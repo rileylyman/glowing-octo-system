@@ -3,6 +3,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "vertex.h"
+#include <glm/glm.hpp>
 #include <map>
 
 struct Model {
@@ -10,13 +11,13 @@ struct Model {
         VertexBuffer *vertex_buffer,
         std::vector<Vertex> vertices, 
         std::vector<uint32_t> indices, 
-        ShaderProgram shader_prog, 
-        std::map<const char *, Texture> textures,
-        glm::mat4 mvp
-        );
+        ShaderProgram shader_prog 
+       );
     void draw();
-    void set_mvp(glm::mat4 new_mvp);
-    glm::mat4 mvp;
+
+    glm::mat4 mvp, model;
+    glm::vec3 object_color, light_color;
+    Texture *container, *smiley;
 
 private:
     VertexBuffer *vertex_buffer;
@@ -24,6 +25,4 @@ private:
     size_t indices_size;
 
     ShaderProgram shader_prog;
-    std::map<const char*, Texture> textures;
-
 };

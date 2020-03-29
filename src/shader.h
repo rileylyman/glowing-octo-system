@@ -4,11 +4,21 @@
 #include <stdint.h>
 #include <string>
 #include <glm/glm.hpp>
+#include <vector>
+
+enum UniformName {
+    TRANSFORM = 0,
+    OBJECT_COLOR,
+    LIGHT_COLOR,
+    CONTAINER,
+    SMILEY
+};
 
 struct ShaderProgram {
     uint32_t id;
+    std::vector<UniformName> uniforms;
 
-    ShaderProgram(const char* vertex_path, const char* frag_path, const char* geo_path=nullptr); 
+    ShaderProgram(std::vector<UniformName> uniforms, const char* vertex_path, const char* frag_path, const char* geo_path=nullptr); 
 
     void use();
     void setBool(const std::string &name, bool value) const;

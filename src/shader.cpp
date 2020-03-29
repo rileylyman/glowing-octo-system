@@ -5,7 +5,13 @@
 #include <sstream>
 #include <iostream>
 
-ShaderProgram::ShaderProgram(const char* vertex_path, const char* frag_path, const char* geo_path) {
+ShaderProgram::ShaderProgram(
+    std::vector<UniformName> uniforms, 
+    const char* vertex_path, 
+    const char* frag_path, 
+    const char* geo_path)
+: uniforms(uniforms)
+{
 
     std::string vertex_code;
     std::string frag_code;
