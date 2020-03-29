@@ -7,80 +7,79 @@
 
 ShaderProgram::ShaderProgram(const char* vertex_path, const char* frag_path, const char* geo_path) {
 
-        std::string vertex_code;
-        std::string frag_code;
-        std::string geo_code;
+    std::string vertex_code;
+    std::string frag_code;
+    std::string geo_code;
 
-        std::ifstream vertex_file;
-        std::ifstream frag_file;
-        std::ifstream geo_file;
+    std::ifstream vertex_file;
+    std::ifstream frag_file;
+    std::ifstream geo_file;
 
-        vertex_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-        frag_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-        geo_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    vertex_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    frag_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+    geo_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
 
-        try  {
-            vertex_file.open(vertex_path);
-            frag_file.open(frag_path);
+    try  {
+        vertex_file.open(vertex_path);
+        frag_file.open(frag_path);
 
-            std::stringstream vertex_stream, frag_stream;
-            vertex_stream << vertex_file.rdbuf();
-            frag_stream << frag_file.rdbuf();		
+        std::stringstream vertex_stream, frag_stream;
+        vertex_stream << vertex_file.rdbuf();
+        frag_stream << frag_file.rdbuf();		
 
-            vertex_file.close();
-            frag_file.close();
+        vertex_file.close();
+        frag_file.close();
 
-            vertex_code = vertex_stream.str();
-            frag_code = frag_stream.str();			
+        vertex_code = vertex_stream.str();
+        frag_code = frag_stream.str();			
 
-            if(geo_path != nullptr)
-            {
-                geo_file.open(geo_path);
-                std::stringstream gShaderStream;
-                gShaderStream << geo_file.rdbuf();
-                geo_file.close();
-                geo_code = gShaderStream.str();
-            }
+        if (geo_path != nullptr) {
+            geo_file.open(geo_path);
+            std::stringstream gShaderStream;
+            gShaderStream << geo_file.rdbuf();
+            geo_file.close();
+            geo_code = gShaderStream.str();
         }
-        catch (std::ifstream::failure& e) {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-            exit(EXIT_FAILURE);
-        }
+    }
+    catch (std::ifstream::failure& e) {
+        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
-        const char* vertex_code_cstr = vertex_code.c_str(); 
-        const char* frag_code_cstr = frag_code.c_str(); 
-        uint32_t vertex, fragment, geometry;
+    const char* vertex_code_cstr = vertex_code.c_str(); 
+    const char* frag_code_cstr = frag_code.c_str(); 
+    uint32_t vertex, fragment, geometry;
 
-        vertex = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex, 1, &vertex_code_cstr, nullptr);
-        glCompileShader(vertex);
-        ShaderProgram::check_compile_errors(vertex);
+    vertex = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex, 1, &vertex_code_cstr, nullptr);
+    glCompileShader(vertex);
+    ShaderProgram::check_compile_errors(vertex);
 
-        fragment = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment, 1, &frag_code_cstr, nullptr);
-        glCompileShader(fragment);
-        ShaderProgram::check_compile_errors(fragment);
+    fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment, 1, &frag_code_cstr, nullptr);
+    glCompileShader(fragment);
+    ShaderProgram::check_compile_errors(fragment);
 
-        if(geo_path) {
-            const char* geo_code_cstr = geo_code.c_str(); 
-            geometry = glCreateShader(GL_GEOMETRY_SHADER);
-            glShaderSource(geometry, 1, &geo_code_cstr, nullptr);
-            glCompileShader(geometry);
-            ShaderProgram::check_compile_errors(geometry);
-        }
+    if(geo_path) {
+        const char* geo_code_cstr = geo_code.c_str(); 
+        geometry = glCreateShader(GL_GEOMETRY_SHADER);
+        glShaderSource(geometry, 1, &geo_code_cstr, nullptr);
+        glCompileShader(geometry);
+        ShaderProgram::check_compile_errors(geometry);
+    }
 
-        id = glCreateProgram();
-        glAttachShader(id, vertex);
-        glAttachShader(id, fragment);
-        if(geo_path)
-            glAttachShader(id, geometry);
-        glLinkProgram(id);
-        check_link_errors(id);
+    id = glCreateProgram();
+    glAttachShader(id, vertex);
+    glAttachShader(id, fragment);
+    if(geo_path)
+        glAttachShader(id, geometry);
+    glLinkProgram(id);
+    check_link_errors(id);
 
-        glDeleteShader(vertex);
-        glDeleteShader(fragment);
-        if(geo_path != nullptr)
-            glDeleteShader(geometry);
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
+    if(geo_path != nullptr)
+        glDeleteShader(geometry);
 }
 
 void ShaderProgram::setBool(const std::string &name, bool value) const {

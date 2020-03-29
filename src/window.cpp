@@ -4,7 +4,7 @@
 #include "log.h"
 #include "window.h"
 
-Window::Window(uint32_t width, uint32_t height) : width(width), height(height) {
+Window::Window(uint32_t width, uint32_t height, Camera *cam) : cam(cam), width(width), height(height) {
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -24,6 +24,11 @@ Window::Window(uint32_t width, uint32_t height) : width(width), height(height) {
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetWindowFocusCallback(window, focus_callback);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -43,7 +48,7 @@ void Window::poll_events() {
 }
 
 void Window::clear() {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Window::set_clear_color(float r, float g, float b, float a) {
@@ -54,16 +59,49 @@ void Window::swap_buffers() {
     glfwSwapBuffers(window);
 }
 
-void Window::process_input() {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    }
-}
-
 bool Window::should_close() {
     return glfwWindowShouldClose(window);
 }
 
+float Window::get_aspect_ratio() {
+    return (float)width/(float)height;
+}
+
+void Window::process_input() {
+    cam->keyboard_input(window);
+}
+
+void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods) {
+    Window *user_window = (Window *)glfwGetWindowUserPointer(window);
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS && user_window->mouse_locked) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        user_window->mouse_locked = false;
+    } else if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, true);
+    } else if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        user_window->mouse_locked = true;
+    }
+}
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    Window *user_window = (Window *)glfwGetWindowUserPointer(window);
+    user_window->width = width;
+    user_window->height = height;
     glViewport(0, 0, width, height);
+}
+
+void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+    Window *user_window = (Window *)glfwGetWindowUserPointer(window);
+    if (user_window->mouse_locked) {
+        user_window->cam->mouse_input(xpos, ypos);
+    }
+}
+
+void focus_callback(GLFWwindow *window, int focus) {
+    if (!focus) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        Window *current_window = (Window *)glfwGetWindowUserPointer(window);
+        current_window->mouse_locked = false;
+    }
 }

@@ -12,6 +12,8 @@ add_executable(OpenGL
     vertex.cpp
     model.h
     model.cpp
+    camera.h
+    camera.cpp
     )
 
 set(COMPILE_FLAGS "-g -DLOG_USE_COLOR ${COMPILE_FLAGS}")
