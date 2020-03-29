@@ -1,6 +1,6 @@
-add_library(
+add_library( 
     stb
-    stb_image.h
+    INTERFACE
     )
 
-target_include_directories(stb PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(stb INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include/")

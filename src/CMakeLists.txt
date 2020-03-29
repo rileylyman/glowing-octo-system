@@ -1,9 +1,20 @@
 find_package(glfw3 REQUIRED FATAL_ERROR)
-find_package(glad REQUIRED FATAL_ERROR)
 
 add_executable(OpenGL
     main.cpp
-    shader_s.h
+    window.h
+    window.cpp
+    texture.h
+    texture.cpp
+    shader.h
+    shader.cpp
+    vertex.h
+    vertex.cpp
+    model.h
+    model.cpp
     )
 
-target_link_libraries(OpenGL PRIVATE glfw3 glad rt dl m X11 pthread xcb Xau Xdmcp)
+set(COMPILE_FLAGS "-g -DLOG_USE_COLOR ${COMPILE_FLAGS}")
+set(CMAKE_BUILD_TYPE Debug)
+
+target_link_libraries(OpenGL PRIVATE glfw3 stb GL log glad rt dl m Xrandr Xi X11 pthread xcb Xau Xdmcp)
