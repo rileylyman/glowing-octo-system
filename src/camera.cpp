@@ -14,6 +14,10 @@ void Camera::keyboard_input(GLFWwindow *window) {
         position -= right * camera_speed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         position += right * camera_speed;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        position += up * camera_speed;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        position -= up * camera_speed;
 }
 
 void Camera::mouse_input(double xpos, double ypos) {

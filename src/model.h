@@ -3,6 +3,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "vertex.h"
+#include "camera.h"
 #include <glm/glm.hpp>
 #include <map>
 
@@ -11,7 +12,8 @@ struct Model {
         VertexBuffer *vertex_buffer,
         std::vector<Vertex> vertices, 
         std::vector<uint32_t> indices, 
-        ShaderProgram shader_prog 
+        ShaderProgram shader_prog,
+        Camera *camera
        );
     void draw();
 
@@ -19,10 +21,11 @@ struct Model {
     glm::vec3 object_color, light_color;
     Texture *container, *smiley;
 
+    ShaderProgram shader_prog;
 private:
     VertexBuffer *vertex_buffer;
     uint32_t vertex_buffer_index;
     size_t indices_size;
+    Camera *camera;
 
-    ShaderProgram shader_prog;
 };

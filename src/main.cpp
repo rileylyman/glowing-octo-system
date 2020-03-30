@@ -22,42 +22,50 @@
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-//glm::vec3 cubePositions[] = {
-//  glm::vec3( 0.0f,  0.0f,  0.0f), 
-//  glm::vec3( 2.0f,  5.0f, -15.0f), 
-//  glm::vec3(-1.5f, -2.2f, -2.5f),  
-//  glm::vec3(-3.8f, -2.0f, -12.3f),  
-//  glm::vec3( 2.4f, -0.4f, -3.5f),  
-//  glm::vec3(-1.7f,  3.0f, -7.5f),  
-//  glm::vec3( 1.3f, -2.0f, -2.5f),  
-//  glm::vec3( 1.5f,  2.0f, -2.5f), 
-//  glm::vec3( 1.5f,  0.2f, -1.5f), 
-//  glm::vec3(-1.3f,  1.0f, -1.5f)  
-//};
-
 std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f,  0.5f},  {0.0f, 0.0f}},
-    {{ 0.5f, -0.5f,  0.5f},  {1.0f, 0.0f}},
-    {{ 0.5f,  0.5f,  0.5f},  {1.0f, 1.0f}},
-    {{-0.5f,  0.5f,  0.5f},  {0.0f, 1.0f}},
-    {{-0.5f, -0.5f, -0.5f},  {0.0f, 1.0f}},
-    {{ 0.5f, -0.5f, -0.5f},  {1.0f, 1.0f}},
-    {{ 0.5f,  0.5f, -0.5f},  {1.0f, 0.0f}},
-    {{-0.5f,  0.5f, -0.5f},  {0.0f, 0.0f}},
+    //front face
+    {{-0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, // bottom left
+    {{ 0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // bottom right
+    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // top right
+    {{-0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // top left
+
+    //right face
+    {{ 0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
+    {{ 0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
+    {{ 0.5f,  0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}, // top right
+    {{ 0.5f,  0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}}, // top left
+
+    //left face
+    {{-0.5f, -0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
+    {{-0.5f, -0.5f,  0.5f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
+    {{-0.5f,  0.5f,  0.5f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}, // top right
+    {{-0.5f,  0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}}, // top left
+
+    //bottom face
+    {{-0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
+    {{ 0.5f, -0.5f,  -0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
+    {{ 0.5f, -0.5f,  0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}}, // top right
+    {{-0.5f, -0.5f, 0.5f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}}, // top left
+
+    //top face
+    {{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
+    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
+    {{ 0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}}, // top right
+    {{-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}}, // top left
+
+    //back face
+    {{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}}, // bottom left
+    {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}}, // bottom right
+    {{ 0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}}, // top right
+    {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}}, // top left
 };
 std::vector<uint32_t> indices = {
-    0, 1, 2,
-	2, 3, 0,
-	1, 5, 6,
-	6, 2, 1,
-	7, 6, 5,
-	5, 4, 7,
-	4, 0, 3,
-	3, 7, 4,
-	4, 5, 1,
-	1, 0, 4,
-	3, 2, 6,
-	6, 7, 3
+    0, 1, 2, 2, 3, 0,
+    4, 5, 6, 6, 7, 4,
+    8, 9, 10, 10, 11, 8,
+    12, 13, 14, 14, 15, 12,
+    16, 17, 18, 18, 19, 16,
+    20, 21, 22, 22, 23, 20
 };
 
 int main()
@@ -68,14 +76,15 @@ int main()
     VertexBuffer vertex_buffer;
     //Texture container_tex(std::string("resources/textures/container.jpg"), 0, false);
     //Texture smiley_tex(std::string("resources/textures/awesomeface.png"), 1, true);
-    ShaderProgram shader_prog({TRANSFORM, OBJECT_COLOR, LIGHT_COLOR}, "src/shaders/vert.glsl", "src/shaders/frag.glsl");
-    ShaderProgram light_prog({TRANSFORM}, "src/shaders/vert.glsl", "src/shaders/light.glsl");
+    ShaderProgram shader_prog({VIEW, NORMAL_MATRIX_VIEW, MODEL_VIEW, TRANSFORM, OBJECT_COLOR, LIGHT_COLOR}, "src/shaders/vert.glsl", "src/shaders/frag.glsl");
+    ShaderProgram light_prog( {VIEW, NORMAL_MATRIX_VIEW, MODEL_VIEW, TRANSFORM}, "src/shaders/vert.glsl", "src/shaders/light.glsl");
 
     Model cube(
         &vertex_buffer, 
         vertices, 
         indices, 
-        shader_prog
+        shader_prog,
+        &camera
     );
     cube.model = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, -2.0f, -5.0f));
     cube.object_color = glm::vec3(1.0f, 0.5f, 0.31f);
@@ -87,7 +96,8 @@ int main()
         &vertex_buffer,
         vertices,
         indices,
-        light_prog
+        light_prog,
+        &camera
     );
     light.model = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 4.0f, -10.0f));
 
@@ -98,6 +108,10 @@ int main()
     {
         window.process_input();
         window.clear();
+    
+        cube.shader_prog.use();
+        glm::vec3 light_pos = glm::vec3(5.0f * cos(glfwGetTime() * 0.55) - 3.0f, 0.0f, 5.0f * sin(glfwGetTime() * 0.55) - 5.0f);
+        shader_prog.setVec3("lightPos", light_pos);
 
         glm::mat4 view = camera.view();
         glm::mat4 projection = glm::perspective(glm::radians(50.0f), window.get_aspect_ratio(), 0.1f, 100.0f);
@@ -106,7 +120,8 @@ int main()
         cube.mvp = vp * cube.model;
         cube.draw();
 
-        light.mvp = vp * light.model;
+
+        light.mvp = vp * glm::translate(glm::mat4(1.0f), light_pos);
         light.draw();
 
         window.swap_buffers();
