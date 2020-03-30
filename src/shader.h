@@ -7,12 +7,15 @@
 #include <vector>
 
 enum UniformName {
+    // Vertex
     TRANSFORM = 0,
     VIEW,
     MODEL_VIEW,
     NORMAL_MATRIX_VIEW,
-    OBJECT_COLOR,
-    LIGHT_COLOR,
+
+    //Fragment
+    MATERIAL,
+    LIGHT,
     CONTAINER,
     SMILEY
 };

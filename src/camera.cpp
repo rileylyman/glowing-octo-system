@@ -1,3 +1,4 @@
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "camera.h"
 #include "common.h"
@@ -52,4 +53,8 @@ void Camera::mouse_input(double xpos, double ypos) {
 
 glm::mat4 Camera::view() {
     return glm::lookAt(position, position + front, up);
+}
+
+glm::mat4 Camera::projection() {
+    return glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
 }

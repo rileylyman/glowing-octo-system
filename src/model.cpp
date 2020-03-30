@@ -25,21 +25,23 @@ void Model::draw() {
                 shader_prog.setMat3("normal_matrix_view", glm::mat3(camera->view()) * glm::transpose(glm::inverse(glm::mat3(model))));
             break;
             case TRANSFORM:
-                shader_prog.setMat4("transform", mvp);
+                shader_prog.setMat4("transform", camera->projection() * camera->view() * model);
             break;
-            case OBJECT_COLOR:
-                shader_prog.setVec3("objectColor", object_color);
-            break;
-            case LIGHT_COLOR:
-                shader_prog.setVec3("lightColor", light_color);
+            case MATERIAL:
+                material.diffuse->use();
+                material.specular->use();
+                shader_prog.setInt("material.ambient", material.diffuse->unit);
+                shader_prog.setInt("material.diffuse", material.diffuse->unit);
+                shader_prog.setInt("material.specular", material.specular->unit);
+                shader_prog.setFloat("material.shininess", material.shininess);
             break;
             case CONTAINER:
-                container->use();
-                shader_prog.setInt("container", container->unit);
+                //container->use();
+                //shader_prog.setInt("container", container->unit);
             break;
             case SMILEY:
-                smiley->use();
-                shader_prog.setInt("smiley", smiley->unit);
+                //smiley->use();
+                //shader_prog.setInt("smiley", smiley->unit);
             break;
         }
     }

@@ -16,6 +16,7 @@
 #include "vertex.h"
 #include "model.h"
 #include "camera.h"
+#include "common.h"
 
 #include <iostream>
 
@@ -74,9 +75,9 @@ int main()
     Window window(SCR_WIDTH, SCR_HEIGHT, &camera);
 
     VertexBuffer vertex_buffer;
-    //Texture container_tex(std::string("resources/textures/container.jpg"), 0, false);
-    //Texture smiley_tex(std::string("resources/textures/awesomeface.png"), 1, true);
-    ShaderProgram shader_prog({VIEW, NORMAL_MATRIX_VIEW, MODEL_VIEW, TRANSFORM, OBJECT_COLOR, LIGHT_COLOR}, "src/shaders/vert.glsl", "src/shaders/frag.glsl");
+    Texture container_tex(std::string("resources/textures/container2.png"), 0, true);
+    Texture container_tex_spec(std::string("resources/textures/container2_specular.png"), 1, true);
+    ShaderProgram shader_prog({VIEW, NORMAL_MATRIX_VIEW, MODEL_VIEW, TRANSFORM, MATERIAL}, "src/shaders/vert.glsl", "src/shaders/frag.glsl");
     ShaderProgram light_prog( {VIEW, NORMAL_MATRIX_VIEW, MODEL_VIEW, TRANSFORM}, "src/shaders/vert.glsl", "src/shaders/light.glsl");
 
     Model cube(
@@ -87,10 +88,9 @@ int main()
         &camera
     );
     cube.model = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, -2.0f, -5.0f));
-    cube.object_color = glm::vec3(1.0f, 0.5f, 0.31f);
-    cube.light_color = glm::vec3(1.0f, 1.0f, 1.0f);
-    //cube.container = &container_tex;
-    //cube.smiley = &smiley_tex;
+    cube.material.diffuse = &container_tex;
+    cube.material.specular = &container_tex_spec;
+    cube.material.shininess = 16.0f;
 
     Model light(
         &vertex_buffer,
@@ -110,18 +110,21 @@ int main()
         window.clear();
     
         cube.shader_prog.use();
-        glm::vec3 light_pos = glm::vec3(5.0f * cos(glfwGetTime() * 0.55) - 3.0f, 0.0f, 5.0f * sin(glfwGetTime() * 0.55) - 5.0f);
-        shader_prog.setVec3("lightPos", light_pos);
+        glm::vec3 light_pos = glm::vec3(-3.0f, 2.0f, -5.0f);
+        shader_prog.setVec3("lightU.position", light_pos);
+        shader_prog.setVec3("lightU.ambient", 0.2f, 0.2f, 0.2f);
+        shader_prog.setVec3("lightU.diffuse", 0.5f, 0.5f, 0.5f);
+        shader_prog.setVec3("lightU.specular", 1.0f, 1.0f, 1.0f);
 
-        glm::mat4 view = camera.view();
-        glm::mat4 projection = glm::perspective(glm::radians(50.0f), window.get_aspect_ratio(), 0.1f, 100.0f);
-        glm::mat4 vp = projection * view;
 
-        cube.mvp = vp * cube.model;
+        cube.model = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, -2.0f, -5.0f));
+        cube.model = glm::rotate(cube.model, (float)glfwGetTime() * 0.7f, glm::vec3(1.0f, 0.0f, 0.0f));
         cube.draw();
 
-
-        light.mvp = vp * glm::translate(glm::mat4(1.0f), light_pos);
+        light.shader_prog.use();
+        light.model = glm::translate(glm::mat4(1.0f), light_pos);
+        light.shader_prog.setVec3("lightColor", 1.0f, 1.0f, 1.0f); 
+    
         light.draw();
 
         window.swap_buffers();

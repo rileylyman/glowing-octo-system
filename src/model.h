@@ -7,6 +7,11 @@
 #include <glm/glm.hpp>
 #include <map>
 
+struct Material {
+    Texture *diffuse, *specular;
+    float shininess;
+};
+
 struct Model {
     Model(
         VertexBuffer *vertex_buffer,
@@ -18,8 +23,7 @@ struct Model {
     void draw();
 
     glm::mat4 mvp, model;
-    glm::vec3 object_color, light_color;
-    Texture *container, *smiley;
+    Material material;
 
     ShaderProgram shader_prog;
 private:
