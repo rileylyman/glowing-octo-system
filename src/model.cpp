@@ -15,14 +15,14 @@ void Model::draw() {
     shader_prog.use();
     for (UniformName name : shader_prog.uniforms) {
         switch (name) {
-            case VIEW:
-                shader_prog.setMat4("view", camera->view());
+            case CAMERA_POS:
+                shader_prog.setVec3("camera_pos", camera->position);
             break;
-            case MODEL_VIEW:
-                shader_prog.setMat4("model_view", camera->view() * model);
+            case MODEL:
+                shader_prog.setMat4("model", model);
             break;
-            case NORMAL_MATRIX_VIEW:
-                shader_prog.setMat3("normal_matrix_view", glm::mat3(camera->view()) * glm::transpose(glm::inverse(glm::mat3(model))));
+            case NORMAL_MATRIX:
+                shader_prog.setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model))));
             break;
             case TRANSFORM:
                 shader_prog.setMat4("transform", camera->projection() * camera->view() * model);

@@ -4,6 +4,95 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <string>
+
+const uint32_t NR_DL_ATTRS = 4;
+const char *DIR_LIGHT_NAMES[] = {
+    "u_DirLights[0].direction",
+    "u_DirLights[0].ambient",
+    "u_DirLights[0].diffuse",
+    "u_DirLights[0].specular",
+    "u_DirLights[1].direction",
+    "u_DirLights[1].ambient",
+    "u_DirLights[1].diffuse",
+    "u_DirLights[1].specular",
+};
+
+const uint32_t NR_PL_ATTRS = 7;
+const char *POINT_LIGHT_NAMES[] = {
+    "u_PointLights[0].position",
+    "u_PointLights[0].ambient",
+    "u_PointLights[0].diffuse",
+    "u_PointLights[0].specular",
+    "u_PointLights[0].constant",
+    "u_PointLights[0].linear",
+    "u_PointLights[0].quadratic",
+    "u_PointLights[1].position",
+    "u_PointLights[1].ambient",
+    "u_PointLights[1].diffuse",
+    "u_PointLights[1].specular",
+    "u_PointLights[1].constant",
+    "u_PointLights[1].linear",
+    "u_PointLights[1].quadratic",
+    "u_PointLights[2].position",
+    "u_PointLights[2].ambient",
+    "u_PointLights[2].diffuse",
+    "u_PointLights[2].specular",
+    "u_PointLights[2].constant",
+    "u_PointLights[2].linear",
+    "u_PointLights[2].quadratic",
+    "u_PointLights[3].position",
+    "u_PointLights[3].ambient",
+    "u_PointLights[3].diffuse",
+    "u_PointLights[3].specular",
+    "u_PointLights[3].constant",
+    "u_PointLights[3].linear",
+    "u_PointLights[3].quadratic",
+};
+
+const uint32_t NR_SL_ATTRS = 10;
+const char *SPOTLIGHT_NAMES[] = {
+    "u_Spotlights[0].position",
+    "u_Spotlights[0].direction",
+    "u_Spotlights[0].ambient",
+    "u_Spotlights[0].diffuse",
+    "u_Spotlights[0].specular",
+    "u_Spotlights[0].constant",
+    "u_Spotlights[0].linear",
+    "u_Spotlights[0].quadratic",
+    "u_Spotlights[0].cosPhi",
+    "u_Spotlights[0].cosGamma",
+    "u_Spotlights[1].position",
+    "u_Spotlights[1].direction",
+    "u_Spotlights[1].ambient",
+    "u_Spotlights[1].diffuse",
+    "u_Spotlights[1].specular",
+    "u_Spotlights[1].constant",
+    "u_Spotlights[1].linear",
+    "u_Spotlights[1].quadratic",
+    "u_Spotlights[1].cosPhi",
+    "u_Spotlights[1].cosGamma",
+    "u_Spotlights[2].position",
+    "u_Spotlights[2].direction",
+    "u_Spotlights[2].ambient",
+    "u_Spotlights[2].diffuse",
+    "u_Spotlights[2].specular",
+    "u_Spotlights[2].constant",
+    "u_Spotlights[2].linear",
+    "u_Spotlights[2].quadratic",
+    "u_Spotlights[2].cosPhi",
+    "u_Spotlights[2].cosGamma",
+    "u_Spotlights[3].position",
+    "u_Spotlights[3].direction",
+    "u_Spotlights[3].ambient",
+    "u_Spotlights[3].diffuse",
+    "u_Spotlights[3].specular",
+    "u_Spotlights[3].constant",
+    "u_Spotlights[3].linear",
+    "u_Spotlights[3].quadratic",
+    "u_Spotlights[3].cosPhi",
+    "u_Spotlights[3].cosGamma",
+};
 
 ShaderProgram::ShaderProgram(
     std::vector<UniformName> uniforms, 
@@ -134,6 +223,43 @@ void ShaderProgram::setMat3(const std::string &name, const glm::mat3 &mat) const
 
 void ShaderProgram::setMat4(const std::string &name, const glm::mat4 &mat) const {
     glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+}
+
+void ShaderProgram::bind_lights(glm::mat4 view, std::vector<DirLight*> dir_lights, std::vector<PointLight*> point_lights, std::vector<Spotlight*> spot_lights) {
+    if (dir_lights.size() > max_nr_dirlights || point_lights.size() > max_nr_pointlights || spot_lights.size() > max_nr_spotlights) {
+        std::cout << "Too many lights!\n";
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < dir_lights.size(); i++) {
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 0], dir_lights[i]->direction);
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 1], dir_lights[i]->ambient);
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 2], dir_lights[i]->diffuse);
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 3], dir_lights[i]->specular);
+    }
+    setInt("u_NrDirLights", dir_lights.size());
+    for (int i = 0; i < point_lights.size(); i++) {
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 0], point_lights[i]->position);
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 1], point_lights[i]->ambient);
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 2], point_lights[i]->diffuse);
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 3], point_lights[i]->specular);
+        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 4], point_lights[i]->constant);
+        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 5], point_lights[i]->linear);
+        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 6], point_lights[i]->quadratic);
+    }
+    setInt("u_NrPointLights", point_lights.size());
+    for (int i = 0; i < spot_lights.size(); i++) {
+        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 0], spot_lights[i]->position);
+        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 1], spot_lights[i]->direction);
+        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 2], spot_lights[i]->ambient);
+        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 3], spot_lights[i]->diffuse);
+        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 4], spot_lights[i]->specular);
+        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 5], spot_lights[i]->constant);
+        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 6], spot_lights[i]->linear);
+        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 7], spot_lights[i]->quadratic);
+        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 8], spot_lights[i]->cosPhi);
+        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 9], spot_lights[i]->cosGamma);
+    }
+    setInt("u_NrSpotlights", spot_lights.size());
 }
 
 void ShaderProgram::use() {

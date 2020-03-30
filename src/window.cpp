@@ -36,7 +36,7 @@ Window::Window(uint32_t width, uint32_t height, Camera *cam) : cam(cam), width(w
         exit(EXIT_FAILURE);
     }
 
-    set_clear_color(.25f, .5f, 0.9f, 1.0f);
+    set_clear_color(0.1f, 0.1f, 0.1f, 1.0f);
 }
 
 Window::~Window() { 
