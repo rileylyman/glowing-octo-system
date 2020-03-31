@@ -23,4 +23,4 @@ add_executable(OpenGL
 set(COMPILE_FLAGS "-g -DLOG_USE_COLOR ${COMPILE_FLAGS}")
 set(CMAKE_BUILD_TYPE Debug)
 
-target_link_libraries(OpenGL PRIVATE glfw3 stb GL log glad rt dl m Xrandr Xi X11 pthread xcb Xau Xdmcp)
+target_link_libraries(OpenGL PRIVATE assimp glfw3 stb GL log glad rt dl m Xrandr Xi X11 pthread xcb Xau Xdmcp)

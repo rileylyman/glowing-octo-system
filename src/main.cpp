@@ -24,51 +24,51 @@
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-std::vector<Vertex> vertices = {
-    //front face
-    {{-0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, // bottom left
-    {{ 0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // bottom right
-    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // top right
-    {{-0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // top left
-
-    //right face
-    {{ 0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
-    {{ 0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
-    {{ 0.5f,  0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}, // top right
-    {{ 0.5f,  0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}}, // top left
-
-    //left face
-    {{-0.5f, -0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
-    {{-0.5f, -0.5f,  0.5f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
-    {{-0.5f,  0.5f,  0.5f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}, // top right
-    {{-0.5f,  0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}}, // top left
-
-    //bottom face
-    {{-0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
-    {{ 0.5f, -0.5f,  -0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
-    {{ 0.5f, -0.5f,  0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}}, // top right
-    {{-0.5f, -0.5f, 0.5f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}}, // top left
-
-    //top face
-    {{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
-    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
-    {{ 0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}}, // top right
-    {{-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}}, // top left
-
-    //back face
-    {{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}}, // bottom left
-    {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}}, // bottom right
-    {{ 0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}}, // top right
-    {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}}, // top left
-};
-std::vector<uint32_t> indices = {
-    0, 1, 2, 2, 3, 0,
-    4, 5, 6, 6, 7, 4,
-    8, 9, 10, 10, 11, 8,
-    12, 13, 14, 14, 15, 12,
-    16, 17, 18, 18, 19, 16,
-    20, 21, 22, 22, 23, 20
-};
+//std::vector<Vertex> vertices = {
+//    //front face
+//    {{-0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, // bottom left
+//    {{ 0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // bottom right
+//    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // top right
+//    {{-0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // top left
+//
+//    //right face
+//    {{ 0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
+//    {{ 0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
+//    {{ 0.5f,  0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}, // top right
+//    {{ 0.5f,  0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}}, // top left
+//
+//    //left face
+//    {{-0.5f, -0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
+//    {{-0.5f, -0.5f,  0.5f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
+//    {{-0.5f,  0.5f,  0.5f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}}, // top right
+//    {{-0.5f,  0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}}, // top left
+//
+//    //bottom face
+//    {{-0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
+//    {{ 0.5f, -0.5f,  -0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
+//    {{ 0.5f, -0.5f,  0.5f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}}, // top right
+//    {{-0.5f, -0.5f, 0.5f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}}, // top left
+//
+//    //top face
+//    {{-0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}, // bottom left
+//    {{ 0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}}, // bottom right
+//    {{ 0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}}, // top right
+//    {{-0.5f,  0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}}, // top left
+//
+//    //back face
+//    {{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}}, // bottom left
+//    {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}}, // bottom right
+//    {{ 0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}}, // top right
+//    {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}}, // top left
+//};
+//std::vector<uint32_t> indices = {
+//    0, 1, 2, 2, 3, 0,
+//    4, 5, 6, 6, 7, 4,
+//    8, 9, 10, 10, 11, 8,
+//    12, 13, 14, 14, 15, 12,
+//    16, 17, 18, 18, 19, 16,
+//    20, 21, 22, 22, 23, 20
+//};
 
 glm::vec3 light_positions[] = {
     glm::vec3( 0.7f,  10.0f,  2.0f),
@@ -101,8 +101,8 @@ int main()
     //
     // Load assets
     //
-    Texture container_tex(std::string("resources/textures/container2.png"), 0, true);
-    Texture container_tex_spec(std::string("resources/textures/container2_specular.png"), 1, true);
+    //Texture container_tex(std::string("resources/textures/container2.png"), 0);
+    //Texture container_tex_spec(std::string("resources/textures/container2_specular.png"), 1);
     ShaderProgram shader_prog({CAMERA_POS, NORMAL_MATRIX, MODEL, TRANSFORM, MATERIAL}, "src/shaders/vert.glsl", "src/shaders/frag.glsl");
     ShaderProgram light_prog( {CAMERA_POS, NORMAL_MATRIX, MODEL, TRANSFORM}, "src/shaders/vert.glsl", "src/shaders/light.glsl");
 
@@ -110,26 +110,29 @@ int main()
     // Buffer vertex data and set materials
     //
     VertexBuffer vertex_buffer;
-    Model cube(
-        &vertex_buffer, 
-        vertices, 
-        indices, 
-        shader_prog,
-        &camera
-    );
-    cube.model = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, -2.0f, -5.0f));
-    cube.material.diffuse = &container_tex;
-    cube.material.specular = &container_tex_spec;
-    cube.material.shininess = 16.0f;
+    Model nanosuit(&vertex_buffer, "resources/models/torch/scene.gltf");
+    nanosuit.model = glm::mat4(1.0f);//glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(1.0f)), glm::vec3(0.0f, 0.0f, -3.0f));
 
-    Model light(
-        &vertex_buffer,
-        vertices,
-        indices,
-        light_prog,
-        &camera
-    );
-    light.model = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 4.0f, -10.0f));
+    //Model cube(
+    //    &vertex_buffer, 
+    //    vertices, 
+    //    indices, 
+    //    shader_prog,
+    //    &camera
+    //);
+    //cube.model = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, -2.0f, -5.0f));
+    //cube.material.diffuse = &container_tex;
+    //cube.material.specular = &container_tex_spec;
+    //cube.material.shininess = 16.0f;
+
+    //Model light(
+    //    &vertex_buffer,
+    //    vertices,
+    //    indices,
+    //    light_prog,
+    //    &camera
+    //);
+    //light.model = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 4.0f, -10.0f));
 
     vertex_buffer.buffer_data();
 
@@ -156,29 +159,23 @@ int main()
         window.process_input();
         window.clear();
     
-        cube.shader_prog.use();
-        //glm::vec3 light_pos = glm::vec3(-3.0f, 2.0f, -5.0f);
-        //shader_prog.setVec3("lightU.position", light_pos);
-        //shader_prog.setVec3("lightU.ambient", 0.2f, 0.2f, 0.2f);
-        //shader_prog.setVec3("lightU.diffuse", 0.5f, 0.5f, 0.5f);
-        //shader_prog.setVec3("lightU.specular", 1.0f, 1.0f, 1.0f);
+        shader_prog.use();
         spot_light.position = camera.position;
         spot_light.direction = camera.front;
-        cube.shader_prog.bind_lights(camera.view(), dir_lights, point_lights, spotlights);
+        shader_prog.bind_lights(camera.view(), dir_lights, point_lights, spotlights);
 
 
-        for (int i = 0; i < 10; i++) {
-            cube.model = glm::translate(glm::mat4(1.0f), cube_positions[i]);
-            cube.model = glm::rotate(cube.model, (float)glfwGetTime() * (float)i * 0.07f, glm::vec3(1.0f, 0.0f, 0.0f));
-            cube.draw();
-        }
+            //cube.model = glm::translate(glm::mat4(1.0f), cube_positions[i]);
+            //cube.model = glm::rotate(cube.model, (float)glfwGetTime() * (float)i * 0.07f, glm::vec3(1.0f, 0.0f, 0.0f));
+            //cube.draw(shader_prog, &camera);
+        nanosuit.draw(shader_prog, &camera);
 
-        light.shader_prog.use();
-        for (int i = 0; i < 4; i++) {
-            light.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light_positions[i]);
-            light.shader_prog.setVec3("lightColor", 1.0f, 1.0f, 1.0f); 
-            light.draw();
-        }
+        //light_prog.use();
+        //for (int i = 0; i < 4; i++) {
+        //    //light.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light_positions[i]);
+        //    //light_prog.setVec3("lightColor", 1.0f, 1.0f, 1.0f); 
+        //    //light.draw(light_prog, &camera);
+        //}
 
         window.swap_buffers();
         window.poll_events();

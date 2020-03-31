@@ -1,8 +1,11 @@
 #version 330 core
 
 struct Material {
+	sampler2D ambient;
 	sampler2D diffuse;
 	sampler2D specular;
+//	sampler2D normal;
+//	sampler2D height;
 	float shininess;
 };
 uniform Material material;
@@ -63,7 +66,7 @@ vec3 CalculateDirLight(DirLight light) {
 	vec3 lightDir = normalize(-light.direction);
 
 	// Ambient
-	vec3 ambient = light.ambient * texture(material.diffuse, TexCoord).rgb;
+	vec3 ambient = light.ambient * texture(material.ambient, TexCoord).rgb;
 
 	// Diffuse
 	vec3 normal = normalize(Normal);
@@ -84,7 +87,7 @@ vec3 CalculatePointLight(PointLight light) {
 	vec3 lightDir = normalize(light.position - FragPos);
 
 	// Ambient
-	vec3 ambient = light.ambient * texture(material.diffuse, TexCoord).rgb;
+	vec3 ambient = light.ambient * texture(material.ambient, TexCoord).rgb;
 
 	// Diffuse
 	vec3 normal = normalize(Normal);
@@ -108,7 +111,7 @@ vec3 CalculateSpotlight(Spotlight light) {
 	vec3 lightDir = normalize(light.position - FragPos);
 
 	// Ambient
-	vec3 ambient = light.ambient * texture(material.diffuse, TexCoord).rgb;
+	vec3 ambient = light.ambient * texture(material.ambient, TexCoord).rgb;
 
 	// Diffuse
 	vec3 normal = normalize(Normal);
@@ -150,6 +153,6 @@ void main()
 		result += CalculateSpotlight(u_Spotlights[i]);
 	}
 
-//	FragColor = vec4(debug_color, 1.0);
+	//FragColor = vec4(Normal, 1.0);
 	FragColor = vec4(result, 1.0);
 }

@@ -28,7 +28,8 @@ Window::Window(uint32_t width, uint32_t height, Camera *cam) : cam(cam), width(w
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowFocusCallback(window, focus_callback);
     glfwSetWindowUserPointer(window, this);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    mouse_locked = false;
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -36,7 +37,7 @@ Window::Window(uint32_t width, uint32_t height, Camera *cam) : cam(cam), width(w
         exit(EXIT_FAILURE);
     }
 
-    set_clear_color(0.1f, 0.1f, 0.1f, 1.0f);
+    set_clear_color(0.6f, 0.5f, 0.6f, 1.0f);
 }
 
 Window::~Window() { 

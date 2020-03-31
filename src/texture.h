@@ -6,6 +6,7 @@
 struct Texture {
     uint32_t id, unit;
 
-    Texture(std::string path, uint32_t unit, bool alpha);
+    Texture(): id(UINT32_MAX), unit(UINT32_MAX) {}
+    Texture(std::string filename, uint32_t unit);
     void use(); 
 };
