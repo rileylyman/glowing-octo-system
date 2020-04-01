@@ -56,5 +56,5 @@ private:
     void load_model(std::string pathname);
     Mesh process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transformation); 
     void process_node(aiNode *node, const aiScene* scene, glm::mat4);
-    std::vector<Texture> load_texture(aiMaterial *material, aiTextureType type);
+    std::vector<Texture> load_texture(aiMaterial *material, aiTextureType type, bool srgb);
 };

@@ -18,16 +18,23 @@ Mesh::Mesh(
 normal_textures(normal_textures), height_textures(height_textures), ambient_textures(ambient_textures), model(model)
 {
     vertex_buffer_index = vertex_buffer->add_data(vertices, indices);
-
     if (diffuse_textures.empty()) {
-        std::cout << "Must at least have a diffuse texture!\n";
-        exit(EXIT_FAILURE);
+        if (ambient_textures.empty()) {
+            std::cout << "Must at least have a diffuse or ambient texture!\n";
+            exit(EXIT_FAILURE);
+        }
+        material.ambient = ambient_textures[0]; 
+        material.diffuse = ambient_textures[0];
+        material.height = height_textures.size() > 0 ? height_textures[0] : ambient_textures[0];
+        material.normal = normal_textures.size() > 0 ? normal_textures[0] : ambient_textures[0];
+        material.specular = specular_textures.size() > 0 ? specular_textures[0] : ambient_textures[0];
+    } else {
+        material.ambient = ambient_textures.size() > 0 ? ambient_textures[0] : diffuse_textures[0];
+        material.diffuse = diffuse_textures[0];
+        material.height = height_textures.size() > 0 ? height_textures[0] : diffuse_textures[0];
+        material.normal = normal_textures.size() > 0 ? normal_textures[0] : diffuse_textures[0];
+        material.specular = specular_textures.size() > 0 ? specular_textures[0] : diffuse_textures[0];
     }
-    material.ambient = ambient_textures.size() > 0 ? ambient_textures[0] : diffuse_textures[0];
-    material.diffuse = diffuse_textures[0];
-    material.height = height_textures.size() > 0 ? height_textures[0] : diffuse_textures[0];
-    material.normal = normal_textures.size() > 0 ? normal_textures[0] : diffuse_textures[0];
-    material.specular = specular_textures.size() > 0 ? specular_textures[0] : diffuse_textures[0];
     material.shininess = 64.0f;
 }
 
@@ -94,7 +101,7 @@ glm::mat4 convert_matrix(const aiMatrix4x4 &aiMat) {
 void Model::load_model(std::string pathname) {
     
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(pathname, aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate);
+    const aiScene* scene = importer.ReadFile(pathname, aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate | aiProcess_GenNormals);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
     {
         std::cout << "Assimp importer error: " << importer.GetErrorString() << std::endl;
@@ -102,12 +109,12 @@ void Model::load_model(std::string pathname) {
     }
     directory = pathname.substr(0, pathname.find_last_of('/'));
 
-    process_node(scene->mRootNode, scene, glm::scale(glm::mat4(1.0f), glm::vec3(.1f, .1f, .1f)));
+    process_node(scene->mRootNode, scene, glm::mat4(1.0f));
 }
 
 void Model::process_node(aiNode *node, const aiScene *scene, glm::mat4 transformation) {
     glm::mat4 current_tr = convert_matrix(node->mTransformation);
-    transformation = current_tr * transformation;
+    transformation = transformation * current_tr  ;
 
     for (uint32_t i = 0; i < node->mNumMeshes; i++) {
         aiMesh *ai_mesh = scene->mMeshes[node->mMeshes[i]];
@@ -120,6 +127,8 @@ void Model::process_node(aiNode *node, const aiScene *scene, glm::mat4 transform
 }
 
 Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transformation) {
+
+    unit = 0;
 
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
@@ -159,17 +168,17 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
     }
 
     aiMaterial *material = scene->mMaterials[ai_mesh->mMaterialIndex];
-    ambient_textures = load_texture(material, aiTextureType_AMBIENT);
-    diffuse_textures = load_texture(material, aiTextureType_DIFFUSE);
-    specular_textures = load_texture(material, aiTextureType_SPECULAR);
-    normal_textures = load_texture(material, aiTextureType_NORMALS);
-    height_textures = load_texture(material, aiTextureType_HEIGHT);
+    ambient_textures = load_texture(material, aiTextureType_AMBIENT, true);
+    diffuse_textures = load_texture(material, aiTextureType_DIFFUSE, true);
+    specular_textures = load_texture(material, aiTextureType_SPECULAR, true);
+    normal_textures = load_texture(material, aiTextureType_NORMALS, false);
+    height_textures = load_texture(material, aiTextureType_HEIGHT, false);
 
     return Mesh(
         vertex_buffer,
         vertices,
         indices,
-        transformation,
+        model * transformation,
         ambient_textures,
         diffuse_textures,
         specular_textures,
@@ -178,7 +187,7 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
     );
 }
 
-std::vector<Texture> Model::load_texture(aiMaterial *material, aiTextureType type) {
+std::vector<Texture> Model::load_texture(aiMaterial *material, aiTextureType type, bool srgb) {
     std::vector<Texture> textures;
     for(uint32_t i = 0; i < material->GetTextureCount(type); i++) {
 
@@ -193,7 +202,7 @@ std::vector<Texture> Model::load_texture(aiMaterial *material, aiTextureType typ
                 std::cout << "Can have at most 16 textures for same model!\n";
                 exit(EXIT_FAILURE);
             }
-            Texture texture(directory + "/" + texname, unit++);
+            Texture texture(directory + "/" + texname, unit++, srgb);
             textures.push_back(texture);
             loaded_textures[texname] = texture;
         }

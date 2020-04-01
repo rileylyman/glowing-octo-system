@@ -56,5 +56,5 @@ glm::mat4 Camera::view() {
 }
 
 glm::mat4 Camera::projection() {
-    return glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
+    return glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 1000.0f);
 }

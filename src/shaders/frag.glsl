@@ -4,8 +4,8 @@ struct Material {
 	sampler2D ambient;
 	sampler2D diffuse;
 	sampler2D specular;
-//	sampler2D normal;
-//	sampler2D height;
+	sampler2D normal;
+	sampler2D height;
 	float shininess;
 };
 uniform Material material;
@@ -74,9 +74,11 @@ vec3 CalculateDirLight(DirLight light) {
 	vec3 diffuse = diff * texture(material.diffuse, TexCoord).rgb * light.diffuse;
 
 	// Specular
-	vec3 reflectDir = reflect(-lightDir, normal);
+	//vec3 reflectDir = reflect(-lightDir, normal);
+	//float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 	vec3 viewDir = normalize(CameraPos - FragPos);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	vec3 halfway = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(normal, halfway), 0.0), material.shininess);
 	vec3 specular = spec * texture(material.specular, TexCoord).rgb * light.specular;
 
 	vec3 result = ambient + diffuse + specular;
@@ -95,9 +97,11 @@ vec3 CalculatePointLight(PointLight light) {
 	vec3 diffuse = diff * texture(material.diffuse, TexCoord).rgb * light.diffuse;
 
 	// Specular
-	vec3 reflectDir = reflect(-lightDir, normal);
+	//vec3 reflectDir = reflect(-lightDir, normal);
+	//float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 	vec3 viewDir = normalize(CameraPos - FragPos);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	vec3 halfway = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(normal, halfway), 0.0), material.shininess);
 	vec3 specular = spec * texture(material.specular, TexCoord).rgb * light.specular;
 
 	float dist = length(light.position - FragPos);
@@ -119,9 +123,11 @@ vec3 CalculateSpotlight(Spotlight light) {
 	vec3 diffuse = diff * texture(material.diffuse, TexCoord).rgb * light.diffuse;
 
 	// Specular
-	vec3 reflectDir = reflect(-lightDir, normal);
+	//vec3 reflectDir = reflect(-lightDir, normal);
+	//float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 	vec3 viewDir = normalize(CameraPos - FragPos);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	vec3 halfway = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(normal, halfway), 0.0), material.shininess);
 	vec3 specular = spec * texture(material.specular, TexCoord).rgb * light.specular;
 
 	float distance = length(light.position - FragPos);
