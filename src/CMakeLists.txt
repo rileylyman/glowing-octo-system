@@ -8,6 +8,8 @@ add_executable(OpenGL
     texture.cpp
     shader.h
     shader.cpp
+    skybox.h
+    skybox.cpp
     vertex.h
     vertex.cpp
     model.h

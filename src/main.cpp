@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "shader.h"
+#include "skybox.h"
 #include "window.h"
 #include "texture.h"
 #include "vertex.h"
@@ -46,13 +47,31 @@ int main()
     ShaderProgram light_prog( {CAMERA_POS, NORMAL_MATRIX, MODEL, TRANSFORM}, "src/shaders/vert.glsl", "src/shaders/light.glsl");
 
     //
+    // Get skybox cubemap texture
+    //
+    Skybox skybox(
+        {
+            "resources/textures/skybox/right.jpg",
+            "resources/textures/skybox/left.jpg",
+            "resources/textures/skybox/top.jpg",
+            "resources/textures/skybox/bottom.jpg",
+            "resources/textures/skybox/front.jpg",
+            "resources/textures/skybox/back.jpg",
+        },
+        "src/shaders/skybox.vert",
+        "src/shaders/skybox.frag"
+    );
+
+    //
     // Buffer vertex data and set materials
     //
     VertexBuffer vertex_buffer;
-    Model nanosuit(&vertex_buffer, "resources/models/rifle/scene.gltf");
+    Model nanosuit(&vertex_buffer, "resources/models/nanosuit/scene.gltf");
     nanosuit.model = glm::scale(glm::mat4(1.0f), glm::vec3(.01f));
 
 
+    Model rifle(&vertex_buffer, "resources/models/rifle/scene.gltf");
+    rifle.model = glm::scale(glm::mat4(1.0f), glm::vec3(.01f));
     vertex_buffer.buffer_data();
 
     //
@@ -79,14 +98,15 @@ int main()
     {
         window.process_input();
         window.clear();
+
     
         shader_prog.use();
         spot_light.position = camera.position;
         spot_light.direction = camera.front;
         shader_prog.bind_lights(camera.view(), dir_lights, point_lights, spotlights);
 
-        nanosuit.model = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime() * 0.5f, glm::vec3(0.0f, 0.5f, 0.5f));
         nanosuit.draw(shader_prog, &camera);
+        rifle.draw(shader_prog, &camera);
 
         //light_prog.use();
         //for (int i = 0; i < 4; i++) {
@@ -94,6 +114,8 @@ int main()
         //    //light_prog.setVec3("lightColor", 1.0f, 1.0f, 1.0f); 
         //    //light.draw(light_prog, &camera);
         //}
+
+        skybox.draw(&camera);
 
         window.swap_buffers();
         window.poll_events();
