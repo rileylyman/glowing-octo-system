@@ -42,14 +42,15 @@ private:
 };
 
 struct Model {
-    Model(VertexBuffer *vertex_buffer, std::string pathname);
+    Model(VertexBuffer *vertex_buffer, std::string pathname, bool height_normals);
     void draw(ShaderProgram shader_prog, Camera *camera);
 
     glm::mat4 model = glm::mat4(1.0f);
+    std::vector<Mesh> meshes;
 private:
+    bool height_normals = false;
     VertexBuffer *vertex_buffer;
     std::string directory;
-    std::vector<Mesh> meshes;
     static std::map<std::string, Texture> loaded_textures;
     uint32_t unit = 0;
 

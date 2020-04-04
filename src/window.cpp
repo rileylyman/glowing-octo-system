@@ -72,6 +72,7 @@ void Window::process_input() {
     cam->keyboard_input(window);
 }
 
+extern bool render_normals;
 void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods) {
     Window *user_window = (Window *)glfwGetWindowUserPointer(window);
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS && user_window->mouse_locked) {
@@ -82,6 +83,8 @@ void key_callback(GLFWwindow * window, int key, int scancode, int action, int mo
     } else if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         user_window->mouse_locked = true;
+    } else if (key == GLFW_KEY_N && action == GLFW_PRESS) {
+        render_normals = !render_normals;
     }
 }
 

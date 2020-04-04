@@ -54,8 +54,10 @@ struct Spotlight {
 #define MAX_NR_SPOTLIGHTS 1
 uniform Spotlight u_Spotlights[MAX_NR_SPOTLIGHTS];
 uniform int u_NrSpotlights = 0;
+uniform bool u_RenderNormals = true;
 
 in vec2 TexCoord;
+in mat3 TBN;
 in vec3 Normal;
 in vec3 FragPos;
 in vec3 CameraPos;
@@ -69,7 +71,13 @@ vec3 CalculateDirLight(DirLight light) {
 	vec3 ambient = light.ambient * texture(material.ambient, TexCoord).rgb;
 
 	// Diffuse
-	vec3 normal = normalize(Normal);
+	vec3 normal;
+	if (!u_RenderNormals) {
+		normal = normalize(Normal);
+	} else {
+		normal = texture(material.normal, TexCoord).rgb * 2.0 - 1.0 ;
+		normal = TBN * normalize(normal); 
+	}
 	float diff = max(dot(normal, lightDir),  0.0);
 	vec3 diffuse = diff * texture(material.diffuse, TexCoord).rgb * light.diffuse;
 
@@ -92,7 +100,13 @@ vec3 CalculatePointLight(PointLight light) {
 	vec3 ambient = light.ambient * texture(material.ambient, TexCoord).rgb;
 
 	// Diffuse
-	vec3 normal = normalize(Normal);
+	vec3 normal;
+	if (!u_RenderNormals) {
+		normal = normalize(Normal);
+	} else {
+		normal = texture(material.normal, TexCoord).rgb * 2.0 - 1.0 ;
+		normal = TBN * normalize(normal); 
+	}
 	float diff = max(dot(normal, lightDir),  0.0);
 	vec3 diffuse = diff * texture(material.diffuse, TexCoord).rgb * light.diffuse;
 
@@ -118,7 +132,13 @@ vec3 CalculateSpotlight(Spotlight light) {
 	vec3 ambient = light.ambient * texture(material.ambient, TexCoord).rgb;
 
 	// Diffuse
-	vec3 normal = normalize(Normal);
+	vec3 normal;
+	if (!u_RenderNormals) {
+		normal = normalize(Normal);
+	} else {
+		normal = texture(material.normal, TexCoord).rgb * 2.0 - 1.0 ;
+		normal = TBN * normalize(normal); 
+	}
 	float diff = max(dot(normal, lightDir),  0.0);
 	vec3 diffuse = diff * texture(material.diffuse, TexCoord).rgb * light.diffuse;
 
@@ -148,6 +168,15 @@ vec3 CalculateSpotlight(Spotlight light) {
 
 void main()
 {
+	//vec3 normal;
+	//if (false) {
+	//	normal = normalize(Normal);
+	//} else {
+	//	normal = texture(material.normal, TexCoord).rgb * 2.0 - 1.0 ;
+	//	normal = TBN * normalize(normal); 
+	//}
+	//FragColor = vec4( normal, 1.0);
+	//return;
 	vec3 result = vec3(0.0);
 	for (int i = 0; i < u_NrDirLights; i++) {
 		result += CalculateDirLight(u_DirLights[i]);

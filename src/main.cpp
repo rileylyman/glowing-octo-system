@@ -32,6 +32,8 @@ glm::vec3 light_positions[] = {
     glm::vec3( 0.0f,  10.0f, -3.0f)
 };
 
+bool render_normals = true;
+
 int main()
 {
     //
@@ -66,11 +68,11 @@ int main()
     // Buffer vertex data and set materials
     //
     VertexBuffer vertex_buffer;
-    Model nanosuit(&vertex_buffer, "resources/models/nanosuit/scene.gltf");
+    Model nanosuit(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", true);
     nanosuit.model = glm::scale(glm::mat4(1.0f), glm::vec3(.01f));
 
 
-    Model rifle(&vertex_buffer, "resources/models/rifle/scene.gltf");
+    Model rifle(&vertex_buffer, "resources/models/rifle/scene.gltf", false);
     rifle.model = glm::scale(glm::mat4(1.0f), glm::vec3(.01f));
     vertex_buffer.buffer_data();
 
@@ -78,6 +80,7 @@ int main()
     // Set up lights
     //
     DirLight dir_light;
+    dir_light.direction = glm::vec3(0.0f, -1.0f, -1.0f);
     PointLight point_light0 = { .position = light_positions[0] };
     PointLight point_light1 = { .position = light_positions[1] };
     PointLight point_light2 = { .position = light_positions[2] };
@@ -94,8 +97,12 @@ int main()
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_FRAMEBUFFER_SRGB);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    window.set_clear_color(0.1f, 0.2f, 0.1f, 1.0f);
     while (!window.should_close())
     {
+        double start_time = glfwGetTime();
+
         window.process_input();
         window.clear();
 
@@ -106,7 +113,7 @@ int main()
         shader_prog.bind_lights(camera.view(), dir_lights, point_lights, spotlights);
 
         nanosuit.draw(shader_prog, &camera);
-        rifle.draw(shader_prog, &camera);
+        //rifle.draw(shader_prog, &camera);
 
         //light_prog.use();
         //for (int i = 0; i < 4; i++) {
@@ -119,6 +126,11 @@ int main()
 
         window.swap_buffers();
         window.poll_events();
+
+        double end_time = glfwGetTime();
+        double delta_time = end_time - start_time;
+        double framerate = 1.0 / delta_time;
+        std::cout << "Framerate: " << framerate << "\n";
     }
     return 0;
 }

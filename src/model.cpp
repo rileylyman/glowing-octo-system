@@ -58,10 +58,13 @@ void Mesh::draw(ShaderProgram shader_prog, Camera *camera) {
                 material.ambient.use();
                 material.diffuse.use();
                 material.specular.use();
-                std::cout << material.ambient.unit << ", " << material.diffuse.unit << ", " << material.specular.unit  << std::endl;
+                material.normal.use();
+                material.height.use();
                 shader_prog.setInt("material.ambient", material.ambient.unit);
                 shader_prog.setInt("material.diffuse", material.diffuse.unit);
                 shader_prog.setInt("material.specular", material.specular.unit);
+                shader_prog.setInt("material.normal", material.normal.unit);
+                shader_prog.setInt("material.height", material.height.unit);
                 shader_prog.setFloat("material.shininess", material.shininess);
             break;
             case CONTAINER:
@@ -77,13 +80,15 @@ void Mesh::draw(ShaderProgram shader_prog, Camera *camera) {
     vertex_buffer->draw(vertex_buffer_index, indices_size);
 }
 
-Model::Model(VertexBuffer *vertex_buffer, std::string pathname) 
-: vertex_buffer(vertex_buffer)
+Model::Model(VertexBuffer *vertex_buffer, std::string pathname, bool height_normals) 
+: vertex_buffer(vertex_buffer), height_normals(height_normals)
 {
     load_model(pathname);
 }
 
+extern bool render_normals;
 void Model::draw(ShaderProgram shader_prog, Camera *camera) {
+    shader_prog.setBool("u_RenderNormals", render_normals);
     for (Mesh mesh : meshes) {
         mesh.draw(shader_prog, camera);
     }
@@ -101,7 +106,7 @@ glm::mat4 convert_matrix(const aiMatrix4x4 &aiMat) {
 void Model::load_model(std::string pathname) {
     
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(pathname, aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate | aiProcess_GenNormals);
+    const aiScene* scene = importer.ReadFile(pathname, aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
     {
         std::cout << "Assimp importer error: " << importer.GetErrorString() << std::endl;
@@ -155,6 +160,8 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
             aiVector3D ai_tex_coord = ai_mesh->mTextureCoords[0][i];
             vertex.tex_coord.x = ai_tex_coord.x;
             vertex.tex_coord.y = ai_tex_coord.y;
+        } else {
+            exit(EXIT_FAILURE);
         }
 
         vertices.push_back(vertex);
@@ -171,7 +178,7 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
     ambient_textures = load_texture(material, aiTextureType_AMBIENT, true);
     diffuse_textures = load_texture(material, aiTextureType_DIFFUSE, true);
     specular_textures = load_texture(material, aiTextureType_SPECULAR, true);
-    normal_textures = load_texture(material, aiTextureType_NORMALS, false);
+    normal_textures = load_texture(material, height_normals ? aiTextureType_HEIGHT : aiTextureType_NORMALS, true);
     height_textures = load_texture(material, aiTextureType_HEIGHT, false);
 
     return Mesh(
@@ -205,6 +212,7 @@ std::vector<Texture> Model::load_texture(aiMaterial *material, aiTextureType typ
             Texture texture(directory + "/" + texname, unit++, srgb);
             textures.push_back(texture);
             loaded_textures[texname] = texture;
+            std::cout << "Got " << texname << std::endl;
         }
     }
     return textures;

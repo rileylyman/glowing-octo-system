@@ -94,6 +94,7 @@ const char *SPOTLIGHT_NAMES[] = {
     "u_Spotlights[3].cosGamma",
 };
 
+
 ShaderProgram::ShaderProgram(
     std::vector<UniformName> uniforms, 
     const char* vertex_path, 
