@@ -8,8 +8,9 @@ float ImGuiInstance::camera_speed = 5.0f, ImGuiInstance::camera_sensitivity = 0.
 float ImGuiInstance::clear_r = 0.1f;
 float ImGuiInstance::clear_g = 0.2f;
 float ImGuiInstance::clear_b = 0.3f;
+glm::vec3 * ImGuiInstance::camera_pos = nullptr;
 
-ImGuiInstance::ImGuiInstance(GLFWwindow *window) {
+ImGuiInstance::ImGuiInstance(GLFWwindow *window, glm::vec3 *cpos) {
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -21,6 +22,8 @@ ImGuiInstance::ImGuiInstance(GLFWwindow *window) {
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
+
+    ImGuiInstance::camera_pos = cpos;
 }
 
 ImGuiInstance::~ImGuiInstance() {
@@ -45,6 +48,7 @@ void ImGuiInstance::draw() {
         ImGui::Begin("Debug Options"); 
 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::Text("Camera position: (%.1f, %.1f, %.1f)", ImGuiInstance::camera_pos->x, ImGuiInstance::camera_pos->y, ImGuiInstance::camera_pos->z);
 
         ImGui::Text("Render Settings");
 

@@ -10,91 +10,73 @@ Mesh::Mesh(
     std::vector<Vertex> vertices, 
     std::vector<uint32_t> indices,
     glm::mat4 model,
-    std::vector<Texture> ambient_textures,
-    std::vector<Texture> diffuse_textures,
-    std::vector<Texture> specular_textures,
-    std::vector<Texture> normal_textures,
-    std::vector<Texture> height_textures)
-: vertex_buffer(vertex_buffer), indices_size(indices.size()), diffuse_textures(diffuse_textures), specular_textures(specular_textures),
-normal_textures(normal_textures), height_textures(height_textures), ambient_textures(ambient_textures), model(model)
+    std::map<TextureType, Texture> texmap)
+: vertex_buffer(vertex_buffer), indices_size(indices.size()), model(model), texmap(texmap)
 {
     vertex_buffer_index = vertex_buffer->add_data(vertices, indices);
-    if (diffuse_textures.empty()) {
-        if (ambient_textures.empty()) {
+}
+
+PBRMaterial Mesh::get_pbr_material() {
+    if (pbr_cached) {
+        return pbrmat;
+    }
+    PBRMaterial material;
+    material.albedo = texmap[TEXTURE_TYPE_ALBEDO_MAP];
+    material.metallic = texmap[TEXTURE_TYPE_METALLIC_MAP];
+    material.ao = texmap[TEXTURE_TYPE_AO_MAP];
+    material.roughness = texmap[TEXTURE_TYPE_ROUGHNESS_MAP];
+    material.normal = texmap[TEXTURE_TYPE_NORMAL_MAP];
+
+    return material;
+}
+
+BlinnPhongMaterial Mesh::get_blinnphong_material() {
+    if (blinnphong_cached) {
+        return bpmat;
+    }
+
+    BlinnPhongMaterial material;
+    if (texmap.count(TEXTURE_TYPE_DIFFUSE_MAP) == 0) {
+        if (texmap.count(TEXTURE_TYPE_AMBIENT_MAP) == 0) {
             std::cout << "Must at least have a diffuse or ambient texture!\n";
             exit(EXIT_FAILURE);
         }
-        material.ambient = ambient_textures[0]; 
-        material.diffuse = ambient_textures[0];
-        material.height = height_textures.size() > 0 ? height_textures[0] : ambient_textures[0];
-        material.normal = normal_textures.size() > 0 ? normal_textures[0] : ambient_textures[0];
-        material.specular = specular_textures.size() > 0 ? specular_textures[0] : ambient_textures[0];
+        material.ambient = texmap[TEXTURE_TYPE_AMBIENT_MAP];
+        material.diffuse = texmap[TEXTURE_TYPE_AMBIENT_MAP];
+        material.height = texmap.count(TEXTURE_TYPE_HEIGHT_MAP) > 0 ? texmap[TEXTURE_TYPE_HEIGHT_MAP] : texmap[TEXTURE_TYPE_AMBIENT_MAP];
+        material.normal = texmap.count(TEXTURE_TYPE_NORMAL_MAP) > 0 ? texmap[TEXTURE_TYPE_NORMAL_MAP] : texmap[TEXTURE_TYPE_AMBIENT_MAP];
+        material.specular = texmap.count(TEXTURE_TYPE_SPECULAR_MAP) > 0 ? texmap[TEXTURE_TYPE_SPECULAR_MAP] : texmap[TEXTURE_TYPE_AMBIENT_MAP];
     } else {
-        material.ambient = ambient_textures.size() > 0 ? ambient_textures[0] : diffuse_textures[0];
-        material.diffuse = diffuse_textures[0];
-        material.height = height_textures.size() > 0 ? height_textures[0] : diffuse_textures[0];
-        material.normal = normal_textures.size() > 0 ? normal_textures[0] : diffuse_textures[0];
-        material.specular = specular_textures.size() > 0 ? specular_textures[0] : diffuse_textures[0];
+        material.ambient = texmap.count(TEXTURE_TYPE_AMBIENT_MAP) > 0 ? texmap[TEXTURE_TYPE_AMBIENT_MAP] : texmap[TEXTURE_TYPE_DIFFUSE_MAP];
+        material.diffuse = texmap[TEXTURE_TYPE_DIFFUSE_MAP];
+        material.height = texmap.count(TEXTURE_TYPE_HEIGHT_MAP) > 0 ? texmap[TEXTURE_TYPE_HEIGHT_MAP] : texmap[TEXTURE_TYPE_DIFFUSE_MAP];
+        material.normal = texmap.count(TEXTURE_TYPE_NORMAL_MAP) > 0 ? texmap[TEXTURE_TYPE_NORMAL_MAP] : texmap[TEXTURE_TYPE_DIFFUSE_MAP];
+        material.specular = texmap.count(TEXTURE_TYPE_SPECULAR_MAP) > 0 ? texmap[TEXTURE_TYPE_SPECULAR_MAP] : texmap[TEXTURE_TYPE_DIFFUSE_MAP];
     }
     material.shininess = 64.0f;
+
+    return material;
 }
 
-void Mesh::draw(ShaderProgram shader_prog, Camera *camera) {
-    shader_prog.use();
-    for (UniformName name : shader_prog.uniforms) {
-        switch (name) {
-            case CAMERA_POS:
-                shader_prog.setVec3("camera_pos", camera->position);
-            break;
-            case MODEL:
-                shader_prog.setMat4("model", model);
-            break;
-            case NORMAL_MATRIX:
-                shader_prog.setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model))));
-            break;
-            case TRANSFORM:
-                shader_prog.setMat4("transform", camera->projection() * camera->view() * model);
-            break;
-            case MATERIAL:
-                material.ambient.use();
-                material.diffuse.use();
-                material.specular.use();
-                material.normal.use();
-                material.height.use();
-                shader_prog.setInt("material.ambient", material.ambient.unit);
-                shader_prog.setInt("material.diffuse", material.diffuse.unit);
-                shader_prog.setInt("material.specular", material.specular.unit);
-                shader_prog.setInt("material.normal", material.normal.unit);
-                shader_prog.setInt("material.height", material.height.unit);
-                shader_prog.setFloat("material.shininess", material.shininess);
-            break;
-            case CONTAINER:
-                //container->use();
-                //shader_prog.setInt("container", container->unit);
-            break;
-            case SMILEY:
-                //smiley->use();
-                //shader_prog.setInt("smiley", smiley->unit);
-            break;
-        }
-    }
+void Mesh::draw() {
     vertex_buffer->draw(vertex_buffer_index, indices_size);
 }
 
-Model::Model(VertexBuffer *vertex_buffer, std::string pathname, bool height_normals) 
-: vertex_buffer(vertex_buffer), height_normals(height_normals)
+Model::Model(VertexBuffer *vertex_buffer, std::string pathname, bool pbr, bool height_normals) 
+
+: vertex_buffer(vertex_buffer), height_normals(height_normals), pbr(pbr)
 {
     load_model(pathname);
 }
 
 void Model::draw(ShaderProgram shader_prog, Camera *camera) {
-    shader_prog.setBool("u_RenderNormals", ImGuiInstance::render_normals);
+    throw "This will produce an incorrect result... for now";
     for (Mesh mesh : meshes) {
-        mesh.draw(shader_prog, camera);
+        mesh.draw();
     }
 }
 
-glm::mat4 convert_matrix(const aiMatrix4x4 &aiMat) {
+glm::mat4 Model::convert_matrix(const aiMatrix4x4 &aiMat) {
     return {
         aiMat.a1, aiMat.b1, aiMat.c1, aiMat.d1,
         aiMat.a2, aiMat.b2, aiMat.c2, aiMat.d2,
@@ -137,11 +119,6 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
 
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
-    std::vector<Texture> ambient_textures;
-    std::vector<Texture> diffuse_textures;
-    std::vector<Texture> specular_textures;
-    std::vector<Texture> normal_textures;
-    std::vector<Texture> height_textures;
 
     for (uint32_t i = 0; i < ai_mesh->mNumVertices; i++) {
         Vertex vertex;
@@ -174,25 +151,61 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
         }
     }
 
-    aiMaterial *material = scene->mMaterials[ai_mesh->mMaterialIndex];
-    ambient_textures = load_texture(material, aiTextureType_AMBIENT, true);
-    diffuse_textures = load_texture(material, aiTextureType_DIFFUSE, true);
-    specular_textures = load_texture(material, aiTextureType_SPECULAR, true);
-    normal_textures = load_texture(material, height_normals ? aiTextureType_HEIGHT : aiTextureType_NORMALS, true);
-    height_textures = load_texture(material, aiTextureType_HEIGHT, false);
+    std::map<TextureType, Texture> texmap;
+
+    if (!pbr) {
+        aiMaterial *material = scene->mMaterials[ai_mesh->mMaterialIndex];
+        std::vector<Texture> ambient_textures = load_texture(material, aiTextureType_AMBIENT, true);
+        std::vector<Texture> diffuse_textures = load_texture(material, aiTextureType_DIFFUSE, true);
+        std::vector<Texture> specular_textures = load_texture(material, aiTextureType_SPECULAR, true);
+        std::vector<Texture> normal_textures = load_texture(material, height_normals ? aiTextureType_HEIGHT : aiTextureType_NORMALS, true);
+        std::vector<Texture> height_textures = load_texture(material, aiTextureType_HEIGHT, false);
+
+        if (ambient_textures.size()) texmap[TEXTURE_TYPE_AMBIENT_MAP] = ambient_textures[0];
+        if (diffuse_textures.size()) texmap[TEXTURE_TYPE_DIFFUSE_MAP] = diffuse_textures[0];
+        if (specular_textures.size()) texmap[TEXTURE_TYPE_SPECULAR_MAP] = specular_textures[0];
+        if (normal_textures.size()) texmap[TEXTURE_TYPE_NORMAL_MAP] = normal_textures[0];
+        if (height_textures.size()) texmap[TEXTURE_TYPE_HEIGHT_MAP] = height_textures[0];
+    } else {
+        std::cout << "Getting albedo" << std::endl;
+        Texture albedo = load_texture_from_name("albedo.jpg", true);
+        //Texture metallic = load_texture_from_name("metaallic.tga", false);
+        std::cout << "Getting normal" << std::endl;
+        Texture normal = load_texture_from_name("normal.jpg", false);
+        std::cout << "Getting roughness" << std::endl;
+        Texture roughness = load_texture_from_name("roughness.jpg", false);
+        std::cout << "Getting ao" << std::endl;
+        Texture ao = load_texture_from_name("ao.jpg", false);
+
+        texmap[TEXTURE_TYPE_ALBEDO_MAP] = albedo; 
+        //texmap[TEXTURE_TYPE_METALLIC_MAP] = metallic; 
+        texmap[TEXTURE_TYPE_ROUGHNESS_MAP] = roughness;
+        texmap[TEXTURE_TYPE_NORMAL_MAP] = normal;
+        texmap[TEXTURE_TYPE_AO_MAP] = ao;
+    }
 
     return Mesh(
         vertex_buffer,
         vertices,
         indices,
         model * transformation,
-        ambient_textures,
-        diffuse_textures,
-        specular_textures,
-        normal_textures,
-        height_textures
+        texmap
     );
 }
+
+Texture Model::load_texture_from_name(std::string texname, bool srgb) {
+    if (loaded_textures.count(texname) > 0) {
+        return loaded_textures.at(texname);
+    }
+    if (unit >= 16) {
+        std::cout << "Can have at most 16 textures for same mesh!\n";
+        exit(EXIT_FAILURE);
+    }
+    Texture texture(directory + "/" + texname, unit++, srgb);
+    loaded_textures[texname] = texture;
+    std::cout << "Got " << texname << std::endl;
+    return texture;
+} 
 
 std::vector<Texture> Model::load_texture(aiMaterial *material, aiTextureType type, bool srgb) {
     std::vector<Texture> textures;
@@ -202,18 +215,7 @@ std::vector<Texture> Model::load_texture(aiMaterial *material, aiTextureType typ
         material->GetTexture(type, i, &str);
 
         std::string texname = std::string(str.C_Str());
-        if (loaded_textures.count(texname) > 0) {
-            textures.push_back(loaded_textures.at(texname));
-        } else {
-            if (unit >= 16) {
-                std::cout << "Can have at most 16 textures for same model!\n";
-                exit(EXIT_FAILURE);
-            }
-            Texture texture(directory + "/" + texname, unit++, srgb);
-            textures.push_back(texture);
-            loaded_textures[texname] = texture;
-            std::cout << "Got " << texname << std::endl;
-        }
+        textures.push_back(load_texture_from_name(texname, srgb));
     }
     return textures;
 }

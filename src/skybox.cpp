@@ -46,7 +46,7 @@ float cube_verts[] = {
 };
 
 Skybox::Skybox(std::vector<std::string> texture_names, std::string vshader, std::string fshader)
-: shader(ShaderProgram({}, vshader.c_str(), fshader.c_str())), cubemap(Cubemap(texture_names, 0, true))
+: shader(ShaderProgram(vshader.c_str(), fshader.c_str())), cubemap(Cubemap(texture_names, 0, true))
 {
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);

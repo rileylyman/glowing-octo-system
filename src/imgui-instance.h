@@ -7,6 +7,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "glm/glm.hpp"
 
 
 struct ImGuiInstance {
@@ -14,8 +15,9 @@ struct ImGuiInstance {
     static bool cull_back_face;
     static float camera_speed, camera_sensitivity, camera_fov;
     static float clear_r, clear_g, clear_b;
+    static glm::vec3 *camera_pos;
 
-    ImGuiInstance(GLFWwindow *window);
+    ImGuiInstance(GLFWwindow *window, glm::vec3 *cpos);
     ~ImGuiInstance();
     void draw();
 };

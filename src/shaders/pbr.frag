@@ -13,7 +13,7 @@ struct Material {
     sampler2D metallic;
     sampler2D roughness;
     sampler2D ao;
-}
+};
 uniform Material u_Material;
 
 struct PointLight {
@@ -40,8 +40,8 @@ const float PI = 3.14159265359;
 // a tint and is much larger. Achieve by
 // F0 = mix(vec3(0.4), surfaceColor.rgb, metalness)
 //
-float FresnelSchlick(vec3 H, vec3 V, vec3 F0) {
-    return F0 + (1.0 - F0) * pow(1.0 - max(dot(H, V), 0.0), 5.0);)
+vec3 FresnelSchlick(vec3 H, vec3 V, vec3 F0) {
+    return F0 + (vec3(1.0) - F0) * pow(1.0 - max(dot(H, V), 0.0), 5.0);
 }
 
 float GeometrySchlickGGX(float NdotV, float k) {
@@ -69,7 +69,7 @@ void main() {
     float roughness = texture(u_Material.roughness, TexCoord).r;
     float ao = texture(u_Material.ao, TexCoord).r;
 
-    vec3 N = normalize(normal;
+    vec3 N = normalize(normal);
     vec3 V = normalize(CameraPos - FragPos);
     
     vec3 F0 = vec3(0.4);
@@ -83,8 +83,8 @@ void main() {
         vec3 H = normalize(V + L);
 
         float distance = length(light.position - FragPos);
-	    float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * dist * dist);
-        vec3 radiance = light[i].color * attenuation;
+	    float attenuation = 1.0 ;/// (distance * distance);//(light.constant + light.linear * dist + light.quadratic * dist * dist);
+        vec3 radiance = light.diffuse * attenuation;
 
         float NDF = NDFTrowbridgeReitzGGX(N, H, roughness);
         float k = roughness + 1; k = k * k / 8.0; 

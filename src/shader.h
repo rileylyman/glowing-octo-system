@@ -6,33 +6,24 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include "light.h"
+#include "texture.h"
+#include "camera.h"
 
-enum UniformName {
-    // Vertex
-    TRANSFORM = 0,
-    CAMERA_POS,
-    MODEL,
-    NORMAL_MATRIX,
+struct BlinnPhongMaterial {
+    Texture ambient, diffuse, specular, normal, height;
+    float shininess;
+};
 
-    //Fragment
-    MATERIAL,
-    LIGHT,
-    CONTAINER,
-    SMILEY
+struct PBRMaterial {
+    Texture albedo, normal, metallic, roughness, ao;
 };
 
 struct ShaderProgram {
-    const int max_nr_dirlights = 1;
-    const int max_nr_pointlights = 16;
-    const int max_nr_spotlights = 1;
-
     uint32_t id;
-    std::vector<UniformName> uniforms;
 
-    ShaderProgram(std::vector<UniformName> uniforms, const char* vertex_path, const char* frag_path, const char* geo_path=nullptr); 
+    ShaderProgram(const char* vertex_path, const char* frag_path, const char* geo_path=nullptr); 
 
     void use();
-    void bind_lights(glm::mat4 view, std::vector<DirLight*> dir_lights, std::vector<PointLight*> point_lights, std::vector<Spotlight*> spot_lights); 
     void setBool(const std::string &name, bool value) const;
     void setInt(const std::string &name, int value) const;
     void setFloat(const std::string &name, float value) const;
@@ -49,4 +40,36 @@ struct ShaderProgram {
 private:
     static void check_link_errors(uint32_t id);
     static void check_compile_errors(uint32_t id);
+};
+
+struct BlinnPhongShader : public ShaderProgram {
+
+    using ShaderProgram::ShaderProgram;
+
+    const int max_nr_dirlights = 1;
+    const int max_nr_pointlights = 16;
+    const int max_nr_spotlights = 1;
+    void bind(
+        BlinnPhongMaterial material, 
+        std::vector<DirLight *> dir_lights,
+        std::vector<PointLight *> point_lights,
+        std::vector<Spotlight *> spotlights,
+        bool render_normals,
+        glm::mat4 transform,
+        glm::mat4 model,
+        glm::mat3 normal_matrix,
+        Camera *camera);
+};
+
+struct PBRShader : public ShaderProgram {
+
+    using ShaderProgram::ShaderProgram;
+
+    const int max_nr_pointlights = 16;
+    void bind(
+        PBRMaterial material, 
+        std::vector<PointLight *> point_lights,
+        glm::mat4 transform, glm::mat4 model,
+        glm::mat3 normal_matrix,
+        Camera *camera);
 };

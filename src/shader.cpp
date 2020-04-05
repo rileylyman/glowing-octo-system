@@ -96,11 +96,9 @@ const char *SPOTLIGHT_NAMES[] = {
 
 
 ShaderProgram::ShaderProgram(
-    std::vector<UniformName> uniforms, 
     const char* vertex_path, 
     const char* frag_path, 
     const char* geo_path)
-: uniforms(uniforms)
 {
 
     std::string vertex_code;
@@ -114,6 +112,7 @@ ShaderProgram::ShaderProgram(
     vertex_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
     frag_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
     geo_file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+
 
     try  {
         vertex_file.open(vertex_path);
@@ -226,9 +225,50 @@ void ShaderProgram::setMat4(const std::string &name, const glm::mat4 &mat) const
     glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
 
-void ShaderProgram::bind_lights(glm::mat4 view, std::vector<DirLight*> dir_lights, std::vector<PointLight*> point_lights, std::vector<Spotlight*> spot_lights) {
+void ShaderProgram::use() {
+    glUseProgram(id);
+}
+
+void ShaderProgram::check_link_errors(uint32_t shader)
+{
+    GLint success;
+    GLchar infoLog[1024];
+    glGetProgramiv(shader, GL_LINK_STATUS, &success);
+    if(!success)
+    {
+        glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+        std::cout << "Error linking shader program:\n" << infoLog << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
+void ShaderProgram::check_compile_errors(uint32_t shader)
+{
+    GLint success;
+    GLchar infoLog[1024];
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if(!success)
+    {
+        glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+        std::cout << "Error compiling shader:\n" << infoLog << std::endl;
+    }
+}
+
+void BlinnPhongShader::bind(
+    BlinnPhongMaterial material, 
+    std::vector<DirLight *> dir_lights,
+    std::vector<PointLight *> point_lights,
+    std::vector<Spotlight *> spot_lights,
+    bool render_normals,
+    glm::mat4 transform,
+    glm::mat4 model,
+    glm::mat3 normal_matrix,
+    Camera *camera) 
+{
+    use();
+
     if (dir_lights.size() > max_nr_dirlights || point_lights.size() > max_nr_pointlights || spot_lights.size() > max_nr_spotlights) {
-        std::cout << "Too many lights!\n";
+        std::cout << "Too many lights in BlinnPhongShader::bind() call!\n";
         exit(EXIT_FAILURE);
     }
     for (int i = 0; i < dir_lights.size(); i++) {
@@ -261,33 +301,62 @@ void ShaderProgram::bind_lights(glm::mat4 view, std::vector<DirLight*> dir_light
         setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 9], spot_lights[i]->cosGamma);
     }
     setInt("u_NrSpotlights", spot_lights.size());
+    setVec3("camera_pos", camera->position);
+    setMat4("model", model);
+    setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model))));
+    setMat4("transform", camera->projection() * camera->view() * model);
+    material.ambient.use();
+    material.diffuse.use();
+    material.specular.use();
+    material.normal.use();
+    material.height.use();
+    setInt("material.ambient", material.ambient.unit);
+    setInt("material.diffuse", material.diffuse.unit);
+    setInt("material.specular", material.specular.unit);
+    setInt("material.normal", material.normal.unit);
+    setInt("material.height", material.height.unit);
+    setFloat("material.shininess", material.shininess);
+    setBool("u_RenderNormals", render_normals);
+
 }
 
-void ShaderProgram::use() {
-    glUseProgram(id);
-}
 
-void ShaderProgram::check_link_errors(uint32_t shader)
+void PBRShader::bind(
+    PBRMaterial material, 
+    std::vector<PointLight *> point_lights,
+    glm::mat4 transform, glm::mat4 model,
+    glm::mat3 normal_matrix,
+    Camera *camera) 
 {
-    GLint success;
-    GLchar infoLog[1024];
-    glGetProgramiv(shader, GL_LINK_STATUS, &success);
-    if(!success)
-    {
-        glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-        std::cout << "Error linking shader program:\n" << infoLog << std::endl;
+    use();
+
+    if (point_lights.size() > max_nr_pointlights) {
+        std::cout << "Too many lights in PBRShader::bind() call!\n";
         exit(EXIT_FAILURE);
     }
-}
-
-void ShaderProgram::check_compile_errors(uint32_t shader)
-{
-    GLint success;
-    GLchar infoLog[1024];
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if(!success)
-    {
-        glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-        std::cout << "Error compiling shader:\n" << infoLog << std::endl;
+    for (int i = 0; i < point_lights.size(); i++) {
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 0], point_lights[i]->position);
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 1], point_lights[i]->ambient);
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 2], point_lights[i]->diffuse);
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 3], point_lights[i]->specular);
+        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 4], point_lights[i]->constant);
+        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 5], point_lights[i]->linear);
+        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 6], point_lights[i]->quadratic);
     }
+    setInt("u_NrPointLights", point_lights.size());
+    setVec3("camera_pos", camera->position);
+    setMat4("model", model);
+    setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model))));
+    setMat4("transform", camera->projection() * camera->view() * model);
+    material.albedo.use();
+    material.metallic.use();
+    material.ao.use();
+    material.normal.use();
+    material.roughness.use();
+    setInt("material.albeo", material.albedo.unit);
+    setInt("material.metallic", material.metallic.unit);
+    setInt("material.ao", material.ao.unit);
+    setInt("material.normal", material.normal.unit);
+    setInt("material.roughness", material.roughness.unit);
+
 }
