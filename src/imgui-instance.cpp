@@ -51,6 +51,12 @@ void ImGuiInstance::draw() {
         ImGui::Checkbox("Normal mapping", &render_normals);
         ImGui::Checkbox("Render skybox", &render_skybox);
         ImGui::Checkbox("Cull Back Face", &cull_back_face);
+
+        static bool wireframe_toggled = false;
+        if (ImGui::Button("Toggle Wireframe")) { 
+            glPolygonMode(GL_FRONT_AND_BACK, wireframe_toggled ? GL_FILL : GL_LINE); 
+            wireframe_toggled = !wireframe_toggled;
+        }
         if (cull_back_face)  {
             glEnable(GL_CULL_FACE);
         } else  {

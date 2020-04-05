@@ -104,7 +104,7 @@ int main()
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_FRAMEBUFFER_SRGB);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glfwSwapInterval(0);
     while (!window.should_close())
     {
         window.process_input();
