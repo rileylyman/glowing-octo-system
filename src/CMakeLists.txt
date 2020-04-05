@@ -20,9 +20,11 @@ add_executable(OpenGL
     common.cpp
     light.h
     light.cpp
+    imgui-instance.h
+    imgui-instance.cpp
     )
 
 set(COMPILE_FLAGS "-g -DLOG_USE_COLOR ${COMPILE_FLAGS}")
 set(CMAKE_BUILD_TYPE Debug)
 
-target_link_libraries(OpenGL PRIVATE assimp glfw3 stb GL log glad rt dl m Xrandr Xi X11 pthread xcb Xau Xdmcp)
+target_link_libraries(OpenGL PRIVATE assimp glfw3 imgui stb GL log glad rt dl m Xrandr Xi X11 pthread xcb Xau Xdmcp)

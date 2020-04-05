@@ -1,6 +1,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include "model.h"
+#include "imgui-instance.h"
 
 std::map<std::string, Texture> Model::loaded_textures = {};
 
@@ -86,9 +87,8 @@ Model::Model(VertexBuffer *vertex_buffer, std::string pathname, bool height_norm
     load_model(pathname);
 }
 
-extern bool render_normals;
 void Model::draw(ShaderProgram shader_prog, Camera *camera) {
-    shader_prog.setBool("u_RenderNormals", render_normals);
+    shader_prog.setBool("u_RenderNormals", ImGuiInstance::render_normals);
     for (Mesh mesh : meshes) {
         mesh.draw(shader_prog, camera);
     }
@@ -106,7 +106,7 @@ glm::mat4 convert_matrix(const aiMatrix4x4 &aiMat) {
 void Model::load_model(std::string pathname) {
     
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(pathname, aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate);
+    const aiScene* scene = importer.ReadFile(pathname, aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate | aiProcess_GenNormals);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
     {
         std::cout << "Assimp importer error: " << importer.GetErrorString() << std::endl;

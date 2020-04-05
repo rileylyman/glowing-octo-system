@@ -3,6 +3,7 @@
 #include <iostream>
 #include "log.h"
 #include "window.h"
+#include "imgui-instance.h"
 
 Window::Window(uint32_t width, uint32_t height, Camera *cam) : cam(cam), width(width), height(height) {
 
@@ -72,19 +73,20 @@ void Window::process_input() {
     cam->keyboard_input(window);
 }
 
-extern bool render_normals;
 void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods) {
     Window *user_window = (Window *)glfwGetWindowUserPointer(window);
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS && user_window->mouse_locked) {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         user_window->mouse_locked = false;
     } else if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
+        //glfwSetWindowShouldClose(window, true);
     } else if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         user_window->mouse_locked = true;
-    } else if (key == GLFW_KEY_N && action == GLFW_PRESS) {
-        render_normals = !render_normals;
+    } else if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS)  {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        user_window->mouse_locked = false;
+        ImGuiInstance::gui_enabled = !ImGuiInstance::gui_enabled;
     }
 }
 

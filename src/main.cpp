@@ -1,6 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "imgui-instance.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -32,15 +34,19 @@ glm::vec3 light_positions[] = {
     glm::vec3( 0.0f,  10.0f, -3.0f)
 };
 
-bool render_normals = true;
-
 int main()
 {
+    gladLoadGL();
     //
     // Set up window
     //
     Camera camera(0.0f, 0.0f, 3.0f);
     Window window(SCR_WIDTH, SCR_HEIGHT, &camera);
+
+    //
+    // Set up imgui instance
+    //
+    ImGuiInstance imgui_instance(window.window);
 
     //
     // Load assets
@@ -71,6 +77,7 @@ int main()
     Model nanosuit(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", true);
     nanosuit.model = glm::scale(glm::mat4(1.0f), glm::vec3(.01f));
 
+    //Model head(&vertex_buffer, "resources/models/head/scene.obj", true);
 
     Model rifle(&vertex_buffer, "resources/models/rifle/scene.gltf", false);
     rifle.model = glm::scale(glm::mat4(1.0f), glm::vec3(.01f));
@@ -98,12 +105,10 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_FRAMEBUFFER_SRGB);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    window.set_clear_color(0.1f, 0.2f, 0.1f, 1.0f);
     while (!window.should_close())
     {
-        double start_time = glfwGetTime();
-
         window.process_input();
+        window.set_clear_color(ImGuiInstance::clear_r, ImGuiInstance::clear_g, ImGuiInstance::clear_b, 1.0f);
         window.clear();
 
     
@@ -113,6 +118,7 @@ int main()
         shader_prog.bind_lights(camera.view(), dir_lights, point_lights, spotlights);
 
         nanosuit.draw(shader_prog, &camera);
+        //head.draw(shader_prog, &camera);
         //rifle.draw(shader_prog, &camera);
 
         //light_prog.use();
@@ -122,15 +128,13 @@ int main()
         //    //light.draw(light_prog, &camera);
         //}
 
-        skybox.draw(&camera);
+        if (ImGuiInstance::render_skybox)
+            skybox.draw(&camera);
+
+        imgui_instance.draw();
 
         window.swap_buffers();
         window.poll_events();
-
-        double end_time = glfwGetTime();
-        double delta_time = end_time - start_time;
-        double framerate = 1.0 / delta_time;
-        std::cout << "Framerate: " << framerate << "\n";
     }
     return 0;
 }
