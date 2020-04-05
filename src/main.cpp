@@ -51,7 +51,7 @@ int main()
     //
     // Load assets
     //
-    ShaderProgram shader_prog({CAMERA_POS, NORMAL_MATRIX, MODEL, TRANSFORM, MATERIAL}, "src/shaders/vert.glsl", "src/shaders/frag.glsl");
+    ShaderProgram shader_prog({CAMERA_POS, NORMAL_MATRIX, MODEL, TRANSFORM, MATERIAL}, "src/shaders/vert.glsl", "src/shaders/pbr.frag");
     ShaderProgram light_prog( {CAMERA_POS, NORMAL_MATRIX, MODEL, TRANSFORM}, "src/shaders/vert.glsl", "src/shaders/light.glsl");
 
     //
@@ -74,13 +74,15 @@ int main()
     // Buffer vertex data and set materials
     //
     VertexBuffer vertex_buffer;
-    Model nanosuit(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", true);
-    nanosuit.model = glm::scale(glm::mat4(1.0f), glm::vec3(.01f));
 
+    //Model nanosuit(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", true);
+    //nanosuit.model = glm::scale(glm::mat4(1.0f), glm::vec3(.01f));
     //Model head(&vertex_buffer, "resources/models/head/scene.obj", true);
+    //Model rifle(&vertex_buffer, "resources/models/rifle/scene.gltf", false);
+    //rifle.model = glm::scale(glm::mat4(1.0f), glm::vec3(.01f));
 
-    Model rifle(&vertex_buffer, "resources/models/rifle/scene.gltf", false);
-    rifle.model = glm::scale(glm::mat4(1.0f), glm::vec3(.01f));
+    Model pbrpistol(&vertex_buffer, "resources/models/pbrpistol/scene.fbx", false);
+
     vertex_buffer.buffer_data();
 
     //
@@ -117,7 +119,10 @@ int main()
         spot_light.direction = camera.front;
         shader_prog.bind_lights(camera.view(), dir_lights, point_lights, spotlights);
 
-        nanosuit.draw(shader_prog, &camera);
+        pbrpistol.draw(shader_prog, &camera);
+
+        //nanosuit.draw(shader_prog, &camera);
+        //draw_sphere();
         //head.draw(shader_prog, &camera);
         //rifle.draw(shader_prog, &camera);
 

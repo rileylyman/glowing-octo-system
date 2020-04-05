@@ -11,8 +11,9 @@
 #include <map>
 
 struct Material {
-    Texture ambient, diffuse, specular, normal, height;
-    float shininess;
+    //Texture ambient, diffuse, specular, normal, height;
+    //float shininess;
+    Texture albedo, normal, metallic, roughness, ao;
 };
 
 struct Mesh {
