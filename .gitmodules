@@ -4,6 +4,6 @@
 [submodule "external/assimp"]
 	path = external/assimp
 	url = git@github.com:assimp/assimp.git
-[submodule "external/imgui"]
+[submodule "external/imgui-lib/imgui"]
 	path = external/imgui-lib/imgui
 	url = git@github.com:ocornut/imgui.git
