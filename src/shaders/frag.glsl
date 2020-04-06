@@ -17,7 +17,7 @@ struct DirLight {
 	vec3 diffuse;
 	vec3 specular;
 };
-#define MAX_NR_DIRLIGHTS 1
+#define MAX_NR_DIRLIGHTS 8
 uniform DirLight u_DirLights[MAX_NR_DIRLIGHTS];
 uniform int u_NrDirLights = 0;
 
@@ -57,7 +57,9 @@ uniform int u_NrSpotlights = 0;
 uniform bool u_RenderNormals = true;
 
 in vec2 TexCoord;
-in mat3 TBN;
+mat3 TBN;
+in vec3 T;
+in vec3 B;
 in vec3 Normal;
 in vec3 FragPos;
 in vec3 CameraPos;
@@ -168,6 +170,7 @@ vec3 CalculateSpotlight(Spotlight light) {
 
 void main()
 {
+	TBN = mat3(normalize(T), normalize(B), normalize(Normal));
 	//vec3 normal;
 	//if (false) {
 	//	normal = normalize(Normal);

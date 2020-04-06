@@ -46,7 +46,7 @@ struct BlinnPhongShader : public ShaderProgram {
 
     using ShaderProgram::ShaderProgram;
 
-    const int max_nr_dirlights = 1;
+    const int max_nr_dirlights = 8;
     const int max_nr_pointlights = 16;
     const int max_nr_spotlights = 1;
     void bind(
