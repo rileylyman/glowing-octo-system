@@ -16,6 +16,30 @@ const char *DIR_LIGHT_NAMES[] = {
     "u_DirLights[1].ambient",
     "u_DirLights[1].diffuse",
     "u_DirLights[1].specular",
+    "u_DirLights[2].direction",
+    "u_DirLights[2].ambient",
+    "u_DirLights[2].diffuse",
+    "u_DirLights[2].specular",
+    "u_DirLights[3].direction",
+    "u_DirLights[3].ambient",
+    "u_DirLights[3].diffuse",
+    "u_DirLights[3].specular",
+    "u_DirLights[4].direction",
+    "u_DirLights[4].ambient",
+    "u_DirLights[4].diffuse",
+    "u_DirLights[4].specular",
+    "u_DirLights[5].direction",
+    "u_DirLights[5].ambient",
+    "u_DirLights[5].diffuse",
+    "u_DirLights[5].specular",
+    "u_DirLights[6].direction",
+    "u_DirLights[6].ambient",
+    "u_DirLights[6].diffuse",
+    "u_DirLights[6].specular",
+    "u_DirLights[7].direction",
+    "u_DirLights[7].ambient",
+    "u_DirLights[7].diffuse",
+    "u_DirLights[7].specular",
 };
 
 const uint32_t NR_PL_ATTRS = 7;
@@ -323,6 +347,7 @@ void BlinnPhongShader::bind(
 
 void PBRShader::bind(
     PBRMaterial material, 
+    std::vector<DirLight *> dir_lights,
     std::vector<PointLight *> point_lights,
     glm::mat4 transform, glm::mat4 model,
     glm::mat3 normal_matrix,
@@ -330,10 +355,17 @@ void PBRShader::bind(
 {
     use();
 
-    if (point_lights.size() > max_nr_pointlights) {
+    if (dir_lights.size() > max_nr_dirlights || point_lights.size() > max_nr_pointlights) {
         std::cout << "Too many lights in PBRShader::bind() call!\n";
         exit(EXIT_FAILURE);
     }
+    for (int i = 0; i < dir_lights.size(); i++) {
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 0], dir_lights[i]->direction);
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 1], dir_lights[i]->ambient);
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 2], dir_lights[i]->diffuse);
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 3], dir_lights[i]->specular);
+    }
+    setInt("u_NrDirLights", dir_lights.size());
     for (int i = 0; i < point_lights.size(); i++) {
         setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 0], point_lights[i]->position);
         setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 1], point_lights[i]->ambient);
@@ -353,10 +385,10 @@ void PBRShader::bind(
     material.ao.use();
     material.normal.use();
     material.roughness.use();
-    setInt("material.albeo", material.albedo.unit);
-    setInt("material.metallic", material.metallic.unit);
-    setInt("material.ao", material.ao.unit);
-    setInt("material.normal", material.normal.unit);
-    setInt("material.roughness", material.roughness.unit);
+    setInt("u_Material.albedo", material.albedo.unit);
+    setInt("u_Material.metallic", material.metallic.unit);
+    setInt("u_Material.ao", material.ao.unit);
+    setInt("u_Material.normal", material.normal.unit);
+    setInt("u_Material.roughness", material.roughness.unit);
 
 }

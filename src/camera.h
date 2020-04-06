@@ -8,6 +8,7 @@
 struct Camera {
     float yaw = -glm::half_pi<float>();
     float pitch = 0.0f;
+    float aspect_ratio = 800.0f / 600.0f;
     glm::vec3 position, front, right, up;
     const glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
     const float pitch_limit = glm::half_pi<float>() - 0.1f;

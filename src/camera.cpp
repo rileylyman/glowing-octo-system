@@ -57,5 +57,5 @@ glm::mat4 Camera::view() {
 }
 
 glm::mat4 Camera::projection() {
-    return glm::perspective(glm::radians(ImGuiInstance::camera_fov), 800.0f / 600.0f, 0.1f, 1000.0f);
+    return glm::perspective(glm::radians(ImGuiInstance::camera_fov), aspect_ratio, 0.1f, 1000.0f);
 }

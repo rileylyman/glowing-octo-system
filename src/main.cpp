@@ -80,22 +80,36 @@ int main()
     //Model nanosuit(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", false, true);
     //Model rifle(&vertex_buffer, "resources/models/rifle/scene.gltf", false);
 
-    Model pbrpistol(&vertex_buffer, "resources/models/tp/scene.obj", true, false);
+    Model pbrpistol(&vertex_buffer, "resources/models/pbrpistol/scene.fbx", true, false);
 
     vertex_buffer.buffer_data();
 
     //
     // Set up lights
     //
-    DirLight dir_light;
-    dir_light.direction = glm::vec3(0.0f, -1.0f, -1.0f);
+    DirLight dir_light0;
+    dir_light0.direction = glm::vec3(-1.0f, -1.0f, -1.0f);
+    DirLight dir_light1;
+    dir_light1.direction = glm::vec3(-1.0f, -1.0f, 1.0f);
+    DirLight dir_light2;
+    dir_light2.direction = glm::vec3(-1.0f, 1.0f, -1.0f);
+    DirLight dir_light3;
+    dir_light3.direction = glm::vec3(-1.0f, 1.0f, 1.0f);
+    DirLight dir_light4;
+    dir_light4.direction = glm::vec3(1.0f, -1.0f, -1.0f);
+    DirLight dir_light5;
+    dir_light5.direction = glm::vec3(1.0f, -1.0f, 1.0f);
+    DirLight dir_light6;
+    dir_light6.direction = glm::vec3(1.0f, 1.0f, -1.0f);
+    DirLight dir_light7;
+    dir_light7.direction = glm::vec3(1.0f, 1.0f, 1.0f);
     PointLight point_light0 = { .position = light_positions[0] };
     PointLight point_light1 = { .position = light_positions[1] };
     PointLight point_light2 = { .position = light_positions[2] };
     PointLight point_light3 = { .position = light_positions[3] };
     Spotlight  spot_light   = { .position = camera.position, .direction = camera.front };
 
-    std::vector<DirLight*> dir_lights = { &dir_light };
+    std::vector<DirLight*> dir_lights = { &dir_light0, &dir_light1, &dir_light2, &dir_light3, &dir_light4, &dir_light5, &dir_light6, &dir_light7 };
     std::vector<PointLight*> point_lights = { &point_light0, &point_light1, &point_light2, &point_light3 };
     std::vector<Spotlight*> spotlights = { &spot_light };
 
@@ -117,7 +131,7 @@ int main()
         spot_light.direction = camera.front;
 
         for (Mesh mesh : pbrpistol.meshes) {
-            shader_prog.bind(mesh.get_pbr_material(), point_lights, 
+            shader_prog.bind(mesh.get_pbr_material(), dir_lights, point_lights, 
                 camera.projection() * camera.view() * mesh.model, mesh.model, glm::transpose(glm::inverse(glm::mat3(mesh.model))), &camera);
             mesh.draw();
         }

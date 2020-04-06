@@ -9,7 +9,10 @@ out vec2 TexCoord;
 out vec3 Normal;
 out vec3 FragPos;
 out vec3 CameraPos;
-out mat3 TBN;
+//out mat3 TBN;
+out vec3 T;
+out vec3 B;
+
 
 uniform mat4 transform;
 uniform mat4 model;
@@ -18,11 +21,12 @@ uniform vec3 camera_pos;
 
 void main()
 {
-	vec3 T = normalize(vec3(model * vec4(aTangent, 0.0)));
-	vec3 B = normalize(vec3(model * vec4(aBitangent, 0.0)));
+	T = normalize(vec3(model * vec4(aTangent, 0.0)));
+	B = normalize(vec3(model * vec4(aBitangent, 0.0)));
 	Normal = normalize(vec3(model * vec4(aNormal, 0.0))); 
 
-	TBN = mat3(T, B, Normal);
+	//TBN = mat3(T, B, Normal);
+	//Do we need to do this in frag shader?
 
 	gl_Position = transform * vec4(aPos, 1.0);
 	TexCoord = aTexCoord;

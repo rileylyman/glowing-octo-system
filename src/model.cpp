@@ -1,4 +1,5 @@
 #include <glm/gtc/matrix_transform.hpp>
+#include <assimp/pbrmaterial.h>
 #include <iostream>
 #include "model.h"
 #include "imgui-instance.h"
@@ -136,7 +137,7 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
         if (ai_mesh->mTextureCoords[0]) {
             aiVector3D ai_tex_coord = ai_mesh->mTextureCoords[0][i];
             vertex.tex_coord.x = ai_tex_coord.x;
-            vertex.tex_coord.y = ai_tex_coord.y;
+            vertex.tex_coord.y = 1.0 - ai_tex_coord.y;
         } else {
             exit(EXIT_FAILURE);
         }
@@ -168,17 +169,17 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
         if (height_textures.size()) texmap[TEXTURE_TYPE_HEIGHT_MAP] = height_textures[0];
     } else {
         std::cout << "Getting albedo" << std::endl;
-        Texture albedo = load_texture_from_name("albedo.jpg", true);
-        //Texture metallic = load_texture_from_name("metaallic.tga", false);
+        Texture albedo = load_texture_from_name("albedo.tga", true);
+        Texture metallic = load_texture_from_name("metallic.tga", true);
         std::cout << "Getting normal" << std::endl;
-        Texture normal = load_texture_from_name("normal.jpg", false);
+        Texture normal = load_texture_from_name("normal.tga", false);
         std::cout << "Getting roughness" << std::endl;
-        Texture roughness = load_texture_from_name("roughness.jpg", false);
+        Texture roughness = load_texture_from_name("roughness.tga", false);
         std::cout << "Getting ao" << std::endl;
-        Texture ao = load_texture_from_name("ao.jpg", false);
+        Texture ao = load_texture_from_name("ao.tga", false);
 
         texmap[TEXTURE_TYPE_ALBEDO_MAP] = albedo; 
-        //texmap[TEXTURE_TYPE_METALLIC_MAP] = metallic; 
+        texmap[TEXTURE_TYPE_METALLIC_MAP] = metallic; 
         texmap[TEXTURE_TYPE_ROUGHNESS_MAP] = roughness;
         texmap[TEXTURE_TYPE_NORMAL_MAP] = normal;
         texmap[TEXTURE_TYPE_AO_MAP] = ao;

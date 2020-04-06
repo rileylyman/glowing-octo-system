@@ -92,6 +92,7 @@ void key_callback(GLFWwindow * window, int key, int scancode, int action, int mo
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     Window *user_window = (Window *)glfwGetWindowUserPointer(window);
+    user_window->cam->aspect_ratio = (float)width / (float)height;
     user_window->width = width;
     user_window->height = height;
     glViewport(0, 0, width, height);

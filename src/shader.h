@@ -66,8 +66,10 @@ struct PBRShader : public ShaderProgram {
     using ShaderProgram::ShaderProgram;
 
     const int max_nr_pointlights = 16;
+    const int max_nr_dirlights = 8;
     void bind(
         PBRMaterial material, 
+        std::vector<DirLight *> dir_lights,
         std::vector<PointLight *> point_lights,
         glm::mat4 transform, glm::mat4 model,
         glm::mat3 normal_matrix,
