@@ -4,11 +4,15 @@ bool ImGuiInstance::gui_enabled = false;
 bool ImGuiInstance::render_normals = true; 
 bool ImGuiInstance::render_skybox = true;
 bool ImGuiInstance::cull_back_face = true;
+bool ImGuiInstance::draw_model_bb = false;
+bool ImGuiInstance::draw_mesh_bb = false;
 float ImGuiInstance::camera_speed = 5.0f, ImGuiInstance::camera_sensitivity = 0.004f, ImGuiInstance::camera_fov = 50.0f;
 float ImGuiInstance::clear_r = 0.1f;
 float ImGuiInstance::clear_g = 0.2f;
 float ImGuiInstance::clear_b = 0.3f;
 glm::vec3 * ImGuiInstance::camera_pos = nullptr;
+
+ImGuiInstance *ImGuiInstance::instance = nullptr;
 
 ImGuiInstance::ImGuiInstance(GLFWwindow *window, glm::vec3 *cpos) {
 
@@ -24,6 +28,8 @@ ImGuiInstance::ImGuiInstance(GLFWwindow *window, glm::vec3 *cpos) {
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
     ImGuiInstance::camera_pos = cpos;
+
+    ImGuiInstance::instance = this;
 }
 
 ImGuiInstance::~ImGuiInstance() {
@@ -55,6 +61,8 @@ void ImGuiInstance::draw() {
         ImGui::Checkbox("Normal mapping", &render_normals);
         ImGui::Checkbox("Render skybox", &render_skybox);
         ImGui::Checkbox("Cull Back Face", &cull_back_face);
+        ImGui::Checkbox("Show Model Bounding Boxes", &draw_model_bb);
+        ImGui::Checkbox("Show Mesh Bounding Boxes", &draw_mesh_bb);
 
         static bool wireframe_toggled = false;
         if (ImGui::Button("Toggle Wireframe")) { 
@@ -90,4 +98,8 @@ void ImGuiInstance::draw() {
         ImGui::End();
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+bool ImGuiInstance::mouse_over_imgui() {
+    return ImGui::GetIO().WantCaptureMouse;
 }

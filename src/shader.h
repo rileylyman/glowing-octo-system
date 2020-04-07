@@ -75,3 +75,10 @@ struct PBRShader : public ShaderProgram {
         glm::mat3 normal_matrix,
         Camera *camera);
 };
+
+struct BoundingBoxShader : public ShaderProgram {
+
+    using ShaderProgram::ShaderProgram;
+
+    void bind(glm::mat4 model, Camera *camera);
+};

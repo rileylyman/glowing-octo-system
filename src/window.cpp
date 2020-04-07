@@ -26,6 +26,7 @@ Window::Window(uint32_t width, uint32_t height, Camera *cam) : cam(cam), width(w
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowFocusCallback(window, focus_callback);
     glfwSetWindowUserPointer(window, this);
@@ -102,6 +103,16 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
     Window *user_window = (Window *)glfwGetWindowUserPointer(window);
     if (user_window->mouse_locked) {
         user_window->cam->mouse_input(xpos, ypos);
+    }
+}
+
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        if (ImGuiInstance::mouse_over_imgui()) {
+            std::cout << "Clicked imgui" << std::endl;
+        } else {
+            std::cout << "Click" << std::endl;
+        }
     }
 }
 

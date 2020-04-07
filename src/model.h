@@ -19,10 +19,16 @@ struct Mesh {
         std::vector<Vertex> vertices, 
         std::vector<uint32_t> indices,
         glm::mat4 model,
+        BoundingBoxShader bbox_shader,
         std::map<TextureType, Texture> texmap);
-    void draw();
+    void draw(Camera *camera);
+    void draw_bounding_box(Camera *camera);
+
+    glm::vec3 bbox_least, bbox_most;
 
 private:
+    GLuint bbox_vao = 0, bbox_vbo = 0;
+    BoundingBoxShader bbox_shader;
     bool blinnphong_cached = false;
     BlinnPhongMaterial bpmat;
     bool pbr_cached = false;
@@ -37,10 +43,16 @@ private:
 struct Model {
     Model(VertexBuffer *vertex_buffer, std::string pathname, bool pbr, bool height_normals=false);
     void draw(ShaderProgram shader_prog, Camera *camera);
+    void draw_bounding_box(Camera *camera);
 
     glm::mat4 model = glm::mat4(1.0f);
     std::vector<Mesh> meshes;
 private:
+
+    GLuint bbox_vao = 0, bbox_vbo = 0;
+
+    glm::vec3 bbox_least, bbox_most;
+    BoundingBoxShader bbox_shader;
     bool pbr;
     bool height_normals = false;
     VertexBuffer *vertex_buffer;
@@ -55,3 +67,5 @@ private:
     Texture load_texture_from_name(std::string texname, bool srgb);
     std::vector<Texture> load_texture(aiMaterial *material, aiTextureType type, bool srgb);
 };
+
+void draw_bounding_box_general(float, float, float, float, float, float);

@@ -13,13 +13,18 @@
 struct ImGuiInstance {
     static bool gui_enabled, render_normals, render_skybox;
     static bool cull_back_face;
+    static bool draw_model_bb, draw_mesh_bb;
     static float camera_speed, camera_sensitivity, camera_fov;
     static float clear_r, clear_g, clear_b;
     static glm::vec3 *camera_pos;
 
+    static ImGuiInstance *instance;
+
     ImGuiInstance(GLFWwindow *window, glm::vec3 *cpos);
     ~ImGuiInstance();
     void draw();
+
+    static bool mouse_over_imgui();
 };
 
 

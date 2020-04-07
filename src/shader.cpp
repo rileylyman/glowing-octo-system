@@ -392,3 +392,8 @@ void PBRShader::bind(
     setInt("u_Material.roughness", material.roughness.unit);
 
 }
+
+void BoundingBoxShader::bind(glm::mat4 model, Camera *camera) {
+    use();
+    setMat4("u_Transform", camera->projection() * camera->view() * model);
+}

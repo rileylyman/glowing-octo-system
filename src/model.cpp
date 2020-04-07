@@ -11,9 +11,25 @@ Mesh::Mesh(
     std::vector<Vertex> vertices, 
     std::vector<uint32_t> indices,
     glm::mat4 model,
+    BoundingBoxShader bbox_shader,
     std::map<TextureType, Texture> texmap)
-: vertex_buffer(vertex_buffer), indices_size(indices.size()), model(model), texmap(texmap)
+: vertex_buffer(vertex_buffer), indices_size(indices.size()), model(model), texmap(texmap), bbox_shader(bbox_shader)
 {
+    bbox_least = glm::vec3(vertices[0].position);
+    bbox_most  = glm::vec3(vertices[0].position);
+    bbox_least = glm::vec3(model * glm::vec4(bbox_least.x, bbox_least.y, bbox_least.z, 1.0f));
+    bbox_most = glm::vec3(model * glm::vec4(bbox_most.x, bbox_most.y, bbox_most.z, 1.0f));
+
+    for (Vertex vert : vertices) {
+        glm::vec4 position = model * glm::vec4(vert.position.x, vert.position.y, vert.position.z, 1.0f);
+        bbox_least.x = std::min(position.x, bbox_least.x);
+        bbox_least.y = std::min(position.y, bbox_least.y);
+        bbox_least.z = std::min(position.z, bbox_least.z);
+
+        bbox_most.x = std::max(position.x, bbox_most.x);
+        bbox_most.y = std::max(position.y, bbox_most.y);
+        bbox_most.z = std::max(position.z, bbox_most.z);
+    }
     vertex_buffer_index = vertex_buffer->add_data(vertices, indices);
 }
 
@@ -59,22 +75,92 @@ BlinnPhongMaterial Mesh::get_blinnphong_material() {
     return material;
 }
 
-void Mesh::draw() {
+void Mesh::draw(Camera *camera) {
     vertex_buffer->draw(vertex_buffer_index, indices_size);
+    // Note: must call this after, since it binds a new shader!
+    if (ImGuiInstance::draw_mesh_bb) {
+        draw_bounding_box(camera);
+    }
 }
 
 Model::Model(VertexBuffer *vertex_buffer, std::string pathname, bool pbr, bool height_normals) 
 
-: vertex_buffer(vertex_buffer), height_normals(height_normals), pbr(pbr)
+: vertex_buffer(vertex_buffer), height_normals(height_normals), pbr(pbr), 
+bbox_shader("src/shaders/bbox.vert", "src/shaders/bbox.frag")
 {
+    bbox_least = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+    bbox_most = glm::vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
     load_model(pathname);
 }
 
 void Model::draw(ShaderProgram shader_prog, Camera *camera) {
     throw "This will produce an incorrect result... for now";
     for (Mesh mesh : meshes) {
-        mesh.draw();
+        mesh.draw(camera);
     }
+}
+
+void draw_bounding_box_general(float lx, float ly, float lz, float mx, float my, float mz, GLuint vao, GLuint vbo, BoundingBoxShader bbox_shader, glm::mat4 model, Camera *camera) {
+
+    // @Performance
+    float vertices[] = {
+        lx, ly, lz, lx, my, lz, mx, ly, lz,
+        lx, my, lz, mx, ly, lz, mx, my, lz,
+
+        lx, ly, mz, lx, my, mz, mx, ly, mz,
+        lx, my, mz, mx, ly, mz, mx, my, mz,
+
+        mx, ly, lz, mx, my, lz, mx, ly, mz,
+        mx, my, lz, mx, ly, mz, mx, my, mz,
+
+        lx, ly, lz, lx, my, lz, lx, ly, mz,
+        lx, my, lz, lx, ly, mz, lx, my, mz,
+
+        lx, my, lz, lx, my, mz, mx, my, lz,
+        lx, my, mz, mx, my, lz, mx, my, mz,
+
+        lx, ly, lz, lx, ly, mz, mx, ly, lz,
+        lx, ly, mz, mx, ly, lz, mx, ly, mz,
+
+    };
+
+    if (vao == 0 || vbo == 0) {
+        glGenBuffers(1, &vbo);
+        glGenVertexArrays(1, &vao);
+
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * sizeof(GL_FLOAT), (void *) 0);
+    }
+    glBindVertexArray(vao);
+
+    bbox_shader.use();
+    bbox_shader.bind(model, camera);
+
+    glDisable(GL_CULL_FACE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices) / sizeof(float));
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    if (ImGuiInstance::cull_back_face) {
+        glEnable(GL_CULL_FACE);
+    }
+
+}
+
+void Mesh::draw_bounding_box(Camera *camera) {
+    float lx = bbox_least.x, ly = bbox_least.y, lz = bbox_least.z;
+    float mx = bbox_most.x, my = bbox_most.y, mz = bbox_most.z;
+    draw_bounding_box_general(lx, ly, lz, mx, my, mz, bbox_vao, bbox_vbo, bbox_shader, model, camera);
+}
+
+void Model::draw_bounding_box(Camera *camera) {
+    float lx = bbox_least.x, ly = bbox_least.y, lz = bbox_least.z;
+    float mx = bbox_most.x, my = bbox_most.y, mz = bbox_most.z;
+    draw_bounding_box_general(lx, ly, lz, mx, my, mz, bbox_vao, bbox_vbo, bbox_shader, model, camera);
 }
 
 glm::mat4 Model::convert_matrix(const aiMatrix4x4 &aiMat) {
@@ -101,12 +187,22 @@ void Model::load_model(std::string pathname) {
 }
 
 void Model::process_node(aiNode *node, const aiScene *scene, glm::mat4 transformation) {
+
     glm::mat4 current_tr = convert_matrix(node->mTransformation);
     transformation = transformation * current_tr  ;
 
     for (uint32_t i = 0; i < node->mNumMeshes; i++) {
         aiMesh *ai_mesh = scene->mMeshes[node->mMeshes[i]];
         Mesh mesh = process_mesh(ai_mesh, scene, transformation);
+
+        bbox_least.x = std::min(mesh.bbox_least.x, bbox_least.x);
+        bbox_least.y = std::min(mesh.bbox_least.y, bbox_least.y);
+        bbox_least.z = std::min(mesh.bbox_least.z, bbox_least.z);
+
+        bbox_most.x = std::max(mesh.bbox_most.x, bbox_most.x);
+        bbox_most.y = std::max(mesh.bbox_most.y, bbox_most.y);
+        bbox_most.z = std::max(mesh.bbox_most.z, bbox_most.z);
+
         meshes.push_back(mesh);
     }
     for (uint32_t i = 0; i < node->mNumChildren; i++) {
@@ -189,7 +285,8 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
         vertex_buffer,
         vertices,
         indices,
-        model * transformation,
+        transformation,
+        bbox_shader,
         texmap
     );
 }
