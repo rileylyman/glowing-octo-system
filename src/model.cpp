@@ -250,8 +250,8 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
 
     std::map<TextureType, Texture> texmap;
 
+    aiMaterial *material = scene->mMaterials[ai_mesh->mMaterialIndex];
     if (!pbr) {
-        aiMaterial *material = scene->mMaterials[ai_mesh->mMaterialIndex];
         std::vector<Texture> ambient_textures = load_texture(material, aiTextureType_AMBIENT, true);
         std::vector<Texture> diffuse_textures = load_texture(material, aiTextureType_DIFFUSE, true);
         std::vector<Texture> specular_textures = load_texture(material, aiTextureType_SPECULAR, true);
@@ -264,15 +264,26 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
         if (normal_textures.size()) texmap[TEXTURE_TYPE_NORMAL_MAP] = normal_textures[0];
         if (height_textures.size()) texmap[TEXTURE_TYPE_HEIGHT_MAP] = height_textures[0];
     } else {
-        std::cout << "Getting albedo" << std::endl;
-        Texture albedo = load_texture_from_name("albedo.tga", true);
-        Texture metallic = load_texture_from_name("metallic.tga", true);
-        std::cout << "Getting normal" << std::endl;
-        Texture normal = load_texture_from_name("normal.tga", false);
-        std::cout << "Getting roughness" << std::endl;
-        Texture roughness = load_texture_from_name("roughness.tga", false);
-        std::cout << "Getting ao" << std::endl;
-        Texture ao = load_texture_from_name("ao.tga", false);
+
+        for (int i = 1; i <= 18; i++) {
+            aiString str;
+            material->GetTexture((aiTextureType)i, 0, &str);
+            std::cout << i << ": " << str.C_Str() << std::endl;
+        }
+
+        // Find the albedo texture
+        //aiString albedo_path;
+        //aiTextureType possible_albedos[] = { aiTextureType_DIFFUSE, aiTextureType_BASE_COLOR };
+
+        //aiString albedo_path;
+        //aiTextureType possible_albedos[] = { aiTextureType_DIFFUSE, aiTextureType_BASE_COLOR };
+
+
+        Texture albedo = load_texture_from_name("albedo.png", true);
+        Texture metallic = load_texture_from_name("metallic.png", true);
+        Texture normal = load_texture_from_name("normal.png", false);
+        Texture roughness = load_texture_from_name("roughness.png", false);
+        Texture ao = load_texture_from_name("ao.png", false);
 
         texmap[TEXTURE_TYPE_ALBEDO_MAP] = albedo; 
         texmap[TEXTURE_TYPE_METALLIC_MAP] = metallic; 

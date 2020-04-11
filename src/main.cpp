@@ -53,8 +53,8 @@ int main()
     //
     // Load assets
     //
-    PBRShader shader_prog("src/shaders/vert.glsl", "src/shaders/pbr.frag", nullptr);
-    //BlinnPhongShader shader_prog("src/shaders/vert.glsl", "src/shaders/frag.glsl");
+    //PBRShader shader_prog("src/shaders/vert.glsl", "src/shaders/pbr.frag", nullptr);
+    BlinnPhongShader shader_prog("src/shaders/vert.glsl", "src/shaders/frag.glsl");
     BlinnPhongShader light_prog("src/shaders/vert.glsl", "src/shaders/light.glsl", nullptr);
 
     //
@@ -78,10 +78,10 @@ int main()
     //
     VertexBuffer vertex_buffer;
 
-    //Model nanosuit(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", false, true);
-    //Model rifle(&vertex_buffer, "resources/models/rifle/scene.gltf", false);
+    Model nanosuit(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", false, true);
+    //Model rifle(&vertex_buffer, "resources/models/super/scene.fbx", true, false);
 
-    Model pbrpistol(&vertex_buffer, "resources/models/pbrpistol/scene.fbx", true, false);
+    //Model pbrpistol(&vertex_buffer, "resources/models/pbrpistol/scene.fbx", true, false);
 
     vertex_buffer.buffer_data();
 
@@ -131,23 +131,23 @@ int main()
         spot_light.position = camera.position;
         spot_light.direction = camera.front;
 
-        for (Mesh mesh : pbrpistol.meshes) {
-            shader_prog.use();
-            mesh.model = pbrpistol.model * mesh.model;
-            shader_prog.bind(mesh.get_pbr_material(), dir_lights, point_lights, 
-                camera.projection() * camera.view() * mesh.model, mesh.model, glm::transpose(glm::inverse(glm::mat3(mesh.model))), &camera);
-            mesh.draw(&camera);
-        }
-        if (ImGuiInstance::draw_model_bb) pbrpistol.draw_bounding_box(&camera);
-        //nanosuit.model = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime() * 0.02f, glm::vec3(0.0, 1.0, 0.0));
-        //for (Mesh mesh : nanosuit.meshes) {
-        //    mesh.model = nanosuit.model * mesh.model;
+        //for (Mesh mesh : rifle.meshes) {
         //    shader_prog.use();
-        //    shader_prog.bind(mesh.get_blinnphong_material(), dir_lights, point_lights, spotlights, ImGuiInstance::render_normals, 
+        //    mesh.model = rifle.model * mesh.model;
+        //    shader_prog.bind(mesh.get_pbr_material(), dir_lights, point_lights, 
         //        camera.projection() * camera.view() * mesh.model, mesh.model, glm::transpose(glm::inverse(glm::mat3(mesh.model))), &camera);
         //    mesh.draw(&camera);
         //}
-        //if (ImGuiInstance::draw_model_bb) nanosuit.draw_bounding_box(&camera);
+        //if (ImGuiInstance::draw_model_bb) rifle.draw_bounding_box(&camera);
+        //nanosuit.model = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime() * 0.02f, glm::vec3(0.0, 1.0, 0.0));
+        for (Mesh mesh : nanosuit.meshes) {
+            mesh.model = nanosuit.model * mesh.model;
+            shader_prog.use();
+            shader_prog.bind(mesh.get_blinnphong_material(), dir_lights, point_lights, spotlights, ImGuiInstance::render_normals, 
+                camera.projection() * camera.view() * mesh.model, mesh.model, glm::transpose(glm::inverse(glm::mat3(mesh.model))), &camera);
+            mesh.draw(&camera);
+        }
+        if (ImGuiInstance::draw_model_bb) nanosuit.draw_bounding_box(&camera);
 
         //light_prog.use();
         //for (int i = 0; i < 4; i++) {
@@ -155,6 +155,8 @@ int main()
         //    //light_prog.setVec3("lightColor", 1.0f, 1.0f, 1.0f); 
         //    //light.draw(light_prog, &camera);
         //}
+
+        draw_ray(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 100.0f, 0.0f), camera.projection(), camera.view());
 
         if (ImGuiInstance::render_skybox)
             skybox.draw(&camera);
