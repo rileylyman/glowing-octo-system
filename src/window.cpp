@@ -96,6 +96,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     user_window->cam->aspect_ratio = (float)width / (float)height;
     user_window->width = width;
     user_window->height = height;
+    for (Framebuffer *fb : user_window->framebuffer_to_alert) {
+        fb->recreate(width, height);
+    }
     glViewport(0, 0, width, height);
 }
 

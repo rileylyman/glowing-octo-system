@@ -49,9 +49,9 @@ Mesh::~Mesh() {
 }
 
 Model::~Model() {
-    delete bbox_shader;
-    glDeleteVertexArrays(1, &bbox_vao);
-    glDeleteBuffers(1, &bbox_vbo);
+    //delete bbox_shader;
+    //glDeleteVertexArrays(1, &bbox_vao);
+    //glDeleteBuffers(1, &bbox_vbo);
 }
 
 void Mesh::draw(ShaderProgram shader, Camera *camera) {

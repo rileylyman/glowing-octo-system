@@ -21,6 +21,7 @@
 #include "camera.h"
 #include "common.h"
 #include "light.h"
+#include "framebuffer.h"
 
 #include <iostream>
 
@@ -72,6 +73,11 @@ int main()
         "src/shaders/skybox.vert",
         "src/shaders/skybox.frag"
     );
+
+    Framebuffer fb(window.window);
+    fb.add_color_attachment();
+    fb.add_depth_stencil_attachment();
+    window.framebuffer_to_alert.push_back(&fb); // Alert this framebuffer on window resize
 
     //
     // Create buffer which will hold model vertex data 
@@ -132,6 +138,8 @@ int main()
     //glfwSwapInterval(0);
     while (!window.should_close())
     {
+        fb.bind();
+
         window.process_input();
         window.set_clear_color(ImGuiInstance::clear_r, ImGuiInstance::clear_g, ImGuiInstance::clear_b, 1.0f);
         window.clear();
@@ -161,6 +169,11 @@ int main()
             skybox.draw(&camera);
 
         imgui_instance.draw();
+
+        fb.unbind();
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        fb.draw();
 
         window.swap_buffers();
         window.poll_events();

@@ -2,12 +2,15 @@
 
 #include <GLFW/glfw3.h>
 #include "camera.h"
+#include "framebuffer.h"
 
 struct Window {
     uint32_t width, height;
     GLFWwindow *window;
     Camera *cam;
     bool mouse_locked = true;
+
+    std::vector<Framebuffer *> framebuffer_to_alert;
 
     Window(uint32_t width, uint32_t height, Camera *cam);
     ~Window();
