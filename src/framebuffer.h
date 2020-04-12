@@ -19,7 +19,7 @@ struct Framebuffer {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-private:
+protected:
     uint32_t id;
     uint32_t num_color_attachments = 0;
 
@@ -32,4 +32,20 @@ private:
     uint32_t quad_vao, quad_vbo;
 
     void destroy_attachments();
+
+    friend struct MultisampleFramebuffer;
+};
+
+struct MultisampleFramebuffer : public Framebuffer {
+    
+    MultisampleFramebuffer(GLFWwindow *window, int samples): Framebuffer(window), samples(samples) {}
+    ~MultisampleFramebuffer() {
+    }
+
+    void resolve_to_framebuffer(Framebuffer &fb);
+    void add_color_attachment();
+    void add_depth_stencil_attachment();
+
+private:
+    uint32_t samples;
 };

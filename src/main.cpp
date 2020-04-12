@@ -77,7 +77,13 @@ int main()
     Framebuffer fb(window.window);
     fb.add_color_attachment();
     fb.add_depth_stencil_attachment();
-    window.framebuffer_to_alert.push_back(&fb); // Alert this framebuffer on window resize
+
+    MultisampleFramebuffer msfb(window.window, 16);
+    msfb.add_color_attachment();
+    msfb.add_depth_stencil_attachment();
+
+    window.framebuffers_to_alert.push_back(&fb); // Alert this framebuffer on window resize
+    window.framebuffers_to_alert.push_back(&msfb); 
 
     //
     // Create buffer which will hold model vertex data 
@@ -135,10 +141,15 @@ int main()
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_FRAMEBUFFER_SRGB);
+    glEnable(GL_MULTISAMPLE);
     //glfwSwapInterval(0);
     while (!window.should_close())
     {
-        fb.bind();
+        if (ImGuiInstance::msaa) {
+            msfb.bind();
+        } else {
+            fb.bind();
+        }
 
         window.process_input();
         window.set_clear_color(ImGuiInstance::clear_r, ImGuiInstance::clear_g, ImGuiInstance::clear_b, 1.0f);
@@ -170,7 +181,11 @@ int main()
 
         imgui_instance.draw();
 
-        fb.unbind();
+        if (ImGuiInstance::msaa) {
+            std::cout << "lala" << std::endl;
+            msfb.resolve_to_framebuffer(fb);
+        }
+        Framebuffer::unbind();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         fb.draw();

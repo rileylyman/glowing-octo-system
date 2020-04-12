@@ -10,7 +10,7 @@ struct Window {
     Camera *cam;
     bool mouse_locked = true;
 
-    std::vector<Framebuffer *> framebuffer_to_alert;
+    std::vector<Framebuffer *> framebuffers_to_alert;
 
     Window(uint32_t width, uint32_t height, Camera *cam);
     ~Window();

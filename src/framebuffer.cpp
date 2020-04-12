@@ -68,6 +68,25 @@ void Framebuffer::add_color_attachment() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void MultisampleFramebuffer::add_color_attachment() {
+    glBindFramebuffer(GL_FRAMEBUFFER, id);
+
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex);
+
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_SRGB, width, height, GL_TRUE);
+
+    glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+    glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + num_color_attachments++, GL_TEXTURE_2D_MULTISAMPLE, tex, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
 void Framebuffer::add_depth_stencil_attachment() {
     glBindFramebuffer(GL_FRAMEBUFFER, id);
 
@@ -75,6 +94,21 @@ void Framebuffer::add_depth_stencil_attachment() {
     glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void MultisampleFramebuffer::add_depth_stencil_attachment() {
+    glBindFramebuffer(GL_FRAMEBUFFER, id);
+
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, width, height);
 
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
@@ -107,4 +141,10 @@ void Framebuffer::draw() {
 
     glBindVertexArray(quad_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+void MultisampleFramebuffer::resolve_to_framebuffer(Framebuffer &fb) {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb.id);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, fb.width, fb.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }

@@ -5,6 +5,7 @@ bool ImGuiInstance::render_normals = true;
 bool ImGuiInstance::render_skybox = true;
 bool ImGuiInstance::cull_back_face = true;
 bool ImGuiInstance::draw_model_bb = false;
+bool ImGuiInstance::msaa = false;
 bool ImGuiInstance::draw_mesh_bb = false;
 float ImGuiInstance::camera_speed = 5.0f, ImGuiInstance::camera_sensitivity = 0.004f, ImGuiInstance::camera_fov = 50.0f;
 float ImGuiInstance::clear_r = 0.1f;
@@ -63,6 +64,7 @@ void ImGuiInstance::draw() {
         ImGui::Checkbox("Cull Back Face", &cull_back_face);
         ImGui::Checkbox("Show Model Bounding Boxes", &draw_model_bb);
         ImGui::Checkbox("Show Mesh Bounding Boxes", &draw_mesh_bb);
+        ImGui::Checkbox("Anti-Aliasing", &msaa);
 
         static bool wireframe_toggled = false;
         if (ImGui::Button("Toggle Wireframe")) { 
