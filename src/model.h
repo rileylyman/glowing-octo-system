@@ -45,11 +45,6 @@ enum MeshShaderBits {
 //
 struct Mesh {
     //
-    // The local->world space transformation matrix
-    //
-    glm::mat4 model;
-
-    //
     // The shader type and shader option flags for this mesh
     //
     MeshShaderType shader_type;
@@ -68,7 +63,8 @@ struct Mesh {
     Mesh(VertexBuffer *vertex_buffer,
         std::vector<Vertex> vertices, 
         std::vector<uint32_t> indices,
-        glm::mat4 model,
+        glm::mat4 bind_matrix,
+        glm::mat4 *parent_model,
         MeshShaderType shader_type,
         uint32_t shader_flags,
         std::map<TextureType, Texture> texmap);
@@ -84,7 +80,25 @@ struct Mesh {
     //
     void draw_bounding_box(Camera *camera);
 
+    //
+    // Get the full local->world space transformation matrix
+    //
+    glm::mat4 model() {
+        return *parent_model * bind_matrix;
+    }
+
 private:
+    //
+    // The mesh local->model local transformation
+    //
+    glm::mat4 bind_matrix;
+
+    //
+    // The model transformation of the model which contains
+    // this mesh.
+    //
+    glm::mat4 *parent_model;
+
 
     //
     // VAO, VBO, and shader program for this mesh's bounding box
@@ -103,6 +117,15 @@ private:
     // List of retrieved textures for this mesh
     //
     std::map<TextureType, Texture> texmap;
+
+    // @Performance
+    //
+    // Optional solid materials for this mesh, if it is not textured
+    //
+    BlinnPhongSolidMaterial bp_solid_material;
+    PBRSolidMaterial pbr_solid_material;
+    
+    friend struct Model;
 };
 
 //
@@ -120,6 +143,35 @@ struct Model {
     // the height texture should be used as the normal texture.
     //
     Model(VertexBuffer *vertex_buffer, std::string pathname, MeshShaderType shader_type, uint32_t shader_flags, bool height_normals=false);
+
+    //
+    // Create a model from raw vertex data and a constant Blinn-Phong material
+    //
+    Model(VertexBuffer *vertex_buffer, std::vector<Vertex> vertices, std::vector<uint32_t> indices, BlinnPhongSolidMaterial material) {
+        meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), &model, BP_SOLID, 0, {}) };
+        meshes[0].bp_solid_material = material;
+    }
+
+    //
+    // Create a model from raw vertex data and a constant PBR material
+    //
+    Model(VertexBuffer *vertex_buffer, std::vector<Vertex> vertices, std::vector<uint32_t> indices, PBRSolidMaterial material) {
+        meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), &model, PBR_SOLID, 0, {}) };
+        meshes[0].pbr_solid_material = material;
+    }
+
+    //
+    // Create a model from raw vertex data and a texture
+    //
+    Model(VertexBuffer *vertex_buffer, std::vector<Vertex> vertices, std::vector<uint32_t> indices, std::string texture) {
+        directory = "";
+        Texture tex = load_texture_from_name(texture, true);
+        meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), &model, RAW_TEXTURE, 0, {{TEXTURE_TYPE_DIFFUSE_MAP , tex}}) };
+    }
+
+    //
+    // Destructor
+    //
     ~Model();
 
     //

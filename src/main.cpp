@@ -24,7 +24,7 @@
 
 #include <iostream>
 
-void renderSphere();
+Model construct_sphere(VertexBuffer *, float, int, int, MeshShaderType);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -53,8 +53,8 @@ int main()
     //
     // Load assets
     //
-    //ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/pbr.frag");
-    ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/frag.glsl");
+    ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/pbr.frag");
+    //ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/frag.glsl");
     ShaderProgram light_prog("src/shaders/vert.glsl", "src/shaders/light.glsl");
 
     //
@@ -81,9 +81,11 @@ int main()
     //
     // Load models
     //
-    Model rifle(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", BP_TEXTURED, 0, true);
-    //Model rifle(&vertex_buffer, "resources/models/super/scene.fbx", PBR_TEXTURED, 0, false);
+    //Model rifle(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", BP_TEXTURED, 0, true);
+    Model rifle(&vertex_buffer, "resources/models/super/scene.fbx", PBR_TEXTURED, 0, false);
     //Model pbrpistol(&vertex_buffer, "resources/models/pbrpistol/scene.fbx", PBR_TEXTURED, 0, false);
+
+    Model sphere = construct_sphere(&vertex_buffer, 2.0f, 64, 64, PBR_SOLID);
 
     vertex_buffer.buffer_data();
 
@@ -112,10 +114,11 @@ int main()
     PointLight point_light3 = { .position = light_positions[3] };
     Spotlight  spot_light   = { .position = camera.position, .direction = camera.front };
 
-    //std::vector<DirLight*> dir_lights = { &dir_light0, &dir_light1, &dir_light2, &dir_light3, &dir_light4, &dir_light5, &dir_light6, &dir_light7 };
+    std::vector<DirLight*> dir_lights = { &dir_light0, &dir_light1, &dir_light2, &dir_light3, &dir_light4, &dir_light5, &dir_light6, &dir_light7 };
+    //std::vector<DirLight *> dir_lights = { &dir_light0 };
     std::vector<PointLight*> point_lights = { &point_light0, &point_light1, &point_light2, &point_light3 };
     std::vector<Spotlight*> spotlights = { &spot_light };
-    std::vector<DirLight*> dir_lights = {};
+    //std::vector<DirLight*> dir_lights = {};
     //std::vector<PointLight*> point_lights = {};
 
     shader_prog.bind_lights(dir_lights, point_lights, spotlights);
@@ -142,6 +145,9 @@ int main()
         rifle.draw(shader_prog, &camera);
         if (ImGuiInstance::draw_model_bb) rifle.draw_bounding_box(&camera);
 
+        sphere.model = glm::translate(glm::mat4(1.0f), glm::vec3(glfwGetTime(), 0.0f, 0.0f));
+        sphere.draw(shader_prog, &camera);
+
         //light_prog.use();
         //for (int i = 0; i < 4; i++) {
         //    //light.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light_positions[i]);
@@ -162,105 +168,88 @@ int main()
     return 0;
 }
 
-unsigned int sphereVAO = 0;
-unsigned int indexCount;
-void renderSphere()
-{
-    if (sphereVAO == 0)
+Model construct_sphere(VertexBuffer *vertex_buffer, float radius, int sectorCount, int stackCount, MeshShaderType shader_type) {
+
+    std::vector<Vertex> vertices;
+
+    const float PI = 3.14159265359;
+    float x, y, z, xy;                           // vertex position
+    float nx, ny, nz, lengthInv = 1.0f / radius; // vertex normal
+    float s, t;                                  // vertex texCoord
+
+    float sectorStep = 2 * PI / sectorCount;
+    float stackStep = PI / stackCount;
+    float sectorAngle, stackAngle;
+
+    for (int i = 0; i <= stackCount; ++i)
     {
-        glGenVertexArrays(1, &sphereVAO);
+        stackAngle = PI / 2 - i * stackStep; // starting from pi/2 to -pi/2
+        xy = radius * cosf(stackAngle);      // r * cos(u)
+        z = radius * sinf(stackAngle);       // r * sin(u)
 
-        unsigned int vbo, ebo;
-        glGenBuffers(1, &vbo);
-        glGenBuffers(1, &ebo);
-
-        std::vector<glm::vec3> positions;
-        std::vector<glm::vec2> uv;
-        std::vector<glm::vec3> normals;
-        std::vector<unsigned int> indices;
-
-        const unsigned int X_SEGMENTS = 64;
-        const unsigned int Y_SEGMENTS = 64;
-        const float PI = 3.14159265359;
-        for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
+        // add (sectorCount+1) vertices per stack
+        // the first and last vertices have same position and normal, but different tex coords
+        for (int j = 0; j <= sectorCount; ++j)
         {
-            for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
-            {
-                float xSegment = (float)x / (float)X_SEGMENTS;
-                float ySegment = (float)y / (float)Y_SEGMENTS;
-                float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-                float yPos = std::cos(ySegment * PI);
-                float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
+            Vertex v;
+            sectorAngle = j * sectorStep; // starting from 0 to 2pi
 
-                positions.push_back(glm::vec3(xPos, yPos, zPos));
-                uv.push_back(glm::vec2(xSegment, ySegment));
-                normals.push_back(glm::vec3(xPos, yPos, zPos));
-            }
-        }
+            // vertex position (x, y, z)
+            x = xy * cosf(sectorAngle); // r * cos(u) * cos(v)
+            y = xy * sinf(sectorAngle); // r * cos(u) * sin(v)
+            v.position = glm::vec3(x,y,z);
 
-        bool oddRow = false;
-        for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
-        {
-            if (!oddRow) // even rows: y == 0, y == 2; and so on
-            {
-                for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
-                {
-                    indices.push_back(y       * (X_SEGMENTS + 1) + x);
-                    indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-                }
-            }
-            else
-            {
-                for (unsigned int x = X_SEGMENTS; x >= 0; --x)
-                {
-                    indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-                    indices.push_back(y       * (X_SEGMENTS + 1) + x);
-                }
-            }
-            oddRow = !oddRow;
-        }
-        indexCount = indices.size();
+            // normalized vertex normal (nx, ny, nz)
+            nx = x * lengthInv;
+            ny = y * lengthInv;
+            nz = z * lengthInv;
+            v.normal = glm::vec3(nx,ny,nz);
+            v.tangent = glm::vec3(nx,ny,nz);
+            v.bitangent = glm::vec3(nx,ny,nz);
 
-        std::vector<float> data;
-        for (unsigned int i = 0; i < positions.size(); ++i)
-        {
-            data.push_back(positions[i].x);
-            data.push_back(positions[i].y);
-            data.push_back(positions[i].z);
-            if (normals.size() > 0)
-            {
-                data.push_back(normals[i].x);
-                data.push_back(normals[i].y);
-                data.push_back(normals[i].z);
-            }
-            for (int _ = 0; _ < 6; _++) {
-                data.push_back(0.0f);
-            } 
-            if (uv.size() > 0)
-            {
-                data.push_back(uv[i].x);
-                data.push_back(uv[i].y);
-            }
+            // vertex tex coord (s, t) range between [0, 1]
+            s = (float)j / sectorCount;
+            t = (float)i / stackCount;
+            v.tex_coord = glm::vec2(s,t);
+
+            vertices.push_back(v);
         }
-        glBindVertexArray(sphereVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-        float stride = (3 + 2 + 3 + 3 + 3) * sizeof(float);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
-        glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, stride, (void*)(9 * sizeof(float)));
-        glEnableVertexAttribArray(4);
-        glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, stride, (void*)(12 * sizeof(float)));
     }
 
-    glBindVertexArray(sphereVAO);
-    glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
-}
+    // generate CCW index list of sphere triangles
+    std::vector<uint32_t> indices;
+    int k1, k2;
+    for (int i = 0; i < stackCount; ++i)
+    {
+        k1 = i * (sectorCount + 1); // beginning of current stack
+        k2 = k1 + sectorCount + 1;  // beginning of next stack
 
+        for (int j = 0; j < sectorCount; ++j, ++k1, ++k2)
+        {
+            // 2 triangles per sector excluding first and last stacks
+            // k1 => k2 => k1+1
+            if (i != 0)
+            {
+                indices.push_back(k1);
+                indices.push_back(k2);
+                indices.push_back(k1 + 1);
+            }
+
+            // k1+1 => k2 => k2+1
+            if (i != (stackCount - 1))
+            {
+                indices.push_back(k1 + 1);
+                indices.push_back(k2);
+                indices.push_back(k2 + 1);
+            }
+        }
+    }
+
+    if (shader_type == BP_SOLID) {
+        return Model(vertex_buffer, vertices, indices, BlinnPhongSolidMaterial{ glm::vec3(0.3f), glm::vec3(0.6f), glm::vec3(1.0f), 64.0f});
+    } else if (shader_type == PBR_SOLID) {
+        return Model(vertex_buffer, vertices, indices, PBRSolidMaterial{ glm::vec3(0.7f, 0.1f, 0.1f), 1.0f, 0.3f });
+    } else {
+        throw "Sphere with this shader type is not yet supported";
+    }
+}

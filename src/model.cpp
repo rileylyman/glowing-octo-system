@@ -13,11 +13,12 @@ Mesh::Mesh(
     VertexBuffer *vertex_buffer,
     std::vector<Vertex> vertices, 
     std::vector<uint32_t> indices,
-    glm::mat4 model,
+    glm::mat4 bind_matrix,
+    glm::mat4 *parent_model,
     MeshShaderType shader_type,
     uint32_t shader_bits,
     std::map<TextureType, Texture> texmap)
-: vertex_buffer(vertex_buffer), indices_size(indices.size()), model(model), texmap(texmap), shader_type(shader_type), shader_flags(shader_bits)
+: vertex_buffer(vertex_buffer), indices_size(indices.size()), bind_matrix(bind_matrix), parent_model(parent_model), texmap(texmap), shader_type(shader_type), shader_flags(shader_bits)
 {
 
     if (bbox_shader == nullptr) {
@@ -25,11 +26,11 @@ Mesh::Mesh(
     }
     bbox_least = glm::vec3(vertices[0].position);
     bbox_most  = glm::vec3(vertices[0].position);
-    bbox_least = glm::vec3(model * glm::vec4(bbox_least.x, bbox_least.y, bbox_least.z, 1.0f));
-    bbox_most = glm::vec3(model * glm::vec4(bbox_most.x, bbox_most.y, bbox_most.z, 1.0f));
+    bbox_least = glm::vec3(bind_matrix * glm::vec4(bbox_least.x, bbox_least.y, bbox_least.z, 1.0f));
+    bbox_most = glm::vec3(bind_matrix * glm::vec4(bbox_most.x, bbox_most.y, bbox_most.z, 1.0f));
 
     for (Vertex vert : vertices) {
-        glm::vec4 position = model * glm::vec4(vert.position.x, vert.position.y, vert.position.z, 1.0f);
+        glm::vec4 position = bind_matrix * glm::vec4(vert.position.x, vert.position.y, vert.position.z, 1.0f);
         bbox_least.x = std::min(position.x, bbox_least.x);
         bbox_least.y = std::min(position.y, bbox_least.y);
         bbox_least.z = std::min(position.z, bbox_least.z);
@@ -59,9 +60,9 @@ void Mesh::draw(ShaderProgram shader, Camera *camera) {
     switch (shader_type) {
         case PBR_TEXTURED:
             shader.setVec3("camera_pos", camera->position);
-            shader.setMat4("model", model);
-            shader.setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model))));
-            shader.setMat4("transform", camera->projection() * camera->view() * model);
+            shader.setMat4("model", model());
+            shader.setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model()))));
+            shader.setMat4("transform", camera->projection() * camera->view() * model());
             if (shader_flags & METALLIC_ROUGHNESS_COMBINED) {
                 texmap[TEXTURE_TYPE_METALLIC_ROUGHNESS_MAP].use();
                 shader.setInt("u_Material.metallicRoughness", texmap[TEXTURE_TYPE_METALLIC_ROUGHNESS_MAP].unit);
@@ -79,14 +80,23 @@ void Mesh::draw(ShaderProgram shader, Camera *camera) {
             shader.setInt("u_Material.albedo", texmap[TEXTURE_TYPE_ALBEDO_MAP].unit);
             shader.setInt("u_Material.ao", texmap[TEXTURE_TYPE_AO_MAP].unit);
             shader.setInt("u_Material.normal", texmap[TEXTURE_TYPE_NORMAL_MAP].unit);
+            shader.setBool("u_Solid", false);
         break;
         case PBR_SOLID:
+            shader.setVec3("camera_pos", camera->position);
+            shader.setMat4("model", model());
+            shader.setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model()))));
+            shader.setMat4("transform", camera->projection() * camera->view() * model());
+            shader.setFloat("u_SolidMaterial.metallic", pbr_solid_material.metallic);
+            shader.setFloat("u_SolidMaterial.roughness", pbr_solid_material.roughness);
+            shader.setVec3("u_SolidMaterial.albedo", pbr_solid_material.albedo);
+            shader.setBool("u_Solid", true);
         break;
         case BP_TEXTURED:
             shader.setVec3("camera_pos", camera->position);
-            shader.setMat4("model", model);
-            shader.setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model))));
-            shader.setMat4("transform", camera->projection() * camera->view() * model);
+            shader.setMat4("model", model());
+            shader.setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model()))));
+            shader.setMat4("transform", camera->projection() * camera->view() * model());
             texmap[TEXTURE_TYPE_AMBIENT_MAP].use();
             texmap[TEXTURE_TYPE_DIFFUSE_MAP].use();
             texmap[TEXTURE_TYPE_SPECULAR_MAP].use();
@@ -99,8 +109,19 @@ void Mesh::draw(ShaderProgram shader, Camera *camera) {
             shader.setInt("material.height", texmap[TEXTURE_TYPE_HEIGHT_MAP].unit);
             shader.setFloat("material.shininess", 64.0f);
             shader.setBool("u_RenderNormals", ImGuiInstance::render_normals);
+            shader.setBool("u_Solid", false);
         break;
         case BP_SOLID:
+            shader.setVec3("camera_pos", camera->position);
+            shader.setMat4("model", model());
+            shader.setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model()))));
+            shader.setMat4("transform", camera->projection() * camera->view() * model());
+            shader.setVec3("u_SolidMaterial.ambient",  bp_solid_material.ambient);
+            shader.setVec3("u_SolideMaterial.diffuse",  bp_solid_material.diffuse);
+            shader.setVec3("u_SolidMaterial.specular", bp_solid_material.specular);
+            shader.setFloat("u_SolidMaterial.shininess", 64.0f);
+            shader.setBool("u_RenderNormals", false);
+            shader.setBool("u_Solid", true);
         break;
         case RAW_COLOR:
         break;
@@ -183,11 +204,10 @@ void draw_bounding_box_general(glm::vec3 bbox_least, glm::vec3 bbox_most, GLuint
     if (ImGuiInstance::cull_back_face) {
         glEnable(GL_CULL_FACE);
     }
-
 }
 
 void Mesh::draw_bounding_box(Camera *camera) {
-    draw_bounding_box_general(bbox_least, bbox_most, bbox_vao, bbox_vbo, bbox_shader, model, camera);
+    draw_bounding_box_general(bbox_least, bbox_most, bbox_vao, bbox_vbo, bbox_shader, model(), camera);
 }
 
 void Model::draw_bounding_box(Camera *camera) {
@@ -349,6 +369,7 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
         vertices,
         indices,
         transformation,
+        &model,
         shader_type,
         shader_flags,
         texmap

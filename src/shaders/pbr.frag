@@ -17,6 +17,15 @@ struct Material {
     sampler2D ao;
 };
 uniform Material u_Material;
+uniform bool u_AO = false;
+
+struct SolidMaterial {
+    vec3 albedo;
+    float metallic;
+    float roughness;
+};
+uniform SolidMaterial u_SolidMaterial;
+uniform bool u_Solid;
 
 struct DirLight {
 	vec3 direction;
@@ -103,12 +112,31 @@ void main() {
 
     mat3 TBN = mat3(normalize(T), normalize(B), normalize(Normal)); 
 
-    vec3 albedo = texture(u_Material.albedo, TexCoord).rgb;
-	vec3 normal = texture(u_Material.normal, TexCoord).rgb * 2.0 - 1.0 ;
-	normal = TBN * normalize(normal); 
-    float metallic = texture(u_Material.metallic, TexCoord).r;
-    float roughness = texture(u_Material.roughness, TexCoord).r;
-    float ao = texture(u_Material.ao, TexCoord).r;
+    vec3 albedo;
+    vec3 normal;
+    float metallic;
+    float roughness;
+    float ao;
+
+    if (u_Solid) {
+        albedo = u_SolidMaterial.albedo;
+        normal = normalize(Normal);
+        metallic = u_SolidMaterial.metallic;
+        roughness = u_SolidMaterial.roughness;
+        ao = 1.0;
+    } else {
+        albedo = texture(u_Material.albedo, TexCoord).rgb;
+	    normal = texture(u_Material.normal, TexCoord).rgb * 2.0 - 1.0 ;
+	    normal = TBN * normalize(normal); 
+        metallic = texture(u_Material.metallic, TexCoord).r;
+        roughness = texture(u_Material.roughness, TexCoord).r;
+        if (u_AO) {
+            ao = texture(u_Material.ao, TexCoord).r;
+        } else {
+            ao = 1.0;
+        }
+    }
+
 
     vec3 N = normalize(normal);
     vec3 V = normalize(CameraPos - FragPos);
@@ -133,7 +161,7 @@ void main() {
     }
     
 
-    vec3 ambient = vec3(.03) * albedo ;//* (ao);
+    vec3 ambient = vec3(.03) * albedo * ao;
     vec3 color = ambient + Lo;
 
     color = color / (color + vec3(1.0));
