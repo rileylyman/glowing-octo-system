@@ -150,6 +150,7 @@ struct Model {
     Model(VertexBuffer *vertex_buffer, std::vector<Vertex> vertices, std::vector<uint32_t> indices, BlinnPhongSolidMaterial material) {
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), &model, BP_SOLID, 0, {}) };
         meshes[0].bp_solid_material = material;
+        gen_bbox(vertices);
     }
 
     //
@@ -158,6 +159,7 @@ struct Model {
     Model(VertexBuffer *vertex_buffer, std::vector<Vertex> vertices, std::vector<uint32_t> indices, PBRSolidMaterial material) {
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), &model, PBR_SOLID, 0, {}) };
         meshes[0].pbr_solid_material = material;
+        gen_bbox(vertices);
     }
 
     //
@@ -167,6 +169,7 @@ struct Model {
         directory = "";
         Texture tex = load_texture_from_name(texture, true);
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), &model, RAW_TEXTURE, 0, {{TEXTURE_TYPE_DIFFUSE_MAP , tex}}) };
+        gen_bbox(vertices);
     }
 
     //
@@ -226,6 +229,12 @@ private:
     // The current texture unit for this model.
     //
     uint32_t unit = 0;
+
+    //
+    // Generate the bounding box extrema based on
+    // vertex data
+    //
+    void gen_bbox(std::vector<Vertex> vertices);
 
     //
     // Utility function to convert an Assimp matrix to a

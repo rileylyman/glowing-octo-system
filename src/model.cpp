@@ -129,11 +129,6 @@ void Mesh::draw(ShaderProgram shader, Camera *camera) {
         break;
     }
     vertex_buffer->draw(vertex_buffer_index, indices_size);
-
-    // Note: must call this after, since it binds a new shader!
-    if (ImGuiInstance::draw_mesh_bb) {
-        draw_bounding_box(camera);
-    }
 }
 
 Model::Model(VertexBuffer *vertex_buffer, std::string pathname, MeshShaderType shader_type, uint32_t shader_flags, bool height_normals) 
@@ -150,6 +145,32 @@ Model::Model(VertexBuffer *vertex_buffer, std::string pathname, MeshShaderType s
 void Model::draw(ShaderProgram shader_prog, Camera *camera) {
     for (Mesh mesh : meshes) {
         mesh.draw(shader_prog, camera);
+    }
+    if (ImGuiInstance::draw_mesh_bb) {
+        for (Mesh mesh: meshes) {
+            mesh.draw_bounding_box(camera);
+        }
+    }
+    if (ImGuiInstance::draw_model_bb) {
+        draw_bounding_box(camera);
+    }
+}
+
+void Model::gen_bbox(std::vector<Vertex> verts) {
+    bbox_least = glm::vec3(verts[0].position);
+    bbox_most  = glm::vec3(verts[0].position);
+    bbox_least = glm::vec3(model * glm::vec4(bbox_least.x, bbox_least.y, bbox_least.z, 1.0f));
+    bbox_most = glm::vec3(model * glm::vec4(bbox_most.x, bbox_most.y, bbox_most.z, 1.0f));
+
+    for (Vertex vert : verts) {
+        glm::vec4 position = model * glm::vec4(vert.position.x, vert.position.y, vert.position.z, 1.0f);
+        bbox_least.x = std::min(position.x, bbox_least.x);
+        bbox_least.y = std::min(position.y, bbox_least.y);
+        bbox_least.z = std::min(position.z, bbox_least.z);
+
+        bbox_most.x = std::max(position.x, bbox_most.x);
+        bbox_most.y = std::max(position.y, bbox_most.y);
+        bbox_most.z = std::max(position.z, bbox_most.z);
     }
 }
 
