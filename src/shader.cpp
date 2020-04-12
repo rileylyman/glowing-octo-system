@@ -278,21 +278,14 @@ void ShaderProgram::check_compile_errors(uint32_t shader)
     }
 }
 
-void BlinnPhongShader::bind(
-    BlinnPhongMaterial material, 
+void ShaderProgram::bind_lights(
     std::vector<DirLight *> dir_lights,
     std::vector<PointLight *> point_lights,
-    std::vector<Spotlight *> spot_lights,
-    bool render_normals,
-    glm::mat4 transform,
-    glm::mat4 model,
-    glm::mat3 normal_matrix,
-    Camera *camera) 
+    std::vector<Spotlight *> spot_lights)
 {
     use();
-
-    if (dir_lights.size() > max_nr_dirlights || point_lights.size() > max_nr_pointlights || spot_lights.size() > max_nr_spotlights) {
-        std::cout << "Too many lights in BlinnPhongShader::bind() call!\n";
+    if (dir_lights.size() > max_nr_dir_lights || point_lights.size() > max_nr_point_lights || spot_lights.size() > max_nr_spotlights) {
+        std::cout << "Too many lights!\n";
         exit(EXIT_FAILURE);
     }
     for (int i = 0; i < dir_lights.size(); i++) {
@@ -325,75 +318,4 @@ void BlinnPhongShader::bind(
         setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 9], spot_lights[i]->cosGamma);
     }
     setInt("u_NrSpotlights", spot_lights.size());
-    setVec3("camera_pos", camera->position);
-    setMat4("model", model);
-    setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model))));
-    setMat4("transform", camera->projection() * camera->view() * model);
-    material.ambient.use();
-    material.diffuse.use();
-    material.specular.use();
-    material.normal.use();
-    material.height.use();
-    setInt("material.ambient", material.ambient.unit);
-    setInt("material.diffuse", material.diffuse.unit);
-    setInt("material.specular", material.specular.unit);
-    setInt("material.normal", material.normal.unit);
-    setInt("material.height", material.height.unit);
-    setFloat("material.shininess", material.shininess);
-    setBool("u_RenderNormals", render_normals);
-
-}
-
-
-void PBRShader::bind(
-    PBRMaterial material, 
-    std::vector<DirLight *> dir_lights,
-    std::vector<PointLight *> point_lights,
-    glm::mat4 transform, glm::mat4 model,
-    glm::mat3 normal_matrix,
-    Camera *camera) 
-{
-    use();
-
-    if (dir_lights.size() > max_nr_dirlights || point_lights.size() > max_nr_pointlights) {
-        std::cout << "Too many lights in PBRShader::bind() call!\n";
-        exit(EXIT_FAILURE);
-    }
-    for (int i = 0; i < dir_lights.size(); i++) {
-        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 0], dir_lights[i]->direction);
-        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 1], dir_lights[i]->ambient);
-        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 2], dir_lights[i]->diffuse);
-        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 3], dir_lights[i]->specular);
-    }
-    setInt("u_NrDirLights", dir_lights.size());
-    for (int i = 0; i < point_lights.size(); i++) {
-        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 0], point_lights[i]->position);
-        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 1], point_lights[i]->ambient);
-        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 2], point_lights[i]->diffuse);
-        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 3], point_lights[i]->specular);
-        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 4], point_lights[i]->constant);
-        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 5], point_lights[i]->linear);
-        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 6], point_lights[i]->quadratic);
-    }
-    setInt("u_NrPointLights", point_lights.size());
-    setVec3("camera_pos", camera->position);
-    setMat4("model", model);
-    setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model))));
-    setMat4("transform", camera->projection() * camera->view() * model);
-    material.albedo.use();
-    material.metallic.use();
-    material.ao.use();
-    material.normal.use();
-    material.roughness.use();
-    setInt("u_Material.albedo", material.albedo.unit);
-    setInt("u_Material.metallic", material.metallic.unit);
-    setInt("u_Material.ao", material.ao.unit);
-    setInt("u_Material.normal", material.normal.unit);
-    setInt("u_Material.roughness", material.roughness.unit);
-
-}
-
-void BoundingBoxShader::bind(glm::mat4 model, Camera *camera) {
-    use();
-    setMat4("u_Transform", camera->projection() * camera->view() * model);
 }

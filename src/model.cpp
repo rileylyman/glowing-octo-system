@@ -6,15 +6,23 @@
 
 std::map<std::string, Texture> Model::loaded_textures = {};
 
+ShaderProgram *Mesh::bbox_shader = nullptr;
+ShaderProgram *Model::bbox_shader = nullptr;
+
 Mesh::Mesh(
     VertexBuffer *vertex_buffer,
     std::vector<Vertex> vertices, 
     std::vector<uint32_t> indices,
     glm::mat4 model,
-    BoundingBoxShader bbox_shader,
+    MeshShaderType shader_type,
+    uint32_t shader_bits,
     std::map<TextureType, Texture> texmap)
-: vertex_buffer(vertex_buffer), indices_size(indices.size()), model(model), texmap(texmap), bbox_shader(bbox_shader)
+: vertex_buffer(vertex_buffer), indices_size(indices.size()), model(model), texmap(texmap), shader_type(shader_type), shader_flags(shader_bits)
 {
+
+    if (bbox_shader == nullptr) {
+        bbox_shader = new ShaderProgram("src/shaders/bbox.vert", "src/shaders/bbox.frag");
+    }
     bbox_least = glm::vec3(vertices[0].position);
     bbox_most  = glm::vec3(vertices[0].position);
     bbox_least = glm::vec3(model * glm::vec4(bbox_least.x, bbox_least.y, bbox_least.z, 1.0f));
@@ -33,74 +41,101 @@ Mesh::Mesh(
     vertex_buffer_index = vertex_buffer->add_data(vertices, indices);
 }
 
-PBRMaterial Mesh::get_pbr_material() {
-    if (pbr_cached) {
-        return pbrmat;
-    }
-    PBRMaterial material;
-    material.albedo = texmap[TEXTURE_TYPE_ALBEDO_MAP];
-    material.metallic = texmap[TEXTURE_TYPE_METALLIC_MAP];
-    material.ao = texmap[TEXTURE_TYPE_AO_MAP];
-    material.roughness = texmap[TEXTURE_TYPE_ROUGHNESS_MAP];
-    material.normal = texmap[TEXTURE_TYPE_NORMAL_MAP];
-
-    return material;
+Mesh::~Mesh() {
+    //delete bbox_shader;
+    //glDeleteVertexArrays(1, &bbox_vao);
+    //glDeleteBuffers(1, &bbox_vbo);
 }
 
-BlinnPhongMaterial Mesh::get_blinnphong_material() {
-    if (blinnphong_cached) {
-        return bpmat;
-    }
-
-    BlinnPhongMaterial material;
-    if (texmap.count(TEXTURE_TYPE_DIFFUSE_MAP) == 0) {
-        if (texmap.count(TEXTURE_TYPE_AMBIENT_MAP) == 0) {
-            std::cout << "Must at least have a diffuse or ambient texture!\n";
-            exit(EXIT_FAILURE);
-        }
-        material.ambient = texmap[TEXTURE_TYPE_AMBIENT_MAP];
-        material.diffuse = texmap[TEXTURE_TYPE_AMBIENT_MAP];
-        material.height = texmap.count(TEXTURE_TYPE_HEIGHT_MAP) > 0 ? texmap[TEXTURE_TYPE_HEIGHT_MAP] : texmap[TEXTURE_TYPE_AMBIENT_MAP];
-        material.normal = texmap.count(TEXTURE_TYPE_NORMAL_MAP) > 0 ? texmap[TEXTURE_TYPE_NORMAL_MAP] : texmap[TEXTURE_TYPE_AMBIENT_MAP];
-        material.specular = texmap.count(TEXTURE_TYPE_SPECULAR_MAP) > 0 ? texmap[TEXTURE_TYPE_SPECULAR_MAP] : texmap[TEXTURE_TYPE_AMBIENT_MAP];
-    } else {
-        material.ambient = texmap.count(TEXTURE_TYPE_AMBIENT_MAP) > 0 ? texmap[TEXTURE_TYPE_AMBIENT_MAP] : texmap[TEXTURE_TYPE_DIFFUSE_MAP];
-        material.diffuse = texmap[TEXTURE_TYPE_DIFFUSE_MAP];
-        material.height = texmap.count(TEXTURE_TYPE_HEIGHT_MAP) > 0 ? texmap[TEXTURE_TYPE_HEIGHT_MAP] : texmap[TEXTURE_TYPE_DIFFUSE_MAP];
-        material.normal = texmap.count(TEXTURE_TYPE_NORMAL_MAP) > 0 ? texmap[TEXTURE_TYPE_NORMAL_MAP] : texmap[TEXTURE_TYPE_DIFFUSE_MAP];
-        material.specular = texmap.count(TEXTURE_TYPE_SPECULAR_MAP) > 0 ? texmap[TEXTURE_TYPE_SPECULAR_MAP] : texmap[TEXTURE_TYPE_DIFFUSE_MAP];
-    }
-    material.shininess = 64.0f;
-
-    return material;
+Model::~Model() {
+    delete bbox_shader;
+    glDeleteVertexArrays(1, &bbox_vao);
+    glDeleteBuffers(1, &bbox_vbo);
 }
 
-void Mesh::draw(Camera *camera) {
+void Mesh::draw(ShaderProgram shader, Camera *camera) {
+
+    shader.use();
+    switch (shader_type) {
+        case PBR_TEXTURED:
+            shader.setVec3("camera_pos", camera->position);
+            shader.setMat4("model", model);
+            shader.setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model))));
+            shader.setMat4("transform", camera->projection() * camera->view() * model);
+            if (shader_flags & METALLIC_ROUGHNESS_COMBINED) {
+                texmap[TEXTURE_TYPE_METALLIC_ROUGHNESS_MAP].use();
+                shader.setInt("u_Material.metallicRoughness", texmap[TEXTURE_TYPE_METALLIC_ROUGHNESS_MAP].unit);
+                shader.setBool("u_MetallicRoughnessCombined", true);
+            } else {
+                texmap[TEXTURE_TYPE_METALLIC_MAP].use();
+                texmap[TEXTURE_TYPE_ROUGHNESS_MAP].use();
+                shader.setInt("u_Material.metallic", texmap[TEXTURE_TYPE_METALLIC_MAP].unit);
+                shader.setInt("u_Material.roughness", texmap[TEXTURE_TYPE_ROUGHNESS_MAP].unit);
+                shader.setBool("u_MetallicRoughnessCombined", false);
+            }
+            texmap[TEXTURE_TYPE_ALBEDO_MAP].use();
+            texmap[TEXTURE_TYPE_AO_MAP].use();
+            texmap[TEXTURE_TYPE_NORMAL_MAP].use();
+            shader.setInt("u_Material.albedo", texmap[TEXTURE_TYPE_ALBEDO_MAP].unit);
+            shader.setInt("u_Material.ao", texmap[TEXTURE_TYPE_AO_MAP].unit);
+            shader.setInt("u_Material.normal", texmap[TEXTURE_TYPE_NORMAL_MAP].unit);
+        break;
+        case PBR_SOLID:
+        break;
+        case BP_TEXTURED:
+            shader.setVec3("camera_pos", camera->position);
+            shader.setMat4("model", model);
+            shader.setMat3("normal_matrix", glm::transpose(glm::inverse(glm::mat3(model))));
+            shader.setMat4("transform", camera->projection() * camera->view() * model);
+            texmap[TEXTURE_TYPE_AMBIENT_MAP].use();
+            texmap[TEXTURE_TYPE_DIFFUSE_MAP].use();
+            texmap[TEXTURE_TYPE_SPECULAR_MAP].use();
+            texmap[TEXTURE_TYPE_NORMAL_MAP].use();
+            texmap[TEXTURE_TYPE_HEIGHT_MAP].use();
+            shader.setInt("material.ambient", texmap[TEXTURE_TYPE_AMBIENT_MAP].unit);
+            shader.setInt("material.diffuse", texmap[TEXTURE_TYPE_DIFFUSE_MAP].unit);
+            shader.setInt("material.specular", texmap[TEXTURE_TYPE_SPECULAR_MAP].unit);
+            shader.setInt("material.normal", texmap[TEXTURE_TYPE_NORMAL_MAP].unit);
+            shader.setInt("material.height", texmap[TEXTURE_TYPE_HEIGHT_MAP].unit);
+            shader.setFloat("material.shininess", 64.0f);
+            shader.setBool("u_RenderNormals", ImGuiInstance::render_normals);
+        break;
+        case BP_SOLID:
+        break;
+        case RAW_COLOR:
+        break;
+        case RAW_TEXTURE:
+        break;
+    }
     vertex_buffer->draw(vertex_buffer_index, indices_size);
+
     // Note: must call this after, since it binds a new shader!
     if (ImGuiInstance::draw_mesh_bb) {
         draw_bounding_box(camera);
     }
 }
 
-Model::Model(VertexBuffer *vertex_buffer, std::string pathname, bool pbr, bool height_normals) 
-
-: vertex_buffer(vertex_buffer), height_normals(height_normals), pbr(pbr), 
-bbox_shader("src/shaders/bbox.vert", "src/shaders/bbox.frag")
+Model::Model(VertexBuffer *vertex_buffer, std::string pathname, MeshShaderType shader_type, uint32_t shader_flags, bool height_normals) 
+: vertex_buffer(vertex_buffer)
 {
+    if (bbox_shader == nullptr) {
+        bbox_shader = new ShaderProgram("src/shaders/bbox.vert", "src/shaders/bbox.frag");
+    }
     bbox_least = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
     bbox_most = glm::vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-    load_model(pathname);
+    load_model(pathname, shader_type, shader_flags, height_normals);
 }
 
 void Model::draw(ShaderProgram shader_prog, Camera *camera) {
-    throw "This will produce an incorrect result... for now";
     for (Mesh mesh : meshes) {
-        mesh.draw(camera);
+        mesh.draw(shader_prog, camera);
     }
 }
 
-void draw_bounding_box_general(float lx, float ly, float lz, float mx, float my, float mz, GLuint vao, GLuint vbo, BoundingBoxShader bbox_shader, glm::mat4 model, Camera *camera) {
+void draw_bounding_box_general(glm::vec3 bbox_least, glm::vec3 bbox_most, GLuint vao, GLuint vbo, ShaderProgram *bbox_shader, glm::mat4 model, Camera *camera) {
+
+    float lx = bbox_least.x, ly = bbox_least.y, lz = bbox_least.z;
+    float mx = bbox_most.x, my = bbox_most.y, mz = bbox_most.z;
 
     // @Performance
     float vertices[] = {
@@ -138,8 +173,8 @@ void draw_bounding_box_general(float lx, float ly, float lz, float mx, float my,
     }
     glBindVertexArray(vao);
 
-    bbox_shader.use();
-    bbox_shader.bind(model, camera);
+    bbox_shader->use();
+    bbox_shader->setMat4("u_Transform", camera->projection() * camera->view() * model);
 
     glDisable(GL_CULL_FACE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -152,17 +187,23 @@ void draw_bounding_box_general(float lx, float ly, float lz, float mx, float my,
 }
 
 void Mesh::draw_bounding_box(Camera *camera) {
-    float lx = bbox_least.x, ly = bbox_least.y, lz = bbox_least.z;
-    float mx = bbox_most.x, my = bbox_most.y, mz = bbox_most.z;
-    draw_bounding_box_general(lx, ly, lz, mx, my, mz, bbox_vao, bbox_vbo, bbox_shader, model, camera);
+    draw_bounding_box_general(bbox_least, bbox_most, bbox_vao, bbox_vbo, bbox_shader, model, camera);
 }
 
 void Model::draw_bounding_box(Camera *camera) {
-    float lx = bbox_least.x, ly = bbox_least.y, lz = bbox_least.z;
-    float mx = bbox_most.x, my = bbox_most.y, mz = bbox_most.z;
-    draw_bounding_box_general(lx, ly, lz, mx, my, mz, bbox_vao, bbox_vbo, bbox_shader, model, camera);
+    draw_bounding_box_general(bbox_least, bbox_most, bbox_vao, bbox_vbo, bbox_shader, model, camera);
 }
 
+
+//                                                                                                    //
+// ---------------------------------------------------------------------------------------------------//
+//                                  Model loading                                                     //
+// ---------------------------------------------------------------------------------------------------//
+//                                                                                                    //
+
+//
+// Assimp -> GLM matrix conversion
+//
 glm::mat4 Model::convert_matrix(const aiMatrix4x4 &aiMat) {
     return {
         aiMat.a1, aiMat.b1, aiMat.c1, aiMat.d1,
@@ -172,7 +213,10 @@ glm::mat4 Model::convert_matrix(const aiMatrix4x4 &aiMat) {
     };
 }
 
-void Model::load_model(std::string pathname) {
+//
+// Load model from the specified pathname
+//
+void Model::load_model(std::string pathname, MeshShaderType shader_type, uint32_t shader_flags, bool height_normals) {
     
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(pathname, aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate | aiProcess_GenNormals);
@@ -183,17 +227,20 @@ void Model::load_model(std::string pathname) {
     }
     directory = pathname.substr(0, pathname.find_last_of('/'));
 
-    process_node(scene->mRootNode, scene, glm::mat4(1.0f));
+    process_node(scene->mRootNode, scene, glm::mat4(1.0f), shader_type, shader_flags, height_normals);
 }
 
-void Model::process_node(aiNode *node, const aiScene *scene, glm::mat4 transformation) {
+//
+// Process all the meshes contained within the node, then process the children nodes
+//
+void Model::process_node(aiNode *node, const aiScene *scene, glm::mat4 transformation, MeshShaderType shader_type, uint32_t shader_flags, bool height_normals) {
 
     glm::mat4 current_tr = convert_matrix(node->mTransformation);
     transformation = transformation * current_tr  ;
 
     for (uint32_t i = 0; i < node->mNumMeshes; i++) {
         aiMesh *ai_mesh = scene->mMeshes[node->mMeshes[i]];
-        Mesh mesh = process_mesh(ai_mesh, scene, transformation);
+        Mesh mesh = process_mesh(ai_mesh, scene, transformation, shader_type, shader_flags, height_normals);
 
         bbox_least.x = std::min(mesh.bbox_least.x, bbox_least.x);
         bbox_least.y = std::min(mesh.bbox_least.y, bbox_least.y);
@@ -206,11 +253,14 @@ void Model::process_node(aiNode *node, const aiScene *scene, glm::mat4 transform
         meshes.push_back(mesh);
     }
     for (uint32_t i = 0; i < node->mNumChildren; i++) {
-        process_node(node->mChildren[i], scene, transformation);
+        process_node(node->mChildren[i], scene, transformation, shader_type, shader_flags, height_normals);
     }
 }
 
-Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transformation) {
+//
+// Load an Assimp mesh into our mesh representation
+//
+Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transformation, MeshShaderType shader_type, uint32_t shader_flags, bool height_normals) {
 
     unit = 0;
 
@@ -251,7 +301,7 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
     std::map<TextureType, Texture> texmap;
 
     aiMaterial *material = scene->mMaterials[ai_mesh->mMaterialIndex];
-    if (!pbr) {
+    if (shader_type == BP_TEXTURED) {
         std::vector<Texture> ambient_textures = load_texture(material, aiTextureType_AMBIENT, true);
         std::vector<Texture> diffuse_textures = load_texture(material, aiTextureType_DIFFUSE, true);
         std::vector<Texture> specular_textures = load_texture(material, aiTextureType_SPECULAR, true);
@@ -263,7 +313,7 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
         if (specular_textures.size()) texmap[TEXTURE_TYPE_SPECULAR_MAP] = specular_textures[0];
         if (normal_textures.size()) texmap[TEXTURE_TYPE_NORMAL_MAP] = normal_textures[0];
         if (height_textures.size()) texmap[TEXTURE_TYPE_HEIGHT_MAP] = height_textures[0];
-    } else {
+    } else if (shader_type == PBR_TEXTURED) {
 
         for (int i = 1; i <= 18; i++) {
             aiString str;
@@ -290,6 +340,8 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
         texmap[TEXTURE_TYPE_ROUGHNESS_MAP] = roughness;
         texmap[TEXTURE_TYPE_NORMAL_MAP] = normal;
         texmap[TEXTURE_TYPE_AO_MAP] = ao;
+    } else {
+        throw "unimplemented";
     }
 
     return Mesh(
@@ -297,7 +349,8 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
         vertices,
         indices,
         transformation,
-        bbox_shader,
+        shader_type,
+        shader_flags,
         texmap
     );
 }

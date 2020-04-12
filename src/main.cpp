@@ -53,9 +53,9 @@ int main()
     //
     // Load assets
     //
-    //PBRShader shader_prog("src/shaders/vert.glsl", "src/shaders/pbr.frag", nullptr);
-    BlinnPhongShader shader_prog("src/shaders/vert.glsl", "src/shaders/frag.glsl");
-    BlinnPhongShader light_prog("src/shaders/vert.glsl", "src/shaders/light.glsl", nullptr);
+    //ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/pbr.frag");
+    ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/frag.glsl");
+    ShaderProgram light_prog("src/shaders/vert.glsl", "src/shaders/light.glsl");
 
     //
     // Get skybox cubemap texture
@@ -74,14 +74,16 @@ int main()
     );
 
     //
-    // Buffer vertex data and set materials
+    // Create buffer which will hold model vertex data 
     //
     VertexBuffer vertex_buffer;
 
-    Model nanosuit(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", false, true);
-    //Model rifle(&vertex_buffer, "resources/models/super/scene.fbx", true, false);
-
-    //Model pbrpistol(&vertex_buffer, "resources/models/pbrpistol/scene.fbx", true, false);
+    //
+    // Load models
+    //
+    Model rifle(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", BP_TEXTURED, 0, true);
+    //Model rifle(&vertex_buffer, "resources/models/super/scene.fbx", PBR_TEXTURED, 0, false);
+    //Model pbrpistol(&vertex_buffer, "resources/models/pbrpistol/scene.fbx", PBR_TEXTURED, 0, false);
 
     vertex_buffer.buffer_data();
 
@@ -110,9 +112,13 @@ int main()
     PointLight point_light3 = { .position = light_positions[3] };
     Spotlight  spot_light   = { .position = camera.position, .direction = camera.front };
 
-    std::vector<DirLight*> dir_lights = { &dir_light0, &dir_light1, &dir_light2, &dir_light3, &dir_light4, &dir_light5, &dir_light6, &dir_light7 };
+    //std::vector<DirLight*> dir_lights = { &dir_light0, &dir_light1, &dir_light2, &dir_light3, &dir_light4, &dir_light5, &dir_light6, &dir_light7 };
     std::vector<PointLight*> point_lights = { &point_light0, &point_light1, &point_light2, &point_light3 };
     std::vector<Spotlight*> spotlights = { &spot_light };
+    std::vector<DirLight*> dir_lights = {};
+    //std::vector<PointLight*> point_lights = {};
+
+    shader_prog.bind_lights(dir_lights, point_lights, spotlights);
 
     //
     // Render loop
@@ -130,24 +136,11 @@ int main()
         shader_prog.use();
         spot_light.position = camera.position;
         spot_light.direction = camera.front;
+        shader_prog.bind_lights(dir_lights, point_lights, spotlights);
 
-        //for (Mesh mesh : rifle.meshes) {
-        //    shader_prog.use();
-        //    mesh.model = rifle.model * mesh.model;
-        //    shader_prog.bind(mesh.get_pbr_material(), dir_lights, point_lights, 
-        //        camera.projection() * camera.view() * mesh.model, mesh.model, glm::transpose(glm::inverse(glm::mat3(mesh.model))), &camera);
-        //    mesh.draw(&camera);
-        //}
-        //if (ImGuiInstance::draw_model_bb) rifle.draw_bounding_box(&camera);
         //nanosuit.model = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime() * 0.02f, glm::vec3(0.0, 1.0, 0.0));
-        for (Mesh mesh : nanosuit.meshes) {
-            mesh.model = nanosuit.model * mesh.model;
-            shader_prog.use();
-            shader_prog.bind(mesh.get_blinnphong_material(), dir_lights, point_lights, spotlights, ImGuiInstance::render_normals, 
-                camera.projection() * camera.view() * mesh.model, mesh.model, glm::transpose(glm::inverse(glm::mat3(mesh.model))), &camera);
-            mesh.draw(&camera);
-        }
-        if (ImGuiInstance::draw_model_bb) nanosuit.draw_bounding_box(&camera);
+        rifle.draw(shader_prog, &camera);
+        if (ImGuiInstance::draw_model_bb) rifle.draw_bounding_box(&camera);
 
         //light_prog.use();
         //for (int i = 0; i < 4; i++) {
