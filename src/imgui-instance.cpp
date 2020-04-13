@@ -7,6 +7,7 @@ bool ImGuiInstance::cull_back_face = true;
 bool ImGuiInstance::draw_model_bb = false;
 bool ImGuiInstance::msaa = false;
 bool ImGuiInstance::reinhard_hdr = true;
+bool ImGuiInstance::wireframe = false;
 bool ImGuiInstance::draw_mesh_bb = false;
 float ImGuiInstance::camera_speed = 5.0f, ImGuiInstance::camera_sensitivity = 0.004f, ImGuiInstance::camera_fov = 50.0f;
 float ImGuiInstance::clear_r = 0.1f;
@@ -67,12 +68,8 @@ void ImGuiInstance::draw() {
         ImGui::Checkbox("Show Mesh Bounding Boxes", &draw_mesh_bb);
         ImGui::Checkbox("Anti-Aliasing", &msaa);
         ImGui::Checkbox("Reinhard HDR Mapping", &reinhard_hdr);
+        ImGui::Checkbox("Wireframe", &wireframe);
 
-        static bool wireframe_toggled = false;
-        if (ImGui::Button("Toggle Wireframe")) { 
-            glPolygonMode(GL_FRONT_AND_BACK, wireframe_toggled ? GL_FILL : GL_LINE); 
-            wireframe_toggled = !wireframe_toggled;
-        }
         if (cull_back_face)  {
             glEnable(GL_CULL_FACE);
         } else  {

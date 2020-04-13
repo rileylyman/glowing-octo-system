@@ -152,6 +152,12 @@ int main()
             fb.bind();
         }
 
+        if (ImGuiInstance::wireframe) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        } else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+
         window.process_input();
         window.set_clear_color(ImGuiInstance::clear_r, ImGuiInstance::clear_g, ImGuiInstance::clear_b, 1.0f);
         window.clear();
@@ -182,6 +188,7 @@ int main()
 
         draw_ray(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 100.0f, 0.0f), camera.projection(), camera.view());
 
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         if (ImGuiInstance::render_skybox)
             skybox.draw(&camera);
 
