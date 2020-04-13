@@ -1,5 +1,7 @@
 #version 330 core
 
+uniform bool u_Reinhard = true;
+
 struct Material {
 	sampler2D ambient;
 	sampler2D diffuse;
@@ -170,6 +172,10 @@ void main()
 	}
 	for (int i = 0; i < u_NrSpotlights; i++) {
 		result += CalculateSpotlight(u_Spotlights[i], ambient, diffuse, specular, shininess);
+	}
+
+	if (u_Reinhard) {
+		result = result / (result + vec3(1.0));
 	}
 
 	FragColor = vec4(result, 1.0);

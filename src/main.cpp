@@ -106,6 +106,7 @@ int main()
     //
     DirLight dir_light0;
     dir_light0.direction = glm::vec3(-1.0f, -1.0f, -1.0f);
+    dir_light0.diffuse = glm::vec3(200.0f, 200.0f, 200.0f);
     DirLight dir_light1;
     dir_light1.direction = glm::vec3(-1.0f, -1.0f, 1.0f);
     DirLight dir_light2;
@@ -160,6 +161,11 @@ int main()
         spot_light.direction = camera.front;
         shader_prog.bind_lights(dir_lights, point_lights, spotlights);
 
+        if (ImGuiInstance::reinhard_hdr) {
+            shader_prog.setBool("u_Reinhard", true);
+        } else {
+            shader_prog.setBool("u_Reinhard", false);
+        }
         //nanosuit.model = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime() * 0.02f, glm::vec3(0.0, 1.0, 0.0));
         rifle.draw(shader_prog, &camera);
         if (ImGuiInstance::draw_model_bb) rifle.draw_bounding_box(&camera);
@@ -182,7 +188,6 @@ int main()
         imgui_instance.draw();
 
         if (ImGuiInstance::msaa) {
-            std::cout << "lala" << std::endl;
             msfb.resolve_to_framebuffer(fb);
         }
         Framebuffer::unbind();

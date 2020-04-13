@@ -9,6 +9,8 @@ in vec3 Normal;
 in vec3 FragPos;
 in vec3 CameraPos;
 
+uniform bool u_Reinhard = true;
+
 struct Material {
     sampler2D albedo;
     sampler2D normal;
@@ -88,24 +90,24 @@ float NDFTrowbridgeReitzGGX(vec3 N, vec3 H, float a) {
 
 vec3 getLightLoContrib(vec3 N, vec3 V, vec3 L, vec3 color, vec3 albedo, float roughness, float metallic, vec3 F0) {
 
-        vec3 H = normalize(V + L);
+    vec3 H = normalize(V + L);
 
-        vec3 radiance = color;
+    vec3 radiance = color;
 
-        float NDF = NDFTrowbridgeReitzGGX(N, H, roughness);
-        float G = GeometrySmith(N, V, L, roughness);
-        vec3 F = FresnelSchlick(H, V, F0);
+    float NDF = NDFTrowbridgeReitzGGX(N, H, roughness);
+    float G = GeometrySmith(N, V, L, roughness);
+    vec3 F = FresnelSchlick(H, V, F0);
 
-        vec3 kS = F;
-        vec3 kD = vec3(1.0) - kS;
-        kD *= 1.0 - metallic;
+    vec3 kS = F;
+    vec3 kD = vec3(1.0) - kS;
+    kD *= 1.0 - metallic;
 
-        vec3 numerator = NDF * G * F;
-        float denom = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-        vec3 specular = numerator / max(denom, 0.001);
+    vec3 numerator = NDF * G * F;
+    float denom = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+    vec3 specular = numerator / max(denom, 0.001);
 
-        float NdotL = max(dot(N, L), 0.0);
-        return (kD * albedo / PI + specular) * radiance * NdotL;
+    float NdotL = max(dot(N, L), 0.0);
+    return (kD * albedo / PI + specular) * radiance * NdotL;
 }
 
 void main() {
@@ -137,7 +139,6 @@ void main() {
         }
     }
 
-
     vec3 N = normalize(normal);
     vec3 V = normalize(CameraPos - FragPos);
     
@@ -159,15 +160,13 @@ void main() {
         vec3 term = getLightLoContrib(N, V, L, light.diffuse, albedo, roughness, metallic, F0);
         Lo += term;
     }
-    
 
     vec3 ambient = vec3(.03) * albedo * ao;
     vec3 color = ambient + Lo;
 
-    color = color / (color + vec3(1.0));
+    if (u_Reinhard) {
+        color = color / (color + vec3(1.0));
+    }
 
-    //FragColor = vec4(vec3(metallic, metallic, metallic), 1.0);
     FragColor = vec4(color,  1.0);
-    //FragColor = vec4(getLightLoContrib(N, V, normalize(-u_DirLights[0].direction), u_DirLights[0].diffuse, albedo, roughness, metallic, F0), 1.0);
-    //FragColor = vec4(normalize(TBN * normal), 1.0);
 }
