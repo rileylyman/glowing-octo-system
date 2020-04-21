@@ -24,6 +24,8 @@ add_executable(OpenGL
     imgui-instance.cpp
     framebuffer.h
     framebuffer.cpp
+    scene.h
+    scene.cpp
     )
 
 set(COMPILE_FLAGS "-g -DLOG_USE_COLOR ${COMPILE_FLAGS}")

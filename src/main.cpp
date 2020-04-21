@@ -54,8 +54,8 @@ int main()
     //
     // Load assets
     //
-    ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/pbr.frag");
-    //ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/frag.glsl");
+    //ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/pbr.frag");
+    ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/frag.glsl");
     ShaderProgram light_prog("src/shaders/vert.glsl", "src/shaders/light.glsl");
 
     //
@@ -93,8 +93,9 @@ int main()
     //
     // Load models
     //
+    Model rifle(&vertex_buffer, "resources/models/tavern/scene.gltf", BP_TEXTURED, 0, false);
     //Model rifle(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", BP_TEXTURED, 0, true);
-    Model rifle(&vertex_buffer, "resources/models/super/scene.fbx", PBR_TEXTURED, 0, false);
+    //Model rifle(&vertex_buffer, "resources/models/super/scene.fbx", PBR_TEXTURED, 0, false);
     //Model pbrpistol(&vertex_buffer, "resources/models/pbrpistol/scene.fbx", PBR_TEXTURED, 0, false);
 
     Model sphere = construct_sphere(&vertex_buffer, 2.0f, 64, 64, PBR_SOLID);
@@ -106,7 +107,7 @@ int main()
     //
     DirLight dir_light0;
     dir_light0.direction = glm::vec3(-1.0f, -1.0f, -1.0f);
-    dir_light0.diffuse = glm::vec3(200.0f, 200.0f, 200.0f);
+    dir_light0.diffuse = glm::vec3(2.0f, 2.0f, 2.0f);
     DirLight dir_light1;
     dir_light1.direction = glm::vec3(-1.0f, -1.0f, 1.0f);
     DirLight dir_light2;

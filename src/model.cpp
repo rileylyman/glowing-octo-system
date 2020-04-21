@@ -342,25 +342,25 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
     std::map<TextureType, Texture> texmap;
 
     aiMaterial *material = scene->mMaterials[ai_mesh->mMaterialIndex];
+    for (int i = 1; i <= 18; i++) {
+        aiString str;
+        material->GetTexture((aiTextureType)i, 0, &str);
+        std::cout << i << ": " << str.C_Str() << std::endl;
+    }
+
     if (shader_type == BP_TEXTURED) {
-        std::vector<Texture> ambient_textures = load_texture(material, aiTextureType_AMBIENT, true);
-        std::vector<Texture> diffuse_textures = load_texture(material, aiTextureType_DIFFUSE, true);
-        std::vector<Texture> specular_textures = load_texture(material, aiTextureType_SPECULAR, true);
-        std::vector<Texture> normal_textures = load_texture(material, height_normals ? aiTextureType_HEIGHT : aiTextureType_NORMALS, true);
-        std::vector<Texture> height_textures = load_texture(material, aiTextureType_HEIGHT, false);
+        std::vector<Texture> ambient_textures  = load_texture( material, aiTextureType_AMBIENT, true );
+        std::vector<Texture> diffuse_textures  = load_texture( material, aiTextureType_DIFFUSE, true );
+        std::vector<Texture> specular_textures = load_texture( material, aiTextureType_SPECULAR, true );
+        std::vector<Texture> normal_textures   = load_texture( material, height_normals ? aiTextureType_HEIGHT : aiTextureType_NORMALS, true );
+        std::vector<Texture> height_textures   = load_texture( material, aiTextureType_HEIGHT, false );
 
-        if (ambient_textures.size()) texmap[TEXTURE_TYPE_AMBIENT_MAP] = ambient_textures[0];
-        if (diffuse_textures.size()) texmap[TEXTURE_TYPE_DIFFUSE_MAP] = diffuse_textures[0];
-        if (specular_textures.size()) texmap[TEXTURE_TYPE_SPECULAR_MAP] = specular_textures[0];
-        if (normal_textures.size()) texmap[TEXTURE_TYPE_NORMAL_MAP] = normal_textures[0];
-        if (height_textures.size()) texmap[TEXTURE_TYPE_HEIGHT_MAP] = height_textures[0];
+        if ( ambient_textures.size()  ) texmap[TEXTURE_TYPE_AMBIENT_MAP]  =  ambient_textures[0];
+        if ( diffuse_textures.size()  ) texmap[TEXTURE_TYPE_DIFFUSE_MAP]  =  diffuse_textures[0];
+        if ( specular_textures.size() ) texmap[TEXTURE_TYPE_SPECULAR_MAP] = specular_textures[0];
+        if ( normal_textures.size()   ) texmap[TEXTURE_TYPE_NORMAL_MAP]   =   normal_textures[0];
+        if ( height_textures.size()   ) texmap[TEXTURE_TYPE_HEIGHT_MAP]   =   height_textures[0];
     } else if (shader_type == PBR_TEXTURED) {
-
-        for (int i = 1; i <= 18; i++) {
-            aiString str;
-            material->GetTexture((aiTextureType)i, 0, &str);
-            std::cout << i << ": " << str.C_Str() << std::endl;
-        }
 
         // Find the albedo texture
         //aiString albedo_path;
@@ -370,17 +370,17 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
         //aiTextureType possible_albedos[] = { aiTextureType_DIFFUSE, aiTextureType_BASE_COLOR };
 
 
-        Texture albedo = load_texture_from_name("albedo.png", true);
-        Texture metallic = load_texture_from_name("metallic.png", true);
-        Texture normal = load_texture_from_name("normal.png", false);
+        Texture albedo    = load_texture_from_name("albedo.png", true);
+        Texture metallic  = load_texture_from_name("metallic.png", true);
+        Texture normal    = load_texture_from_name("normal.png", false);
         Texture roughness = load_texture_from_name("roughness.png", false);
-        Texture ao = load_texture_from_name("ao.png", false);
+        Texture ao        = load_texture_from_name("ao.png", false);
 
-        texmap[TEXTURE_TYPE_ALBEDO_MAP] = albedo; 
-        texmap[TEXTURE_TYPE_METALLIC_MAP] = metallic; 
+        texmap[TEXTURE_TYPE_ALBEDO_MAP]    = albedo; 
+        texmap[TEXTURE_TYPE_METALLIC_MAP]  = metallic; 
         texmap[TEXTURE_TYPE_ROUGHNESS_MAP] = roughness;
-        texmap[TEXTURE_TYPE_NORMAL_MAP] = normal;
-        texmap[TEXTURE_TYPE_AO_MAP] = ao;
+        texmap[TEXTURE_TYPE_NORMAL_MAP]    = normal;
+        texmap[TEXTURE_TYPE_AO_MAP]        = ao;
     } else {
         throw "unimplemented";
     }
