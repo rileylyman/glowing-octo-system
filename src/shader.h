@@ -7,7 +7,6 @@
 #include <vector>
 #include "light.h"
 #include "texture.h"
-#include "camera.h"
 
 //
 // Material definitions used by our shaders

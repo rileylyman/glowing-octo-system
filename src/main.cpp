@@ -21,6 +21,7 @@
 #include "camera.h"
 #include "common.h"
 #include "light.h"
+#include "scene.h"
 #include "framebuffer.h"
 
 #include <iostream>
@@ -54,9 +55,9 @@ int main()
     //
     // Load assets
     //
-    //ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/pbr.frag");
-    ShaderProgram shader_prog("src/shaders/vert.glsl", "src/shaders/frag.glsl");
-    ShaderProgram light_prog("src/shaders/vert.glsl", "src/shaders/light.glsl");
+    ShaderProgram pbr_shader("src/shaders/vert.glsl", "src/shaders/pbr.frag");
+    ShaderProgram phong_shader("src/shaders/vert.glsl", "src/shaders/frag.glsl");
+    //ShaderProgram light_prog("src/shaders/vert.glsl", "src/shaders/light.glsl");
 
     //
     // Get skybox cubemap texture
@@ -135,7 +136,13 @@ int main()
     //std::vector<DirLight*> dir_lights = {};
     //std::vector<PointLight*> point_lights = {};
 
-    shader_prog.bind_lights(dir_lights, point_lights, spotlights);
+    //shader_prog.bind_lights(dir_lights, point_lights, spotlights);
+
+    Scene scene;
+    scene.set_skybox(&skybox);
+    scene.add_model(&rifle, &phong_shader);
+    scene.add_model(&sphere, &pbr_shader);
+    scene.add_lights(dir_lights, point_lights, spotlights);
 
     //
     // Render loop
@@ -163,35 +170,13 @@ int main()
         window.set_clear_color(ImGuiInstance::clear_r, ImGuiInstance::clear_g, ImGuiInstance::clear_b, 1.0f);
         window.clear();
     
-        shader_prog.use();
         spot_light.position = camera.position;
         spot_light.direction = camera.front;
-        shader_prog.bind_lights(dir_lights, point_lights, spotlights);
-
-        if (ImGuiInstance::reinhard_hdr) {
-            shader_prog.setBool("u_Reinhard", true);
-        } else {
-            shader_prog.setBool("u_Reinhard", false);
-        }
-        //nanosuit.model = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime() * 0.02f, glm::vec3(0.0, 1.0, 0.0));
-        rifle.draw(shader_prog, &camera);
-        if (ImGuiInstance::draw_model_bb) rifle.draw_bounding_box(&camera);
 
         sphere.model = glm::translate(glm::mat4(1.0f), glm::vec3(glfwGetTime(), 0.0f, 0.0f));
-        sphere.draw(shader_prog, &camera);
+        //model.model = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime() * 0.02f, glm::vec3(0.0, 1.0, 0.0));
 
-        //light_prog.use();
-        //for (int i = 0; i < 4; i++) {
-        //    //light.model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), light_positions[i]);
-        //    //light_prog.setVec3("lightColor", 1.0f, 1.0f, 1.0f); 
-        //    //light.draw(light_prog, &camera);
-        //}
-
-        draw_ray(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 100.0f, 0.0f), camera.projection(), camera.view());
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        if (ImGuiInstance::render_skybox)
-            skybox.draw(&camera);
+        scene.draw(&camera);
 
         imgui_instance.draw();
 
