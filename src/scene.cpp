@@ -70,10 +70,15 @@ void Scene::draw(Camera *camera) {
 
         draw_ray(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 100.0f, 0.0f), camera->projection(), camera->view());
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        if (ImGuiInstance::render_skybox)
-            skybox->draw(camera);
-
     }
+
+    //
+    // After rendering ALL objects, then we can reset the polygon mode back to GL_FILL
+    // so that the skybox renders correctly regardless of whether or not we have
+    // wireframe enabled.
+    //
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    if (ImGuiInstance::render_skybox)
+        skybox->draw(camera);
 
 }
