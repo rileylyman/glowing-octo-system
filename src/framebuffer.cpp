@@ -126,10 +126,10 @@ void Framebuffer::destroy_attachments() {
 }
 
 void Framebuffer::bind() {
+    glBindFramebuffer(GL_FRAMEBUFFER, id);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         throw "cannot bind incomplete framebuffer!";
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, id);
 }
 
 void Framebuffer::draw() {

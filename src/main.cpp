@@ -97,7 +97,7 @@ int main()
     Model rifle(&vertex_buffer, "resources/models/tavern/scene.gltf", BP_TEXTURED, 0, false);
     //Model rifle(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", BP_TEXTURED, 0, true);
     //Model rifle(&vertex_buffer, "resources/models/super/scene.fbx", PBR_TEXTURED, 0, false);
-    //Model pbrpistol(&vertex_buffer, "resources/models/pbrpistol/scene.fbx", PBR_TEXTURED, 0, false);
+    //Model rifle(&vertex_buffer, "resources/models/pbrpistol/scene.fbx", PBR_TEXTURED, 0, false);
 
     Model sphere = construct_sphere(&vertex_buffer, 2.0f, 64, 64, PBR_SOLID);
 
