@@ -1,3 +1,6 @@
+[submodule "external/glfw"]
+    path = external/glfw
+    url = https://github.com/glfw/glfw.git
 [submodule "external/rxi_log/log"]
 	path = external/rxi_log/log
 	url = https://github.com/rxi/log.c.git
