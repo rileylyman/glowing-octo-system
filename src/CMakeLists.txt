@@ -1,5 +1,7 @@
 # find_package(glfw3 REQUIRED FATAL_ERROR)
 
+set (CMAKE_CXX_STANDARD 17)
+
 add_executable(OpenGL
     main.cpp
     window.h
