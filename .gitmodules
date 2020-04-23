@@ -1,12 +1,12 @@
 [submodule "external/rxi_log/log"]
 	path = external/rxi_log/log
-	url = git@github.com:rxi/log.c.git
+	url = https://github.com/rxi/log.c.git
 [submodule "external/glm"]
 	path = external/glm
-	url = git@github.com:g-truc/glm.git
+	url = https://github.com/g-truc/glm.git
 [submodule "external/assimp"]
 	path = external/assimp
-	url = git@github.com:assimp/assimp.git
+	url = https://github.com/assimp/assimp.git
 [submodule "external/imgui-lib/imgui"]
 	path = external/imgui-lib/imgui
-	url = git@github.com:ocornut/imgui.git
+	url = https://github.com/ocornut/imgui.git
