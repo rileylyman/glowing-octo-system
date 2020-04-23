@@ -22,4 +22,4 @@ add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 target_include_directories(imgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
 target_include_directories(imgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples")
 
-target_link_libraries(imgui PRIVATE glad)
+target_link_libraries(imgui PRIVATE glad glfw)
