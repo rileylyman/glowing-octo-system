@@ -127,11 +127,17 @@ int main()
     dir_light6.direction = glm::vec3(1.0f, 1.0f, -1.0f);
     DirLight dir_light7;
     dir_light7.direction = glm::vec3(1.0f, 1.0f, 1.0f);
-    PointLight point_light0 = { .position = light_positions[0] };
-    PointLight point_light1 = { .position = light_positions[1] };
-    PointLight point_light2 = { .position = light_positions[2] };
-    PointLight point_light3 = { .position = light_positions[3] };
-    Spotlight  spot_light   = { .position = camera.position, .direction = camera.front };
+    PointLight point_light0;
+    point_light0.position = light_positions[0];
+    PointLight point_light1; 
+    point_light1.position = light_positions[1];
+    PointLight point_light2; 
+    point_light2.position = light_positions[2];
+    PointLight point_light3;
+    point_light3.position = light_positions[3];
+    Spotlight  spot_light;   
+    spot_light.position = camera.position;
+    spot_light.direction = camera.front;
 
     std::vector<DirLight*> dir_lights = { &dir_light0, &dir_light1, &dir_light2, &dir_light3, &dir_light4, &dir_light5, &dir_light6, &dir_light7 };
     //std::vector<DirLight *> dir_lights = { &dir_light0 };
