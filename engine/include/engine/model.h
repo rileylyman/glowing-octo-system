@@ -3,10 +3,10 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <vector>
-#include "shader.h"
-#include "texture.h"
-#include "vertex.h"
-#include "camera.h"
+#include "engine/shader.h"
+#include "engine/texture.h"
+#include "engine/vertex.h"
+#include "engine/camera.h"
 #include <glm/glm.hpp>
 #include <map>
 

@@ -1,8 +1,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <assimp/pbrmaterial.h>
 #include <iostream>
-#include "model.h"
-#include "imgui-instance.h"
+#include "engine/model.h"
+#include "engine/imgui-instance.h"
 
 std::map<std::string, Texture> Model::loaded_textures = {};
 

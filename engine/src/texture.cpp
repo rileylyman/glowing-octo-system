@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stb_image.h>
 #include <glad/glad.h>
-#include "texture.h"
+#include "engine/texture.h"
 
 Cubemap::Cubemap(std::vector<std::string> filenames, uint32_t unit, bool srgb) {
     this->unit = unit;

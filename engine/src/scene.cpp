@@ -1,4 +1,4 @@
-#include "scene.h"
+#include "engine/scene.h"
 
 void Scene::add_model(Model *new_model, ShaderProgram *shader) {
     if (models.count(shader) == 0) {

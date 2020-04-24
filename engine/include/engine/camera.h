@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
-#include "common.h"
+#include "engine/common.h"
 
 struct Camera {
     float yaw = -glm::half_pi<float>();

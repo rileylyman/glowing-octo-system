@@ -1,6 +1,6 @@
 #include <iostream>
 #include <glad/glad.h>
-#include "vertex.h"
+#include "engine/vertex.h"
 
 void Vertex::setup_attrib_pointers() {
     // position attribute

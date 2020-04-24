@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include "log.h"
-#include "window.h"
-#include "imgui-instance.h"
+#include "engine/window.h"
+#include "engine/imgui-instance.h"
 
 Window::Window(uint32_t width, uint32_t height, Camera *cam) : cam(cam), width(width), height(height) {
 

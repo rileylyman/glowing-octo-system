@@ -4,33 +4,9 @@ set (CMAKE_CXX_STANDARD 17)
 
 add_executable(OpenGL
     main.cpp
-    window.h
-    window.cpp
-    texture.h
-    texture.cpp
-    shader.h
-    shader.cpp
-    skybox.h
-    skybox.cpp
-    vertex.h
-    vertex.cpp
-    model.h
-    model.cpp
-    camera.h
-    camera.cpp
-    common.h
-    common.cpp
-    light.h
-    light.cpp
-    imgui-instance.h
-    imgui-instance.cpp
-    framebuffer.h
-    framebuffer.cpp
-    scene.h
-    scene.cpp
     )
 
 set(COMPILE_FLAGS "-g -DLOG_USE_COLOR ${COMPILE_FLAGS}")
 set(CMAKE_BUILD_TYPE Debug)
 
-target_link_libraries(OpenGL PRIVATE assimp glfw imgui glm stb GL log glad rt dl m Xrandr Xi X11 pthread xcb Xau Xdmcp)
+target_link_libraries(OpenGL PRIVATE engine fluidsim assimp glfw imgui glm stb GL log glad rt dl m Xrandr Xi X11 pthread xcb Xau Xdmcp)

@@ -1,7 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "imgui-instance.h"
+#include "engine/imgui-instance.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -12,17 +12,19 @@
 
 #include <vector>
 
-#include "shader.h"
-#include "skybox.h"
-#include "window.h"
-#include "texture.h"
-#include "vertex.h"
-#include "model.h"
-#include "camera.h"
-#include "common.h"
-#include "light.h"
-#include "scene.h"
-#include "framebuffer.h"
+#include "engine/shader.h"
+#include "engine/skybox.h"
+#include "engine/window.h"
+#include "engine/texture.h"
+#include "engine/vertex.h"
+#include "engine/model.h"
+#include "engine/camera.h"
+#include "engine/common.h"
+#include "engine/light.h"
+#include "engine/scene.h"
+#include "engine/framebuffer.h"
+
+#include <fluidsim/fluidsim.h>
 
 #include <iostream>
 
@@ -59,6 +61,8 @@ int main()
     ShaderProgram phong_shader("src/shaders/vert.glsl", "src/shaders/frag.glsl");
     //ShaderProgram light_prog("src/shaders/vert.glsl", "src/shaders/light.glsl");
 
+    fluidsim_testing123();
+
     //
     // Get skybox cubemap texture
     //
@@ -94,8 +98,8 @@ int main()
     //
     // Load models
     //
-    Model rifle(&vertex_buffer, "resources/models/tavern/scene.gltf", BP_TEXTURED, 0, false);
-    //Model rifle(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", BP_TEXTURED, 0, true);
+    //Model rifle(&vertex_buffer, "resources/models/tavern/scene.gltf", BP_TEXTURED, 0, false);
+    Model rifle(&vertex_buffer, "resources/models/suitofnano/nanosuit.obj", BP_TEXTURED, 0, true);
     //Model rifle(&vertex_buffer, "resources/models/super/scene.fbx", PBR_TEXTURED, 0, false);
     //Model rifle(&vertex_buffer, "resources/models/pbrpistol/scene.fbx", PBR_TEXTURED, 0, false);
 

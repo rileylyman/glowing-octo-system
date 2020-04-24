@@ -9,4 +9,7 @@ add_subdirectory(external/assimp)
 add_subdirectory(external/rxi_log)
 add_subdirectory(external/imgui-lib)
 
+add_subdirectory(fluidsim)
+add_subdirectory(engine)
+
 add_subdirectory(src)

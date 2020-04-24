@@ -1,7 +1,7 @@
 #pragma once
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "shader.h"
+#include "engine/shader.h"
 
 struct Framebuffer {
 

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "model.h"
-#include "light.h"
-#include "shader.h"
-#include "camera.h"
-#include "skybox.h"
-#include "imgui-instance.h"
+#include "engine/model.h"
+#include "engine/light.h"
+#include "engine/shader.h"
+#include "engine/camera.h"
+#include "engine/skybox.h"
+#include "engine/imgui-instance.h"
 #include <map>
 #include <vector>
 

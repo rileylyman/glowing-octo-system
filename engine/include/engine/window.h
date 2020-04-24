@@ -1,8 +1,8 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include "camera.h"
-#include "framebuffer.h"
+#include "engine/camera.h"
+#include "engine/framebuffer.h"
 
 struct Window {
     uint32_t width, height;

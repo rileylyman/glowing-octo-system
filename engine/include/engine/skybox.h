@@ -3,9 +3,9 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <string>
-#include "shader.h"
-#include "texture.h"
-#include "camera.h"
+#include "engine/shader.h"
+#include "engine/texture.h"
+#include "engine/camera.h"
 
 struct Skybox {
 

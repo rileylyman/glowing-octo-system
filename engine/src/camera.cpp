@@ -1,8 +1,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "imgui-instance.h"
-#include "camera.h"
-#include "common.h"
+#include "engine/imgui-instance.h"
+#include "engine/camera.h"
+#include "engine/common.h"
 
 Camera::Camera(float x, float y, float z) : position(glm::vec3(x, y, z)), last_x(400), last_y(300) {}
 

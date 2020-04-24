@@ -1,5 +1,5 @@
 #include <glad/glad.h>
-#include "skybox.h"
+#include "engine/skybox.h"
 
 float cube_verts[] = {
     -1.0f,  1.0f, -1.0f,

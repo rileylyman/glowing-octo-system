@@ -1,4 +1,4 @@
-#include "framebuffer.h"
+#include "engine/framebuffer.h"
 #include <iostream>
 
 Framebuffer::Framebuffer(GLFWwindow *window): fb_shader("src/shaders/fb.vert", "src/shaders/fb.frag") {
