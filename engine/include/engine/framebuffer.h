@@ -6,6 +6,7 @@
 struct Framebuffer {
 
     Framebuffer(GLFWwindow *window);
+    Framebuffer(uint32_t width, uint32_t height);
     ~Framebuffer();
 
     void add_color_attachment();
@@ -18,6 +19,8 @@ struct Framebuffer {
     static void unbind() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+
+    uint32_t get_color_texture() { return tex; }
 
 protected:
     uint32_t id;

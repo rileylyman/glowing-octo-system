@@ -1,7 +1,7 @@
 set (CMAKE_CXX_STANDARD 17)
 
 add_library(
-    engine
+    engine STATIC
 
     src/window.cpp
     src/texture.cpp

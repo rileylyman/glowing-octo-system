@@ -1,6 +1,40 @@
 #include "engine/framebuffer.h"
 #include <iostream>
 
+Framebuffer::Framebuffer(uint32_t _width, uint32_t _height): fb_shader("src/shaders/fb.vert", "src/shaders/fb.frag")  {
+    width = _width;
+    height = _height;
+
+    glGenFramebuffers(1, &id);
+
+    glGenVertexArrays(1, &quad_vao);
+    glBindVertexArray(quad_vao);
+
+    float data[] = {
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f
+    };
+
+    glGenBuffers(1, &quad_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_VERTEX_ARRAY, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 Framebuffer::Framebuffer(GLFWwindow *window): fb_shader("src/shaders/fb.vert", "src/shaders/fb.frag") {
     glGenFramebuffers(1, &id);
     glfwGetWindowSize(window, &width, &height);

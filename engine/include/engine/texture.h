@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <stdint.h>
+#include <glad/glad.h>
 
 enum TextureType {
     TEXTURE_TYPE_NORMAL_MAP = 0,
@@ -23,6 +24,27 @@ struct Texture {
     Texture(): id(UINT32_MAX), unit(UINT32_MAX) {}
     Texture(std::string filename, uint32_t unit, bool srgb);
     void use(); 
+};
+
+struct Texture3D {
+    uint32_t id, unit;
+
+    Texture3D(uint32_t width, uint32_t height, uint32_t depth, uint32_t unit) : unit(unit) {
+        glGenTextures(1, &id);
+        glBindTexture(GL_TEXTURE_3D, id);
+
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
+
+        glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB32F, width, height, depth, 0, GL_RGB, GL_FLOAT, NULL);
+
+        glBindTexture(GL_TEXTURE_3D, 0);
+    }
+
+    void use() {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        glBindTexture(GL_TEXTURE_3D, id);
+    }
 };
 
 struct Cubemap : public Texture {

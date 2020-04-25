@@ -61,8 +61,6 @@ int main()
     ShaderProgram phong_shader("src/shaders/vert.glsl", "src/shaders/frag.glsl");
     //ShaderProgram light_prog("src/shaders/vert.glsl", "src/shaders/light.glsl");
 
-    fluidsim_testing123();
-
     //
     // Get skybox cubemap texture
     //
@@ -78,6 +76,8 @@ int main()
         "src/shaders/skybox.vert",
         "src/shaders/skybox.frag"
     );
+
+    fluidsim_testing123();
 
     Framebuffer fb(window.window);
     fb.add_color_attachment();
