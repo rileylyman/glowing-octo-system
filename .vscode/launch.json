@@ -8,7 +8,7 @@
             "name": "Run Engine",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/src/OpenGL",
+            "program": "${workspaceFolder}/build/src/Guppy",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

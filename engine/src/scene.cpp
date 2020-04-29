@@ -1,4 +1,11 @@
+#include <nlohmann/json.hpp>
 #include "engine/scene.h"
+
+using json = nlohmann::json;
+
+Scene::Scene(std::string filename) {
+
+}
 
 void Scene::add_model(Model *new_model, ShaderProgram *shader) {
     if (models.count(shader) == 0) {

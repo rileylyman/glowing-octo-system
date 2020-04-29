@@ -8,10 +8,12 @@
 #include "engine/imgui-instance.h"
 #include <map>
 #include <vector>
+#include <string>
 
 struct Scene {
 
     Scene() {}
+    Scene(std::string filename);
 
     void set_skybox(Skybox *new_skybox) { skybox = new_skybox; }
 
