@@ -1,5 +1,7 @@
 set (CMAKE_CXX_STANDARD 17)
 
+find_package(OpenGL REQUIRED)
+
 add_library(
     engine STATIC
 
@@ -35,4 +37,8 @@ set(COMPILE_FLAGS "-g -DLOG_USE_COLOR ${COMPILE_FLAGS}")
 
 target_include_directories(engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-target_link_libraries(engine PRIVATE fluidsim assimp glfw imgui glm stb GL log glad rt dl m Xrandr Xi X11 pthread xcb Xau Xdmcp)
+IF (WIN32)
+    target_link_libraries(engine PRIVATE fluidsim assimp glfw imgui glm stb log glad opengl32)
+ELSE()
+    target_link_libraries(engine PRIVATE fluidsim assimp glfw imgui glm stb GL log glad rt dl m Xrandr Xi X11 pthread xcb Xau Xdmcp)
+ENDIF()
