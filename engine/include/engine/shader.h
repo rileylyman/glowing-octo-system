@@ -38,10 +38,19 @@ struct PBRSolidMaterial {
 struct ShaderProgram {
 
     //
+    // Default constructor so that other things work... not to be used to create an
+    // actual shader!
+    //
+    ShaderProgram(): id(UINT32_MAX) {}
+    ShaderProgram& operator=(const ShaderProgram& other) {
+        id = other.id;
+    }
+
+    //
     // Specify the paths for the vertex, fragment, and, optionally, the geometry shaders
     // to create a shader.
     //
-    ShaderProgram(const char* vertex_path, const char* frag_path, const char* geo_path=nullptr); 
+    ShaderProgram(std::string vertex_path, std::string frag_path, std::string *geo_path=nullptr); 
 
     //
     // Set the OpenGl state machine's active shader to this one, meaning that
@@ -49,10 +58,14 @@ struct ShaderProgram {
     //
     void use();
 
+    friend bool operator<(const ShaderProgram first, const ShaderProgram second) {
+        return first.id < second.id;
+    }
+
     //
     // Convinience function to pass in all the lighting data to the shader
     //
-    void bind_lights(std::vector<DirLight *> dir_lights, std::vector<PointLight *> point_lights, std::vector<Spotlight *> spotlights);
+    void bind_lights(std::vector<DirLight> dir_lights, std::vector<PointLight> point_lights, std::vector<Spotlight> spotlights);
 
     //
     // Functions to set uniforms within a shader by the uniform's name

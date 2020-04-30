@@ -9,6 +9,7 @@
 
 struct Skybox {
 
+    Skybox() {}
     Skybox(std::vector<std::string> texture_names, std::string vshader, std::string fshader);
     ~Skybox();
     void draw(Camera *camera);

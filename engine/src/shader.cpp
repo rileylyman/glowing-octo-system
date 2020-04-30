@@ -120,9 +120,9 @@ const char *SPOTLIGHT_NAMES[] = {
 
 
 ShaderProgram::ShaderProgram(
-    const char* vertex_path, 
-    const char* frag_path, 
-    const char* geo_path)
+    std::string vertex_path, 
+    std::string frag_path, 
+    std::string *geo_path)
 {
 
     std::string vertex_code;
@@ -153,7 +153,7 @@ ShaderProgram::ShaderProgram(
         frag_code = frag_stream.str();			
 
         if (geo_path != nullptr) {
-            geo_file.open(geo_path);
+            geo_file.open(*geo_path);
             std::stringstream gShaderStream;
             gShaderStream << geo_file.rdbuf();
             geo_file.close();
@@ -279,9 +279,9 @@ void ShaderProgram::check_compile_errors(uint32_t shader)
 }
 
 void ShaderProgram::bind_lights(
-    std::vector<DirLight *> dir_lights,
-    std::vector<PointLight *> point_lights,
-    std::vector<Spotlight *> spot_lights)
+    std::vector<DirLight> dir_lights,
+    std::vector<PointLight> point_lights,
+    std::vector<Spotlight> spot_lights)
 {
     use();
     if (dir_lights.size() > max_nr_dir_lights || point_lights.size() > max_nr_point_lights || spot_lights.size() > max_nr_spotlights) {
@@ -289,33 +289,33 @@ void ShaderProgram::bind_lights(
         exit(EXIT_FAILURE);
     }
     for (int i = 0; i < dir_lights.size(); i++) {
-        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 0], dir_lights[i]->direction);
-        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 1], dir_lights[i]->ambient);
-        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 2], dir_lights[i]->diffuse);
-        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 3], dir_lights[i]->specular);
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 0], dir_lights[i].direction);
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 1], dir_lights[i].ambient);
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 2], dir_lights[i].diffuse);
+        setVec3(DIR_LIGHT_NAMES[i*NR_DL_ATTRS + 3], dir_lights[i].specular);
     }
     setInt("u_NrDirLights", dir_lights.size());
     for (int i = 0; i < point_lights.size(); i++) {
-        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 0], point_lights[i]->position);
-        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 1], point_lights[i]->ambient);
-        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 2], point_lights[i]->diffuse);
-        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 3], point_lights[i]->specular);
-        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 4], point_lights[i]->constant);
-        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 5], point_lights[i]->linear);
-        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 6], point_lights[i]->quadratic);
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 0], point_lights[i].position);
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 1], point_lights[i].ambient);
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 2], point_lights[i].diffuse);
+        setVec3( POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 3], point_lights[i].specular);
+        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 4], point_lights[i].constant);
+        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 5], point_lights[i].linear);
+        setFloat(POINT_LIGHT_NAMES[i*NR_PL_ATTRS + 6], point_lights[i].quadratic);
     }
     setInt("u_NrPointLights", point_lights.size());
     for (int i = 0; i < spot_lights.size(); i++) {
-        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 0], spot_lights[i]->position);
-        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 1], spot_lights[i]->direction);
-        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 2], spot_lights[i]->ambient);
-        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 3], spot_lights[i]->diffuse);
-        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 4], spot_lights[i]->specular);
-        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 5], spot_lights[i]->constant);
-        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 6], spot_lights[i]->linear);
-        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 7], spot_lights[i]->quadratic);
-        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 8], spot_lights[i]->cosPhi);
-        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 9], spot_lights[i]->cosGamma);
+        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 0], spot_lights[i].position);
+        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 1], spot_lights[i].direction);
+        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 2], spot_lights[i].ambient);
+        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 3], spot_lights[i].diffuse);
+        setVec3( SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 4], spot_lights[i].specular);
+        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 5], spot_lights[i].constant);
+        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 6], spot_lights[i].linear);
+        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 7], spot_lights[i].quadratic);
+        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 8], spot_lights[i].cosPhi);
+        setFloat(SPOTLIGHT_NAMES[i*NR_SL_ATTRS + 9], spot_lights[i].cosGamma);
     }
     setInt("u_NrSpotlights", spot_lights.size());
 }

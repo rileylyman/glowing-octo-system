@@ -345,7 +345,7 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
     for (int i = 1; i <= 18; i++) {
         aiString str;
         material->GetTexture((aiTextureType)i, 0, &str);
-        std::cout << i << ": " << str.C_Str() << std::endl;
+        //std::cout << i << ": " << str.C_Str() << std::endl;
     }
 
     if (shader_type == BP_TEXTURED) {

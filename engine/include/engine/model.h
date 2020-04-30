@@ -195,6 +195,8 @@ struct Model {
 
 private:
 
+    std::string name;
+
     //
     // The list of meshes contained within this model.
     //

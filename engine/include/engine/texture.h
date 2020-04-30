@@ -47,6 +47,14 @@ struct Texture3D {
     }
 };
 
-struct Cubemap : public Texture {
+struct Cubemap {
+    uint32_t unit, id;
+
+    Cubemap() {}
     Cubemap(std::vector<std::string> filenames, uint32_t unit, bool srgb);
+
+    void use() {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+    }
 };
