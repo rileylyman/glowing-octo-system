@@ -13,8 +13,8 @@ layout(rgba32f, binding = 0) uniform image2D img_output;
 // ASSUMES that dimensions of velocity field and advected quantity matches gl_NumWorkGroups
 
 uniform sampler3D vel_sampler;      // velocity field
-uniform usampler3D target_sampler;   // quantity to be advected (float)
-uniform uimage3D target_buffer;      // buffer to store advected quantities (float)
+uniform isampler3D target_sampler;   // quantity to be advected (float)
+uniform iimage3D target_buffer;      // buffer to store advected quantities (float)
 
 uniform vec3 scale;                 // dimensions of a cell in x,y,z
 
@@ -48,7 +48,7 @@ void main() {
     // sample advected quantity
     vec3 zero = vec3(0.0, 0.0, 0.0);
     vec3 one = vec3(1.0, 1.0, 1.0);
-    uvec4 advected_sample = texture(target_sampler, clamp(cell2texture(pos), zero, one));
+    ivec4 advected_sample = texture(target_sampler, clamp(cell2texture(pos), zero, one));
     
     // write to buffer
     imageStore(target_buffer, index, advected_sample);
