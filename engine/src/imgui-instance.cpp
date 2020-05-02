@@ -5,6 +5,7 @@ bool ImGuiInstance::render_normals = true;
 bool ImGuiInstance::render_skybox = true;
 bool ImGuiInstance::cull_back_face = true;
 bool ImGuiInstance::fsdebug = true;
+bool ImGuiInstance::fsdebug_scalar = false;
 bool ImGuiInstance::draw_model_bb = false;
 bool ImGuiInstance::msaa = false;
 bool ImGuiInstance::reinhard_hdr = true;
@@ -70,7 +71,8 @@ void ImGuiInstance::draw() {
         ImGui::Checkbox("Anti-Aliasing", &msaa);
         ImGui::Checkbox("Reinhard HDR Mapping", &reinhard_hdr);
         ImGui::Checkbox("Wireframe", &wireframe);
-        ImGui::Checkbox("Fluid Debug Plan", &fsdebug);
+        ImGui::Checkbox("Fluid Debug Plane", &fsdebug);
+        ImGui::Checkbox("Fluid Debug Scalar Grid?", &fsdebug_scalar);
 
         if (cull_back_face)  {
             glEnable(GL_CULL_FACE);
@@ -93,7 +95,7 @@ void ImGuiInstance::draw() {
         ImGui::Text("Miscellaneous");
 
         static int counter = 0;
-        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+        if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
             counter++;
         ImGui::SameLine();
         ImGui::Text("counter = %d", counter);

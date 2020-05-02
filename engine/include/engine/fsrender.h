@@ -13,50 +13,14 @@ private:
     ShaderProgram shader; 
     uint32_t quad_vao, quad_vbo;
 
+    float plane_width, plane_height, plane_z_offset;
+
 public:
-    FluidDebugRenderer(Camera *cam, float plane_width, float plane_height, float plane_z_offset)
-    : shader(ShaderProgram("src/shaders/fsdebug.vert", "src/shaders/fsdebug.frag")), camera(cam) 
-    {
-        glm::mat4 camera_to_world = glm::inverse(cam->view());
+    FluidDebugRenderer(Camera *cam, float plane_width, float plane_height, float plane_z_offset);
 
-        glm::vec4 camera_space_lower_corner = {-plane_width / 2.0, -plane_height / 2.0, plane_z_offset, 1.0f};
-        glm::vec4 camera_space_upper_corner = { plane_width / 2.0,  plane_height / 2.0, plane_z_offset, 1.0f};
+    void draw(Texture3D grid, bool scalar, glm::vec3 offset, glm::vec3 worldspace_whd);
 
-        glm::vec4 world_space_lower_corner = camera_to_world * camera_space_lower_corner; // plane lower left corner in world space
-        glm::vec4 world_space_upper_corner = camera_to_world * camera_space_upper_corner; // plane upper right corner in world space
-
-
-        float z = camera_space_lower_corner.z;
-        float quad[] = {
-            camera_space_lower_corner.x, camera_space_lower_corner.y, z,  
-            camera_space_upper_corner.x, camera_space_upper_corner.y, z,  
-            camera_space_lower_corner.x, camera_space_upper_corner.y, z,
-
-            camera_space_lower_corner.x, camera_space_lower_corner.y, z,  
-            camera_space_upper_corner.x, camera_space_lower_corner.y, z,  
-            camera_space_upper_corner.x, camera_space_upper_corner.y, z,
-        };
-
-        glGenVertexArrays(1, &quad_vao);
-        glBindVertexArray(quad_vao);
-
-        glGenBuffers(1, &quad_vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_VERTEX_ARRAY, 0);
-    }
-
-    void draw() {
-        shader.use();
-        shader.setMat4("u_Projection", camera->projection());
-        glBindVertexArray(quad_vao);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
+    void plane_vectors(glm::vec3 *plane_x, glm::vec3 *plane_y); 
 
 };
 

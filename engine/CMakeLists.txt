@@ -18,6 +18,7 @@ add_library(
     src/scene.cpp
     src/light.cpp
     src/kernel.cpp
+    src/fsrender.cpp
 
     include/engine/window.h
     include/engine/texture.h
@@ -32,6 +33,7 @@ add_library(
     include/engine/framebuffer.h
     include/engine/scene.h
     include/engine/kernel.h
+    include/engine/fsrender.h
 )
 
 set(CMAKE_BUILD_TYPE Debug)

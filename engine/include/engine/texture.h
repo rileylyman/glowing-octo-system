@@ -43,9 +43,44 @@ struct Texture3D {
         glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
     }
 
+    Texture3D(uint32_t width, uint32_t height, uint32_t depth, uint32_t unit, std::vector<float> data) : unit(unit), width(width), height(height), depth(depth) {
+        glGenTextures(1, &id);
+        glBindTexture(GL_TEXTURE_3D, id);
+
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
+
+        glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, width, height, depth, 0, GL_RGBA, GL_FLOAT, data.data());
+
+        glBindTexture(GL_TEXTURE_3D, 0);
+        glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+    }
+
     void use() {
         glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_3D, id);
+    }
+
+    static std::vector<float> debug_data(uint32_t width, uint32_t height, uint32_t depth) {
+        std::vector<float> data;
+        for (uint32_t h = 0; h < height; h++) {
+            for (uint32_t d = 0; d < depth; d++) {
+                for (uint32_t w = 0; w < width; w++) {
+
+                    float x = (float)w / (float)width;
+                    float y = (float)h / (float)height;
+                    float z = (float)d / (float)depth;
+
+                    x *= 2 * 3.1415, y *= 2 * 3.1415, z = 0.0;
+
+                    data.push_back(x);
+                    data.push_back(y);
+                    data.push_back(z);
+                    data.push_back(1.0f);
+                }
+            }
+        }
+        return data;
     }
 };
 

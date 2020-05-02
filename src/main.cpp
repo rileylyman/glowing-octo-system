@@ -78,6 +78,8 @@ int main()
     vertex_buffer.buffer_data();
 
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
+    uint32_t grid_width = 100, grid_height = 100, grid_depth = 100;
+    Texture3D grid_texture(grid_width, grid_height, grid_depth, 10, Texture3D::debug_data(grid_width, grid_height, grid_depth));
 
     //
     // Render loop
@@ -109,7 +111,7 @@ int main()
         scene.draw(&camera);
 
         if (ImGuiInstance::fsdebug) {
-            fsdebug.draw();
+            fsdebug.draw(grid_texture, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {10.0, 10.0, 10.0});
         }
 
         imgui_instance.draw();

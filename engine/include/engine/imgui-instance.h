@@ -13,7 +13,7 @@
 struct ImGuiInstance {
     static bool gui_enabled, render_normals, render_skybox;
     static bool cull_back_face;
-    static bool fsdebug;
+    static bool fsdebug, fsdebug_scalar;
     static bool msaa, reinhard_hdr, wireframe;
     static bool draw_model_bb, draw_mesh_bb;
     static float camera_speed, camera_sensitivity, camera_fov;
