@@ -48,28 +48,6 @@ struct Texture3D {
     }
 };
 
-struct TextureMask3D {
-    uint32_t id, unit;
-
-    TextureMask3D(uint32_t width, uint32_t height, uint32_t depth, uint32_t unit) : unit(unit) {
-        glGenTextures(1, &id);
-        glBindTexture(GL_TEXTURE_3D, id);
-
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); 
-
-        glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, width, height, depth, 0, GL_RED_INTEGER, GL_FLOAT, NULL);
-
-        glBindTexture(GL_TEXTURE_3D, 0);
-        glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R8);
-    }
-
-    void use() {
-        glActiveTexture(GL_TEXTURE0 + unit);
-        glBindTexture(GL_TEXTURE_3D, id);
-    }
-};
-
 struct Cubemap {
     uint32_t unit, id;
 
