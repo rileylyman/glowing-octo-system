@@ -89,9 +89,9 @@ void main() {
         vec4 phi_next_hat;
 
         // Get position of cell in index-space
-        vec3 pos = vec3(gl_GlobalInvocationID));
-        pos += vec3(0.5, 0.5, 0.5);
-        vec3 orig_pos = pos;
+        vec3 orig_pos = vec3(gl_GlobalInvocationID));
+        orig_pos += vec3(0.5, 0.5, 0.5);
+        vec3 pos = orig_pos;
 
         // Advect backwards
         vec3 vel = texture(u, cell2texture(pos)).rgb;
@@ -108,19 +108,19 @@ void main() {
         vec3 npos = pos;
 
         // Sample velocity and reverse it (for reversed advection)
-        vec3 nvel = texture(u, cell2texture(pos));
+        vel = texture(u, cell2texture(pos)).rgb;
         nvel *= -1.0;
 
         // Backtrack
         npos *= scale;
-        npos -= dt * nvel;
+        npos -= dt * vel;
         npos /= scale;
 
         // We are now in the position which phi_next_hat would say is the past.
         // Calculate the advected term for this new position:
-        vec3 nnvel = texture(u, cell2texture(npos)).rgb;
+        vel = texture(u, cell2texture(npos)).rgb;
         npos *= scale;
-        npos -= dt * nnvel;
+        npos -= dt * vel;
         npos /= scale;
         vec4 phi_hat = texture(q_prev, cell2texture(npos));
 
@@ -132,9 +132,21 @@ void main() {
         // Step 4: Solve for phi_next
         vec4 phi_next = phi_next_hat + 0.5*(phi - phi_hat);
 
-        // Step 5: Clamp to values
-        
+        // Step 5: Clamp to values in boxed range
+        pos = floor(pos) + vec3(0.5, 0.5, 0.5);
+        vec4 lowerbounds = texture(q_prev, cell2texture(pos));
+        vec4 upperbounds = texture(q_prev, cell2texture(pos));
 
+        for(int i = -1; i <= 1; i++) {
+            for(int j = -1; j <= 1; j++) {
+                for(int k = -1; k <= 1; k++) {
+                    lowerbounds = min(lowerbounds, texture(q_prev, cell2texture(pos + vec3(float(i), float(j), float(k))));
+                    upperbounds = min(lowerbounds, texture(q_prev, cell2texture(pos + vec3(float(i), float(j), float(k))));
+                }
+            }
+        }
+
+        sample = clamp(phi_next, lowerbounds, upperbounds);
     }
         
     // Write to buffer
