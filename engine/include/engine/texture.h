@@ -39,6 +39,7 @@ struct Texture3D {
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, width, height, depth, 0, GL_RGBA, GL_FLOAT, NULL);
 
         glBindTexture(GL_TEXTURE_3D, 0);
+        glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
     }
 
     void use() {
@@ -60,6 +61,7 @@ struct TextureMask3D {
         glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, width, height, depth, 0, GL_RED_INTEGER, GL_FLOAT, NULL);
 
         glBindTexture(GL_TEXTURE_3D, 0);
+        glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R8);
     }
 
     void use() {
