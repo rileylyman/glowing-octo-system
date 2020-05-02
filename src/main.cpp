@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "engine/shader.h"
+#include "engine/fsrender.h"
 #include "engine/skybox.h"
 #include "engine/window.h"
 #include "engine/texture.h"
@@ -76,6 +77,7 @@ int main()
     Scene scene("src/scenes/test.json", &vertex_buffer);
     vertex_buffer.buffer_data();
 
+    FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
 
     //
     // Render loop
@@ -105,6 +107,10 @@ int main()
         //model.model = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime() * 0.02f, glm::vec3(0.0, 1.0, 0.0));
 
         scene.draw(&camera);
+
+        if (ImGuiInstance::fsdebug) {
+            fsdebug.draw();
+        }
 
         imgui_instance.draw();
 
