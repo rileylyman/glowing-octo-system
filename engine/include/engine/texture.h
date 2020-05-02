@@ -28,8 +28,9 @@ struct Texture {
 
 struct Texture3D {
     uint32_t id, unit;
+    uint32_t width, height, depth;
 
-    Texture3D(uint32_t width, uint32_t height, uint32_t depth, uint32_t unit) : unit(unit) {
+    Texture3D(uint32_t width, uint32_t height, uint32_t depth, uint32_t unit) : unit(unit), width(width), height(height), depth(depth) {
         glGenTextures(1, &id);
         glBindTexture(GL_TEXTURE_3D, id);
 
