@@ -45,7 +45,7 @@ KernelProgram::KernelProgram(
     glLinkProgram(id);
     check_link_errors(id);
 
-    glDeleteShader(kernel); //TODO: verify the validity of needing this
+    glDeleteShader(kernel);
 }
 
 void KernelProgram::setBool(const std::string &name, bool value) const {
