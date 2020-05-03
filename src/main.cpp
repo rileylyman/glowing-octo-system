@@ -26,6 +26,7 @@
 #include "engine/framebuffer.h"
 
 #include <fluidsim/fluidsim.h>
+#include "engine/kernel.h"
 
 #include <iostream>
 
@@ -60,6 +61,14 @@ int main()
 
     fluidsim_testing123();
 
+    // DECLARE SHADERS
+    KernelProgram advect_diffuse("src/kernels/fs_advect_diffuse.comp");
+    KernelProgram advect_mc("src/kernels/fs_advect_maccormack.comp");
+    KernelProgram apply_force("src/kernels/fs_apply_force.comp");
+    KernelProgram divergence("src/kernels/fs_divergence.comp");
+    KernelProgram jacobi_iter("src/kernels/fs_jacobi_iter_pressure_obstacle.comp");
+    KernelProgram pressure_proj("src/kernels/fs_pressure_projection_obstacle.comp");
+
     Framebuffer fb(window.window);
     fb.add_color_attachment();
     fb.add_depth_stencil_attachment();
@@ -78,8 +87,15 @@ int main()
     vertex_buffer.buffer_data();
 
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
-    uint32_t grid_width = 100, grid_height = 100, grid_depth = 100;
-    Texture3D grid_texture(grid_width, grid_height, grid_depth, 10, Texture3D::debug_data(grid_width, grid_height, grid_depth));
+    uint32_t grid_width = 20, grid_height = 20, grid_depth = 20;
+
+    Texture3D velocity_field(grid_width, grid_height, grid_depth, 10, Texture3D::debug_velocity(grid_width, grid_height, grid_depth));  // VELOCITY 10
+    Texture3D pressure_field(grid_width, grid_height, grid_depth, 11, Texture3D::debug_pressure(grid_width, grid_height, grid_depth));  // PRESSURE 11
+    Texture3D world_mask(grid_width, grid_height, grid_depth, 12, Texture3D::debug_mask(grid_width, grid_height, grid_depth));          // MASK 12
+    Texture3D forces(grid_width, grid_height, grid_depth, 13, Texture3D::debug_forces(grid_width, grid_height, grid_depth));            // EXTERNAL FORCES 13
+    Texture3D zero(grid_width, grid_height, grid_depth, 14, Texture3D::debug_zero(grid_width, grid_height, grid_depth));            // EXTERNAL FORCES 14
+    Texture3D two(grid_width, grid_height, grid_depth, 15, Texture3D::two_mask(grid_width, grid_height, grid_depth));            // EXTERNAL FORCES 15
+    Texture3D buffer(grid_width, grid_height, grid_depth, 14, Texture3D::debug_zero(grid_width, grid_height, grid_depth));            // EXTERNAL FORCES 16
 
     //
     // Render loop
@@ -111,7 +127,41 @@ int main()
         scene.draw(&camera);
 
         if (ImGuiInstance::fsdebug) {
-            fsdebug.draw(grid_texture, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {10.0, 10.0, 10.0});
+            /**
+             * Physics Steps:
+             * 
+             * (1) ADVECTION
+             *      (a) VELOCITY
+             *      (b) WORLD MASK
+             *      
+             * (2) DIFFUSION (NOT IMPLEMENTED)
+             * 
+             * (3) FORCE APPLICATION
+             *      (a) VELOCITY
+             * 
+             * (4) PRESSURE PROJECTION
+             *      (a) DIVERGENCE OF  UNPROJECTED VELOCITY
+             *      (b) JACOBI ITERATIONS FOR PRESSURE
+             *      (c) PROJECTION STEP FOR PRESSURE
+            */
+
+            velocity_field.use();
+            advect_diffuse.use();
+            advect_diffuse.setInt("u", velocity_field.unit);
+            advect_diffuse.setInt("q_prev", world_mask.unit);
+            advect_diffuse.setInt("q_solid", zero.unit);
+            advect_diffuse.setInt("q_next", buffer.unit);
+            advect_diffuse.setInt("world_mask", two.unit);
+
+            advect_diffuse.setFloat("dt", 1000);
+            advect_diffuse.setVec3("scale", 1, 1, 1);
+            advect_diffuse.setVec4("q_air", 0, 0, 0, 0);
+
+            glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
+
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+            fsdebug.draw(world_mask, ImGuiInstance::fsdebug_scalar, {-8.0, -8.0, -8.0}, {16.0, 16.0, 16.0});
         }
 
         imgui_instance.draw();
