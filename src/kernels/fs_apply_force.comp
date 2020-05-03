@@ -38,7 +38,7 @@ void main() {
         vel += imageLoad(f, center());
 
         // Apply Gravitational Force
-        vec4 gravity = vec4(1.0, 1.0, 1.0);
+        vec4 gravity = vec4(1.0, 1.0, 1.0, 0.0);
         gravity *= rho * g;
         vel += gravity;
     }

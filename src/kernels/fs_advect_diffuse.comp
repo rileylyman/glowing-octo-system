@@ -13,7 +13,7 @@ uniform sampler3D u;                            // Velocity field
 
 uniform sampler3D q_prev;                       // Quantity q to be advected
 layout(rgba32f) uniform image3D q_solid;        // Quantity q related directly to the solid
-uniform float q_air;                            // Ambient quantity q related to the air
+uniform vec4 q_air;                             // Ambient quantity q related to the air
 layout(rgba32f) uniform image3D q_next;         // Buffer to store advected quantities q
 
 layout(rgba32f) uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
@@ -38,19 +38,19 @@ vec3 cell2texture(vec3 index) {
 }
 
 void main() {
-    vec4 sample;
+    vec4 q_sample;
 
     // Sample Values
     if (isSolidCell(center())) {
         // Solid-cell => use value from solid 
-        sample = imageLoad(q_solid, ivec(gl_GlobalInvocationID));
+        q_sample = imageLoad(q_solid, ivec3(gl_GlobalInvocationID));
     } else if (isAirCell(center())) {
         // Air-cell => use air value 
-        sample = q_air;
+        q_sample = q_air;
     } else {
         // Fluid-cell => advect
         // Get position of cell in index-space
-        vec3 pos = vec3(gl_GlobalInvocationID));
+        vec3 pos = vec3(gl_GlobalInvocationID);
         pos += vec3(0.5, 0.5, 0.5);
 
         // Advect backwards
@@ -60,9 +60,9 @@ void main() {
         pos /= scale;
 
         // Sample advected quantity
-        sample = texture(q_prev, cell2texture(pos));
+        q_sample = texture(q_prev, cell2texture(pos));
     }
         
     // Write to buffer
-    imageStore(q_next, center(), sample);
+    imageStore(q_next, center(), q_sample);
 }

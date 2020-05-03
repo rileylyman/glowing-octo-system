@@ -10,7 +10,7 @@
 layout(local_size_x = 1, local_size_y = 1) in;
 
 layout(rgba32f) uniform image3D pressure;       // Pressure field iteration
-layout(rgba32f) uniform image3D div_w           // Divergence of unprojected velocity field
+layout(rgba32f) uniform image3D div_w;          // Divergence of unprojected velocity field
 uniform float pressure_air;                     // Ambient quantity q related to the air
 layout(rgba32f) uniform image3D pressure_next;  // Buffer to store next Jacobi iteration
 
@@ -68,7 +68,7 @@ void main() {
     float iter;
     float pC = imageLoad(pressure, center()).r;
 
-    if (isAirCell(center()) || isSolidCell(center()) {
+    if (isAirCell(center()) || isSolidCell(center())) {
         iter = pressure_air;
     } else {
         float dC = imageLoad(div_w, center()).r;
@@ -83,7 +83,7 @@ void main() {
             //Effectively ignore contribution of this cell 
             pL = pC;
         } else if (isAirCell(left())) {
-            pL = imageLoad(pressure_air, left()).r;
+            pL = pressure_air;
         }
 
         if (isSolidCell(right())) {
@@ -91,7 +91,7 @@ void main() {
             pR = pC;
         } else if (isAirCell(right())) {
             //Simulate pressure discontinuity
-            pR = imageLoad(pressure_air, right()).r;
+            pR = pressure_air;
         }
 
         if (isSolidCell(bottom())) {
@@ -99,7 +99,7 @@ void main() {
             pB = pC;
         } else if (isAirCell(bottom())) {
             //Simulate pressure discontinuity
-            pB = imageLoad(pressure_air, bottom()).r;
+            pB = pressure_air;
         }
 
         if (isSolidCell(top())) {
@@ -107,7 +107,7 @@ void main() {
             pT = pC;
         } else if (isAirCell(top())) {
             //Simulate pressure discontinuity
-            pT = imageLoad(pressure_air, top()).r;
+            pT = pressure_air;
         }
 
         if (isSolidCell(down())) {
@@ -115,7 +115,7 @@ void main() {
             pD = pC;
         } else if (isAirCell(down())) {
             //Simulate pressure discontinuity
-            pD = imageLoad(pressure_air, down()).r;
+            pD = pressure_air;
         }
 
         if (isSolidCell(up())) {
@@ -123,7 +123,7 @@ void main() {
             pU = pC;
         } else if (isAirCell(up())) {
             //Simulate pressure discontinuity
-            pU = imageLoad(pressure_air, up()).r;
+            pU = pressure_air;
         }
 
         iter = (pL + pR + pB + pT + pD + pU) / 6.0;
@@ -131,5 +131,5 @@ void main() {
 
            
     // Write to buffer
-    imageStore(pressure_next, center(), iter);
+    imageStore(pressure_next, center(), vec4(iter, 0.0, 0.0, 0.0));
 }

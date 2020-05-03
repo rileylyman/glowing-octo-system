@@ -13,7 +13,7 @@ uniform sampler3D u;                            // Velocity field
 
 uniform sampler3D q_prev;                       // Quantity q to be advected
 layout(rgba32f) uniform image3D q_solid;        // Quantity q related directly to the solid
-uniform float q_air;                            // Ambient quantity q related to the air
+uniform vec4 q_air;                            // Ambient quantity q related to the air
 layout(rgba32f) uniform image3D q_next;         // Buffer to store advected quantities q
 
 layout(rgba32f) uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
@@ -38,22 +38,22 @@ vec3 cell2texture(vec3 index) {
 }
 
 void main() {
-    vec4 sample;
+    vec4 q_sample;
 
     // Sample Values
     if (isSolidCell(center())) {
         // Solid-cell => use value from solid 
-        sample = imageLoad(q_solid, center());
+        q_sample = imageLoad(q_solid, center());
     } else if (isAirCell(center())) {
         // Air-cell => use air value 
-        sample = q_air;
+        q_sample = q_air;
     } else {
         // Fluid-cell => advect
         // Step 1: Solve for phi_next_hat
         vec4 phi_next_hat;
 
         // Get position of cell in index-space
-        vec3 pos = vec3(gl_GlobalInvocationID));
+        vec3 pos = vec3(gl_GlobalInvocationID);
         pos += vec3(0.5, 0.5, 0.5);
         vec3 npos = pos;
 
@@ -64,7 +64,7 @@ void main() {
         npos /= scale;
 
         // Sample advected quantity
-        vec4 phi_next_hat = texture(q_prev, cell2texture(npos));
+        phi_next_hat = texture(q_prev, cell2texture(npos));
 
 
         // Step 2: Solve for phi_hat
@@ -104,15 +104,15 @@ void main() {
         for(int i = -1; i <= 1; i++) {
             for(int j = -1; j <= 1; j++) {
                 for(int k = -1; k <= 1; k++) {
-                    lowerbounds = min(lowerbounds, texture(q_prev, cell2texture(npos + vec3(float(i), float(j), float(k))));
-                    upperbounds = min(lowerbounds, texture(q_prev, cell2texture(npos + vec3(float(i), float(j), float(k))));
+                    lowerbounds = min(lowerbounds, texture(q_prev, cell2texture(npos + vec3(float(i), float(j), float(k)))));
+                    upperbounds = max(upperbounds, texture(q_prev, cell2texture(npos + vec3(float(i), float(j), float(k)))));
                 }
             }
         }
 
-        sample = clamp(phi_next, lowerbounds, upperbounds);
+        q_sample = clamp(phi_next, lowerbounds, upperbounds);
     }
         
     // Write to buffer
-    imageStore(q_next, center(), sample);
+    imageStore(q_next, center(), q_sample);
 }
