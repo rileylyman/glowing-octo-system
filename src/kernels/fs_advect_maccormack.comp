@@ -22,51 +22,15 @@ uniform vec3 scale;             // Dimensions of a cell in x,y,z
 uniform float dt;               // Delta time
 
 ivec3 center() {
-    return ivec3(gl_GlobalInvocationID.xyz);
-}
-
-ivec3 left() {
-    return ivec3(int(gl_GlobalInvocationID.x) - 1,
-                 int(gl_GlobalInvocationID.y),
-                 int(gl_GlobalInvocationID.z));
-}
-
-ivec3 right() {
-    return ivec3(int(gl_GlobalInvocationID.x) + 1,
-                 int(gl_GlobalInvocationID.y),
-                 int(gl_GlobalInvocationID.z));
-}
-
-ivec3 bottom() {
-    return ivec3(int(gl_GlobalInvocationID.x),
-                 int(gl_GlobalInvocationID.y) - 1,
-                 int(gl_GlobalInvocationID.z));
-}
-
-ivec3 top() {
-    return ivec3(int(gl_GlobalInvocationID.x),
-                 int(gl_GlobalInvocationID.y) + 1,
-                 int(gl_GlobalInvocationID.z));
-}
-
-ivec3 up() {
-    return ivec3(int(gl_GlobalInvocationID.x),
-                 int(gl_GlobalInvocationID.y),
-                 int(gl_GlobalInvocationID.z) - 1);
-}
-
-ivec3 down() {
-    return ivec3(int(gl_GlobalInvocationID.x),
-                 int(gl_GlobalInvocationID.y),
-                 int(gl_GlobalInvocationID.z) + 1);
+    return ivec3(gl_GlobalInvocationID);
 }
 
 bool isSolidCell(ivec3 index) {
-    return imageLoad(world_mask, index).r = 0.0;
+    return imageLoad(world_mask, index).r == 0.0;
 }
 
 bool isAirCell(ivec3 index) {
-    return imageLoad(world_mask, index).r = 1.0;
+    return imageLoad(world_mask, index).r == 1.0;
 }
 
 vec3 cell2texture(vec3 index) {
@@ -79,7 +43,7 @@ void main() {
     // Sample Values
     if (isSolidCell(center())) {
         // Solid-cell => use value from solid 
-        sample = imageLoad(q_solid, ivec(gl_GlobalInvocationID));
+        sample = imageLoad(q_solid, center());
     } else if (isAirCell(center())) {
         // Air-cell => use air value 
         sample = q_air;
@@ -91,52 +55,64 @@ void main() {
         // Get position of cell in index-space
         vec3 pos = vec3(gl_GlobalInvocationID));
         pos += vec3(0.5, 0.5, 0.5);
-        vec3 orig_pos = pos;
+        vec3 npos = pos;
 
         // Advect backwards
-        vec3 vel = texture(u, cell2texture(pos)).rgb;
-        pos *= scale;
-        pos -= dt * vel;
-        pos /= scale;
+        vec3 vel = texture(u, cell2texture(npos)).rgb;
+        npos *= scale;
+        npos -= dt * vel;
+        npos /= scale;
 
         // Sample advected quantity
-        vec4 phi_next_hat = texture(q_prev, cell2texture(pos));
+        vec4 phi_next_hat = texture(q_prev, cell2texture(npos));
 
 
         // Step 2: Solve for phi_hat
         // Get index of the cell we landed on, clamping to closest index
-        vec3 npos = pos;
+        vec3 nnpos = npos;
 
         // Sample velocity and reverse it (for reversed advection)
-        vec3 nvel = texture(u, cell2texture(pos));
-        nvel *= -1.0;
+        vel = texture(u, cell2texture(npos)).rgb;
+        vel *= -1.0;
 
         // Backtrack
-        npos *= scale;
-        npos -= dt * nvel;
-        npos /= scale;
+        nnpos *= scale;
+        nnpos -= dt * vel;
+        nnpos /= scale;
 
         // We are now in the position which phi_next_hat would say is the past.
         // Calculate the advected term for this new position:
-        vec3 nnvel = texture(u, cell2texture(npos)).rgb;
-        npos *= scale;
-        npos -= dt * nnvel;
-        npos /= scale;
-        vec4 phi_hat = texture(q_prev, cell2texture(npos));
+        vel = texture(u, cell2texture(nnpos)).rgb;
+        nnpos *= scale;
+        nnpos -= dt * vel;
+        nnpos /= scale;
+        vec4 phi_hat = texture(q_prev, cell2texture(nnpos));
 
-        // (Possible TODO if not stable) Check if we landed inside of a solid/air position
+        // (possible TODO if not stable) Check if we landed inside of a solid/air position
 
         // Step 3: Solve for phi
-        vec4 phi = texture(q_prev, cell2texture(orig_pos));
+        vec4 phi = texture(q_prev, cell2texture(pos));
 
         // Step 4: Solve for phi_next
         vec4 phi_next = phi_next_hat + 0.5*(phi - phi_hat);
 
-        // Step 5: Clamp to values
-        
+        // Step 5: Clamp to values in boxed range
+        npos = floor(npos) + vec3(0.5, 0.5, 0.5);
+        vec4 lowerbounds = texture(q_prev, cell2texture(npos));
+        vec4 upperbounds = texture(q_prev, cell2texture(npos));
 
+        for(int i = -1; i <= 1; i++) {
+            for(int j = -1; j <= 1; j++) {
+                for(int k = -1; k <= 1; k++) {
+                    lowerbounds = min(lowerbounds, texture(q_prev, cell2texture(npos + vec3(float(i), float(j), float(k))));
+                    upperbounds = min(lowerbounds, texture(q_prev, cell2texture(npos + vec3(float(i), float(j), float(k))));
+                }
+            }
+        }
+
+        sample = clamp(phi_next, lowerbounds, upperbounds);
     }
         
     // Write to buffer
-    imageStore(target_buffer, index, sample);
+    imageStore(q_next, center(), sample);
 }
