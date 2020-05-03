@@ -9,11 +9,11 @@
 
 layout(local_size_x = 1, local_size_y = 1) in;
 
-uniform image3D w;              // Unprojected velocity field
-uniform image3D pressure;       // Pressure field
-uniform image3D u_next;         // Buffer to store next velocities
+layout(rgba32f) uniform image3D w;              // Unprojected velocity field
+layout(rgba32f) uniform image3D pressure;       // Pressure field
+layout(rgba32f) uniform image3D u_next;         // Buffer to store next velocities
 
-uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
+layout(rgba32f) uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
 
 ivec3 center() {
     return ivec3(gl_GlobalInvocationID);

@@ -9,12 +9,12 @@
 
 layout(local_size_x = 1, local_size_y = 1) in;
 
-uniform sampler3D q;            // Quantity q
-uniform image3D q_solid;        // Quantity q related directly to the solid
-uniform vec4 q_air;             // Ambient quantity q related to the air
-uniform image3D div_q;          // Buffer to store div q
+uniform sampler3D q;                            // Quantity q
+layout(rgba32f) uniform image3D q_solid;        // Quantity q related directly to the solid
+uniform vec4 q_air;                             // Ambient quantity q related to the air
+layout(rgba32f) uniform image3D div_q;          // Buffer to store div q
 
-uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
+layout(rgba32f) uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
 
 ivec3 center() {
     return ivec3(gl_GlobalInvocationID);
