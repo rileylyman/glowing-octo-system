@@ -29,6 +29,7 @@ void main() {
         vec3 qValue;
         if (u_Scalar) {
             FragColor = vec4(texture(u_Grid, sampleLocation).r, 0.0, 0.0, 1.0);
+            return;
         } else {
             qValue = texture(u_Grid, sampleLocation).rgb;
         }
