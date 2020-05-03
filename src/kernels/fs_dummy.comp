@@ -1,0 +1,21 @@
+#version 460 core
+
+// Built-in Variables
+// in uvec3 gl_NumWorkGroups;
+// in uvec3 gl_WorkGroupID;
+// in uvec3 gl_LocalInvocationID;
+// in uvec3 gl_GlobalInvocationID;      Represents [x,y,z] position in grid
+// in uint  gl_LocalInvocationIndex;
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(binding=1, rgba16f) uniform image3D q_in;            // Unprojected velocity field
+layout(binding=2, rgba16f) uniform image3D q_out;           // Forces
+
+ivec3 center() {
+    return ivec3(gl_GlobalInvocationID);
+}
+
+void main() {
+    imageStore(q_out, center(), vec4(0.0, 0.0, 0.0, 0.0));
+}

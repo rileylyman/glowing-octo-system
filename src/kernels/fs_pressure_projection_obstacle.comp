@@ -9,14 +9,51 @@
 
 layout(local_size_x = 1, local_size_y = 1) in;
 
-uniform image3D w;              // Unprojected velocity field
-uniform image3D pressure;       // Pressure field
-uniform image3D u_next;         // Buffer to store next velocities
+layout(rgba16f) uniform image3D w;              // Unprojected velocity field
+layout(rgba16f) uniform image3D pressure;       // Pressure field
+layout(rgba16f) uniform image3D u_next;         // Buffer to store next velocities
 
-uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
+layout(rgba16f) uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
+
 
 ivec3 center() {
     return ivec3(gl_GlobalInvocationID);
+}
+
+ivec3 left() {
+    return ivec3(int(gl_GlobalInvocationID.x) - 1,
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 right() {
+    return ivec3(int(gl_GlobalInvocationID.x) + 1,
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 bottom() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y) - 1,
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 top() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y) + 1,
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 down() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z) + 1);
+}
+
+ivec3 up() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z) - 1);
 }
 
 void main() {

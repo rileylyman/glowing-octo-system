@@ -9,12 +9,12 @@
 
 layout(local_size_x = 1, local_size_y = 1) in;
 
-uniform sampler3D q;            // Quantity q
-uniform image3D q_solid;        // Quantity q related directly to the solid
-uniform vec4 q_air;             // Ambient quantity q related to the air
-uniform image3D div_q;          // Buffer to store div q
+layout(rgba16f) uniform image3D q;              // Quantity q
+layout(rgba16f) uniform image3D q_solid;        // Quantity q related directly to the solid
+uniform vec4 q_air;                             // Ambient quantity q related to the air
+layout(rgba16f) uniform image3D div_q;          // Buffer to store div q
 
-uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
+layout(rgba16f) uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
 
 ivec3 center() {
     return ivec3(gl_GlobalInvocationID);
@@ -75,41 +75,41 @@ void main() {
     if (isSolidCell(left())) {
         ql = imageLoad(q_solid, left());
     } else if (isAirCell(left())) {
-        ql = imageLoad(q_air, left());
+        ql = q_air;
     }
 
     if (isSolidCell(right())) {
         qr = imageLoad(q_solid, right());
     } else if (isAirCell(right())) {
-        qr = imageLoad(q_air, right());
+        qr = q_air;
     }
 
     if (isSolidCell(bottom())) {
         qb = imageLoad(q_solid, bottom());
     } else if (isAirCell(bottom())) {
-        qb = imageLoad(q_air, bottom());
+        qb = q_air;
     }
 
     if (isSolidCell(top())) {
         qt = imageLoad(q_solid, top());
     } else if (isAirCell(top())) {
-        qt = imageLoad(q_air, top());
+        qt = q_air;
     }
 
     if (isSolidCell(down())) {
         qd = imageLoad(q_solid, down());
     } else if (isAirCell(down())) {
-        qd = imageLoad(q_air, down());
+        qd = q_air;
     }
 
     if (isSolidCell(up())) {
         qu = imageLoad(q_solid, up());
     } else if (isAirCell(up())) {
-        qu = imageLoad(q_air, up());
+        qu = q_air;
     }
 
     float d = 0.5*((qr.x - ql.x) + (qt.y - qb.y) + (qu.z - qd.z));
     
     // Write to buffer
-    imageStore(div_q, center(), d);
+    imageStore(div_q, center(), vec4(d, 0.0, 0.0, 0.0));
 }
