@@ -9,18 +9,15 @@
 
 layout(local_size_x = 1, local_size_y = 1) in;
 
-uniform sampler3D q;            // Quantity q to be advected
+uniform sampler3D q;            // Quantity q
 uniform image3D q_solid;        // Quantity q related directly to the solid
-uniform float q_air;            // Ambient quantity q related to the air
+uniform vec4 q_air;             // Ambient quantity q related to the air
 uniform image3D div_q;          // Buffer to store div q
 
 uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
 
-uniform vec3 scale;             // Dimensions of a cell in x,y,z
-uniform float dt;               // Delta time
-
 ivec3 center() {
-    return ivec3(gl_GlobalInvocationID.xyz);
+    return ivec3(gl_GlobalInvocationID);
 }
 
 ivec3 left() {
@@ -60,15 +57,11 @@ ivec3 up() {
 }
 
 bool isSolidCell(ivec3 index) {
-    return imageLoad(world_mask, index).r = 0.0;
+    return imageLoad(world_mask, index).r == 0.0;
 }
 
 bool isAirCell(ivec3 index) {
-    return imageLoad(world_mask, index).r = 1.0;
-}
-
-vec3 cell2texture(vec3 index) {
-    return index / vec3(gl_NumWorkGroups);
+    return imageLoad(world_mask, index).r == 1.0;
 }
 
 void main() {
@@ -115,8 +108,8 @@ void main() {
         qu = imageLoad(q_air, up());
     }
 
-    d = 0.5*((qr.x - ql.x) + (qt.y - qb.y) + (qu.z - qd.z));
+    float d = 0.5*((qr.x - ql.x) + (qt.y - qb.y) + (qu.z - qd.z));
     
     // Write to buffer
-    imageStore(target_buffer, center(), d);
+    imageStore(div_q, center(), d);
 }

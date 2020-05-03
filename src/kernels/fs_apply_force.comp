@@ -1,0 +1,47 @@
+#version 430 core
+
+// Built-in Variables
+// in uvec3 gl_NumWorkGroups;
+// in uvec3 gl_WorkGroupID;
+// in uvec3 gl_LocalInvocationID;
+// in uvec3 gl_GlobalInvocationID;      Represents [x,y,z] position in grid
+// in uint  gl_LocalInvocationIndex;
+
+layout(local_size_x = 1, local_size_y = 1) in;
+
+uniform image3D w;              // Unprojected velocity field
+uniform image3D f;              // Forces
+uniform float rho;              // Density
+uniform float g;                // Gravitational acceleration
+
+uniform image3D w_next;         // Buffer to store next velocities
+
+uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
+
+ivec3 center() {
+    return ivec3(gl_GlobalInvocationID);
+}
+
+bool isSolidCell(ivec3 index) {
+    return imageLoad(world_mask, index).r == 0.0;
+}
+
+bool isAirCell(ivec3 index) {
+    return imageLoad(world_mask, index).r == 1.0;
+}
+
+void main() {
+    vec4 vel = imageLoad(w, center());
+
+    if (!(isSolidCell(center()) || !(isAirCell(center())))) {
+        // Apply Force
+        vel += imageLoad(f, center());
+
+        // Apply Gravitational Force
+        vec4 gravity = vec4(1.0, 1.0, 1.0);
+        gravity *= rho * g;
+        vel += gravity;
+    }
+
+    imageStore(w_next, center(), vel);
+}

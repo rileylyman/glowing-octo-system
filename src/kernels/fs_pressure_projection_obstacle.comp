@@ -1,0 +1,38 @@
+#version 430 core
+
+// Built-in Variables
+// in uvec3 gl_NumWorkGroups;
+// in uvec3 gl_WorkGroupID;
+// in uvec3 gl_LocalInvocationID;
+// in uvec3 gl_GlobalInvocationID;      Represents [x,y,z] position in grid
+// in uint  gl_LocalInvocationIndex;
+
+layout(local_size_x = 1, local_size_y = 1) in;
+
+uniform image3D w;              // Unprojected velocity field
+uniform image3D pressure;       // Pressure field
+uniform image3D u_next;         // Buffer to store next velocities
+
+uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
+
+ivec3 center() {
+    return ivec3(gl_GlobalInvocationID);
+}
+
+void main() {
+    // Calculate gradient of the pressure field
+    float pL = imageLoad(pressure, left()).r;
+    float pR = imageLoad(pressure, right()).r;
+    float pB = imageLoad(pressure, bottom()).r;
+    float pT = imageLoad(pressure, top()).r;
+    float pD = imageLoad(pressure, down()).r;
+    float pU = imageLoad(pressure, up()).r;
+    vec4 gP = 0.5*vec4(pR - pL, pT - pB, pU - pD, 0.0);
+
+    // Project w onto u
+    vec4 v = imageLoad(w, center());
+    vec4 v_next = v - gP;
+
+    // Write to buffer
+    imageStore(u_next, center(), v_next);
+}
