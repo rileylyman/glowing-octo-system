@@ -40,7 +40,6 @@ struct Texture3D {
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA16F, width, height, depth, 0, GL_RGBA, GL_FLOAT, NULL);
 
         glBindTexture(GL_TEXTURE_3D, 0);
-        glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
     }
 
     Texture3D(uint32_t width, uint32_t height, uint32_t depth, uint32_t unit, std::vector<float> data) : unit(unit), width(width), height(height), depth(depth) {
@@ -53,16 +52,17 @@ struct Texture3D {
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA16F, width, height, depth, 0, GL_RGBA, GL_FLOAT, data.data());
 
         glBindTexture(GL_TEXTURE_3D, 0);
-        glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
     }
 
     void use() {
         glActiveTexture(GL_TEXTURE0 + unit);
+        glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
         glBindTexture(GL_TEXTURE_3D, id);
     }
 
-    void use(uint32_t custom_unit) {
-        glActiveTexture(GL_TEXTURE0 + custom_unit);
+    void use(uint32_t tex_unit, uint32_t img_unit) {
+        glActiveTexture(GL_TEXTURE0 + tex_unit);
+        glBindImageTexture(img_unit, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
         glBindTexture(GL_TEXTURE_3D, id);
     }
 
