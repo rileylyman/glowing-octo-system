@@ -14,7 +14,7 @@ Mesh::Mesh(
     std::vector<Vertex> vertices, 
     std::vector<uint32_t> indices,
     glm::mat4 bind_matrix,
-    glm::mat4 *parent_model,
+    Model *parent_model,
     MeshShaderType shader_type,
     uint32_t shader_bits,
     std::map<TextureType, Texture> texmap)
@@ -40,6 +40,10 @@ Mesh::Mesh(
         bbox_most.z = std::max(position.z, bbox_most.z);
     }
     vertex_buffer_index = vertex_buffer->add_data(vertices, indices);
+}
+
+glm::mat4 Mesh::model() {
+    return parent_model->model() * bind_matrix;
 }
 
 Mesh::~Mesh() {
@@ -131,8 +135,17 @@ void Mesh::draw(ShaderProgram shader, Camera *camera) {
     vertex_buffer->draw(vertex_buffer_index, indices_size);
 }
 
-Model::Model(VertexBuffer *vertex_buffer, std::string pathname, MeshShaderType shader_type, uint32_t shader_flags, bool height_normals) 
-: vertex_buffer(vertex_buffer)
+Model::Model(
+    VertexBuffer *vertex_buffer, 
+    std::string pathname, 
+    MeshShaderType shader_type, 
+    uint32_t shader_flags, 
+    RigidBodyType type,
+    glm::vec3 initial_position,
+    glm::vec3 initial_rotation,
+    bool gravity,
+    bool height_normals)
+: vertex_buffer(vertex_buffer), physics_obj(initial_position, initial_rotation, type, gravity)
 {
     if (bbox_shader == nullptr) {
         bbox_shader = new ShaderProgram("src/shaders/bbox.vert", "src/shaders/bbox.frag");
@@ -159,11 +172,11 @@ void Model::draw(ShaderProgram shader_prog, Camera *camera) {
 void Model::gen_bbox(std::vector<Vertex> verts) {
     bbox_least = glm::vec3(verts[0].position);
     bbox_most  = glm::vec3(verts[0].position);
-    bbox_least = glm::vec3(model * glm::vec4(bbox_least.x, bbox_least.y, bbox_least.z, 1.0f));
-    bbox_most = glm::vec3(model * glm::vec4(bbox_most.x, bbox_most.y, bbox_most.z, 1.0f));
+    bbox_least = glm::vec3(model() * glm::vec4(bbox_least.x, bbox_least.y, bbox_least.z, 1.0f));
+    bbox_most = glm::vec3(model() * glm::vec4(bbox_most.x, bbox_most.y, bbox_most.z, 1.0f));
 
     for (Vertex vert : verts) {
-        glm::vec4 position = model * glm::vec4(vert.position.x, vert.position.y, vert.position.z, 1.0f);
+        glm::vec4 position = model() * glm::vec4(vert.position.x, vert.position.y, vert.position.z, 1.0f);
         bbox_least.x = std::min(position.x, bbox_least.x);
         bbox_least.y = std::min(position.y, bbox_least.y);
         bbox_least.z = std::min(position.z, bbox_least.z);
@@ -232,7 +245,7 @@ void Mesh::draw_bounding_box(Camera *camera) {
 }
 
 void Model::draw_bounding_box(Camera *camera) {
-    draw_bounding_box_general(bbox_least, bbox_most, bbox_vao, bbox_vbo, bbox_shader, model, camera);
+    draw_bounding_box_general(bbox_least, bbox_most, bbox_vao, bbox_vbo, bbox_shader, model(), camera);
 }
 
 
@@ -390,7 +403,7 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
         vertices,
         indices,
         transformation,
-        &model,
+        this,
         shader_type,
         shader_flags,
         texmap

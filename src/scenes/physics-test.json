@@ -29,7 +29,11 @@
             "modelPath": "resources/models/glowingleaf/scene.gltf",
             "shaderType": "blinnphong_textured",
             "heightNormals": false,
-            "shader": "phong"
+            "shader": "phong",
+            "physics": "dynamic" ,
+            "gravity": true,
+            "initial_position": [0.0, 0.0, 0.0],
+            "initial_rotation": [1.0, 1.0, 1.0]
         }
     ],
     "lights": [

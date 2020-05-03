@@ -59,6 +59,7 @@ int main()
     ImGuiInstance imgui_instance(window.window, &camera.position);
 
     fluidsim_testing123();
+    Physics::init();
 
     Framebuffer fb(window.window);
     fb.add_color_attachment();
@@ -74,7 +75,7 @@ int main()
     //Model sphere = construct_sphere(&vertex_buffer, 2.0f, 64, 64, PBR_SOLID);
 
     VertexBuffer vertex_buffer;
-    Scene scene("src/scenes/physics-test.json", &vertex_buffer);
+    Scene scene("src/scenes/test.json", &vertex_buffer);
     vertex_buffer.buffer_data();
 
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
@@ -208,9 +209,9 @@ Model construct_sphere(VertexBuffer *vertex_buffer, float radius, int sectorCoun
     }
 
     if (shader_type == BP_SOLID) {
-        return Model(vertex_buffer, vertices, indices, BlinnPhongSolidMaterial{ glm::vec3(0.3f), glm::vec3(0.6f), glm::vec3(1.0f), 64.0f});
+        return Model(vertex_buffer, vertices, indices, BlinnPhongSolidMaterial{ glm::vec3(0.3f), glm::vec3(0.6f), glm::vec3(1.0f), 64.0f}, RigidBodyType::DYNAMIC, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0});
     } else if (shader_type == PBR_SOLID) {
-        return Model(vertex_buffer, vertices, indices, PBRSolidMaterial{ glm::vec3(0.7f, 0.1f, 0.1f), 1.0f, 0.3f });
+        return Model(vertex_buffer, vertices, indices, PBRSolidMaterial{ glm::vec3(0.7f, 0.1f, 0.1f), 1.0f, 0.3f }, RigidBodyType::DYNAMIC, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0});
     } else {
         throw "Sphere with this shader type is not yet supported";
     }

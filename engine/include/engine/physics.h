@@ -1,7 +1,7 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <reactphysics3d.h>
+#include "reactphysics3d.h"
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -14,10 +14,11 @@ enum RigidBodyType {
 };
 
 struct PhysicsObject {
-    rp3d::RigidBody *body;
-    rp3d::Transform previous_transform, current_transform;
+    rp3d::RigidBody *body = nullptr;
+    rp3d::Transform previous_transform = rp3d::Transform::identity(), current_transform = rp3d::Transform::identity();
 
-    PhysicsObject(glm::vec3 position, RigidBodyType rbtype = RigidBodyType::DYNAMIC, bool gravity = true); 
+    PhysicsObject() {}
+    PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype = RigidBodyType::DYNAMIC, bool gravity = true); 
     ~PhysicsObject();
 
     void set_bounciness(double bounciness);
@@ -29,6 +30,7 @@ struct PhysicsObject {
 
     glm::vec3 position();
     glm::quat orientation();
+    glm::mat4 get_model_matrix();
 
 };
 
@@ -64,10 +66,10 @@ struct Physics {
             accumulator -= timestep;
         }
 
-        double alpha = abs(accumulator / timestep);
+        double alpha = accumulator * 60.0;
 
         for (PhysicsObject *po : physics_objects) {
-            po->current_transform = rp3d::Transform::interpolateTransforms(po->previous_transform, po->body->getTransform(), alpha);
+            po->current_transform = rp3d::Transform::interpolateTransforms(po->previous_transform, po->body->getTransform(), rp3d::decimal(alpha));
         }
     }
 };

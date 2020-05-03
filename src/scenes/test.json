@@ -29,14 +29,22 @@
             "modelPath": "resources/models/suitofnano/nanosuit.obj",
             "shaderType": "blinnphong_textured",
             "heightNormals": true,
-            "shader": "phong"
+            "shader": "phong",
+            "physics": "dynamic",
+            "gravity": true,
+            "initial_position": [0.0, 0.0, 0.0],
+            "initial_rotation": [0.0, 0.0, 0.0]
         },
         {
             "name": "rifle",
             "modelPath": "resources/models/super/scene.fbx",
             "shaderType": "pbr_textured",
             "heightNormals": false,
-            "shader": "pbr"
+            "shader": "pbr",
+            "physics": "static",
+            "gravity": true,
+            "initial_position": [0.0, 0.0, 0.0],
+            "initial_rotation": [0.0, 0.0, 0.0]
         }
     ],
     "lights": [

@@ -1,14 +1,23 @@
 #include "engine/physics.h"
-#include "glm/gtc/quaternion.hpp"
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 rp3d::DynamicsWorld Physics::world = rp3d::DynamicsWorld({0.0, -9.81, 0.0});
 uint32_t Physics::num_position_solver_iters = 5;
 uint32_t Physics::num_velocity_solver_iters = 10;
 double Physics::accumulator = 0.0;
 std::vector<PhysicsObject *> Physics::physics_objects;
+double Physics::previous_time = 0.0;
 
-PhysicsObject::PhysicsObject(glm::vec3 position, RigidBodyType rbtype, bool gravity) {
-    rp3d::Transform transform({position.x, position.y, position.z}, rp3d::Quaternion::identity());
+PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype, bool gravity) {
+    glm::quat quaternion = glm::quat(rotation); 
+    rp3d::Quaternion orientation;
+    orientation.x = quaternion.x;
+    orientation.y = quaternion.y;
+    orientation.z = quaternion.z;
+    orientation.w = quaternion.w;
+
+    rp3d::Transform transform({position.x, position.y, position.z}, orientation);
     body = Physics::world.createRigidBody(transform);
 
     current_transform = transform;
@@ -33,7 +42,7 @@ PhysicsObject::PhysicsObject(glm::vec3 position, RigidBodyType rbtype, bool grav
 
 PhysicsObject::~PhysicsObject() {
     //TODO: remove self from Physics::physics_objects
-    Physics::world.destroyRigidBody(body);
+    //Physics::world.destroyRigidBody(body);
 }
 
 void PhysicsObject::set_bounciness(double bounciness) {
@@ -65,9 +74,15 @@ glm::vec3 PhysicsObject::position() {
 glm::quat PhysicsObject::orientation() {
     rp3d::Quaternion orientation = current_transform.getOrientation();
     glm::quat q;
-    q.w = orientation.w;
     q.x = orientation.x;
     q.y = orientation.y;
     q.z = orientation.z;
+    q.w = orientation.w;
     return q;
+}
+
+glm::mat4 PhysicsObject::get_model_matrix() {
+    float matrix[16];
+    current_transform.getOpenGLMatrix(matrix);
+    return glm::make_mat4(matrix);
 }

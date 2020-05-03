@@ -7,6 +7,7 @@
 #include "engine/texture.h"
 #include "engine/vertex.h"
 #include "engine/camera.h"
+#include "engine/physics.h"
 #include <glm/glm.hpp>
 #include <map>
 
@@ -39,6 +40,9 @@ enum MeshShaderBits {
     METALLIC_ROUGHNESS_COMBINED = 1 << 1,
 };
 
+struct Model;
+struct Mesh;
+
 //
 // A Mesh is the atomic unit of a model. It describes a particular set
 // of vertices, as well as how they should be shaded and drawn.
@@ -64,7 +68,7 @@ struct Mesh {
         std::vector<Vertex> vertices, 
         std::vector<uint32_t> indices,
         glm::mat4 bind_matrix,
-        glm::mat4 *parent_model,
+        Model *parent_model,
         MeshShaderType shader_type,
         uint32_t shader_flags,
         std::map<TextureType, Texture> texmap);
@@ -83,9 +87,7 @@ struct Mesh {
     //
     // Get the full local->world space transformation matrix
     //
-    glm::mat4 model() {
-        return *parent_model * bind_matrix;
-    }
+    glm::mat4 model(); 
 
 private:
     //
@@ -97,7 +99,7 @@ private:
     // The model transformation of the model which contains
     // this mesh.
     //
-    glm::mat4 *parent_model;
+    Model *parent_model;
 
 
     //
@@ -142,13 +144,31 @@ struct Model {
     // from which to load the model, the MeshShaderType, any shader flags, and whether
     // the height texture should be used as the normal texture.
     //
-    Model(VertexBuffer *vertex_buffer, std::string pathname, MeshShaderType shader_type, uint32_t shader_flags, bool height_normals=false);
+    Model(
+        VertexBuffer *vertex_buffer, 
+        std::string pathname, 
+        MeshShaderType shader_type, 
+        uint32_t shader_flags, 
+        RigidBodyType type,
+        glm::vec3 initial_position,
+        glm::vec3 initial_rotation,
+        bool gravity = true,
+        bool height_normals=false);
 
     //
     // Create a model from raw vertex data and a constant Blinn-Phong material
     //
-    Model(VertexBuffer *vertex_buffer, std::vector<Vertex> vertices, std::vector<uint32_t> indices, BlinnPhongSolidMaterial material) {
-        meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), &model, BP_SOLID, 0, {}) };
+    Model(
+        VertexBuffer *vertex_buffer, 
+        std::vector<Vertex> vertices, 
+        std::vector<uint32_t> indices, 
+        BlinnPhongSolidMaterial material, 
+        RigidBodyType type, 
+        glm::vec3 initial_position,
+        glm::vec3 initial_rotation,
+        bool gravity = true
+    ): physics_obj(initial_position, initial_rotation, type, gravity) {
+        meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, BP_SOLID, 0, {}) };
         meshes[0].bp_solid_material = material;
         gen_bbox(vertices);
     }
@@ -156,8 +176,17 @@ struct Model {
     //
     // Create a model from raw vertex data and a constant PBR material
     //
-    Model(VertexBuffer *vertex_buffer, std::vector<Vertex> vertices, std::vector<uint32_t> indices, PBRSolidMaterial material) {
-        meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), &model, PBR_SOLID, 0, {}) };
+    Model(
+        VertexBuffer *vertex_buffer, 
+        std::vector<Vertex> vertices, 
+        std::vector<uint32_t> indices, 
+        PBRSolidMaterial material, 
+        RigidBodyType type, 
+        glm::vec3 initial_position,
+        glm::vec3 initial_rotation,
+        bool gravity = true
+    ) : physics_obj(initial_position, initial_rotation, type, gravity) {
+        meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, PBR_SOLID, 0, {}) };
         meshes[0].pbr_solid_material = material;
         gen_bbox(vertices);
     }
@@ -165,10 +194,19 @@ struct Model {
     //
     // Create a model from raw vertex data and a texture
     //
-    Model(VertexBuffer *vertex_buffer, std::vector<Vertex> vertices, std::vector<uint32_t> indices, std::string texture) {
+    Model(
+        VertexBuffer *vertex_buffer, 
+        std::vector<Vertex> vertices, 
+        std::vector<uint32_t> indices, 
+        std::string texture, 
+        RigidBodyType type, 
+        glm::vec3 initial_position,
+        glm::vec3 initial_rotation,
+        bool gravity = true
+    ) : physics_obj(initial_position, initial_rotation, type, gravity) {
         directory = "";
         Texture tex = load_texture_from_name(texture, true);
-        meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), &model, RAW_TEXTURE, 0, {{TEXTURE_TYPE_DIFFUSE_MAP , tex}}) };
+        meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, RAW_TEXTURE, 0, {{TEXTURE_TYPE_DIFFUSE_MAP , tex}}) };
         gen_bbox(vertices);
     }
 
@@ -191,10 +229,13 @@ struct Model {
     //
     // The local->world space transform for this model
     //
-    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 model() {
+        return physics_obj.get_model_matrix();
+    }
 
+
+    PhysicsObject physics_obj;
 private:
-
     std::string name;
 
     //

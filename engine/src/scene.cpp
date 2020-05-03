@@ -1,5 +1,6 @@
 #include <nlohmann/json.hpp>
 #include "engine/scene.h"
+#include "engine/physics.h"
 #include <iostream>
 #include <fstream>
 
@@ -107,7 +108,53 @@ Scene::Scene(std::string filename, VertexBuffer *vertex_buffer) {
         //Model model(vertex_buffer, path, shader_type, 0, height_normals);
         //models[shaders[shader_ref]].push_back(model);
 
-        models[shaders[shader_ref]].emplace_back(vertex_buffer, path, shader_type, 0, height_normals);
+        if (model_json.find("physics") == model_json.end()) {
+            std::cout << "SCENE PARSE ERROR: Field 'models.physics' not found" << std::endl;
+            throw false;
+        }
+        if (model_json.find("initial_position") == model_json.end()) {
+            std::cout << "SCENE PARSE ERROR: Field 'models.initial_position' not found" << std::endl;
+            throw false;
+        }
+        if (model_json.find("initial_rotation") == model_json.end()) {
+            std::cout << "SCENE PARSE ERROR: Field 'models.initial_rotation' not found" << std::endl;
+            throw false;
+        }
+        if (model_json.find("gravity") == model_json.end()) {
+            std::cout << "SCENE PARSE ERROR: Field 'models.gravity' not found" << std::endl;
+            throw false;
+        }
+
+        std::string physics_type = model_json["physics"];
+        RigidBodyType rbtype;
+        if (physics_type == "dynamic") {
+            rbtype = RigidBodyType::DYNAMIC;
+        } else if (physics_type == "kinematic") {
+            rbtype = RigidBodyType::KINEMATIC;
+        } else if (physics_type == "static") {
+            rbtype = RigidBodyType::STATIC;
+        } else {
+            std::cout << "Unrecognized physics simulation type'" << physics_type << "' for model" << std::endl;
+            throw false;
+        }
+
+        std::vector<float> initial_positions_vec = model_json["initial_position"];
+        if (initial_positions_vec.size() != 3) {
+            std::cout << "Initial position must be a three vector! Got " << initial_positions_vec.size() << std::endl;
+            throw false;
+        }
+        glm::vec3 initial_position = {initial_positions_vec[0], initial_positions_vec[1], initial_positions_vec[2]};
+
+        std::vector<float> initial_rotation_vec = model_json["initial_rotation"];
+        if (initial_rotation_vec.size() != 3) {
+            std::cout << "Initial rotation must be a three vector! Got " << initial_rotation_vec.size() << std::endl;
+            throw false;
+        }
+        glm::vec3 initial_rotation = {initial_rotation_vec[0], initial_rotation_vec[1], initial_rotation_vec[2]};
+
+        bool gravity = model_json["gravity"];
+
+        models[shaders[shader_ref]].emplace_back(vertex_buffer, path, shader_type, 0, rbtype, initial_position, initial_rotation, gravity, height_normals);
     }
 
     if (scene_json.find("lights") == scene_json.end()) {
@@ -199,6 +246,7 @@ void Scene::add_lights(std::vector<DirLight *> new_dirlights, std::vector<PointL
 
 void Scene::draw(Camera *camera) {
     
+    Physics::tick();
     for (std::map<ShaderProgram, std::vector<Model>>::iterator iter = models.begin(); iter != models.end(); iter++) {
         ShaderProgram shader = iter->first;
         std::vector<Model> models_to_render = iter->second;
@@ -213,6 +261,7 @@ void Scene::draw(Camera *camera) {
         }
 
         for (Model model : models_to_render) {
+            model.physics_obj.apply_force_to_center({10.0, 10.0, 10.0});
             model.draw(shader, camera);
             if (ImGuiInstance::draw_model_bb) model.draw_bounding_box(camera);
 
