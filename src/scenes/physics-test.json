@@ -1,0 +1,98 @@
+{
+    "version": "0.0.1",
+    "cameraPosition": [0.0, 0.0, 3.0],
+    "skybox": {
+        "right": "resources/textures/skybox/right.jpg",
+        "left": "resources/textures/skybox/left.jpg",
+        "top": "resources/textures/skybox/top.jpg",
+        "bottom": "resources/textures/skybox/bottom.jpg",
+        "front": "resources/textures/skybox/front.jpg",
+        "back": "resources/textures/skybox/back.jpg"
+    },
+    "shaders": [
+        {
+            "name": "pbr",
+            "vertexPath": "src/shaders/vert.glsl",
+            "fragmentPath": "src/shaders/pbr.frag",
+            "geometryPath": null
+        },
+        {
+            "name": "phong",
+            "vertexPath": "src/shaders/vert.glsl",
+            "fragmentPath": "src/shaders/frag.glsl",
+            "geometryPath": null
+        }
+    ],
+    "models" : [
+        {
+            "name": "leaf",
+            "modelPath": "resources/models/glowingleaf/scene.gltf",
+            "shaderType": "blinnphong_textured",
+            "heightNormals": false,
+            "shader": "phong"
+        }
+    ],
+    "lights": [
+        {
+            "name": "dirlight_1",
+            "type" : "directional",
+            "direction": [-1.0, -1.0, -1.0],
+            "diffuse": [2.0, 2.0, 2.0]
+        },
+        {
+            "name": "dirlight_2",
+            "type" : "directional",
+            "direction": [-1.0, -1.0, 1.0]
+        },
+        {
+            "name": "dirlight_3",
+            "type" : "directional",
+            "direction": [-1.0, 1.0, -1.0]
+        },
+        {
+            "name": "dirlight_4",
+            "type" : "directional",
+            "direction": [-1.0, 1.0, 1.0]
+        },
+        {
+            "name": "dirlight_5",
+            "type" : "directional",
+            "direction": [1.0, -1.0, -1.0]
+        },
+        {
+            "name": "dirlight_6",
+            "type" : "directional",
+            "direction": [1.0, -1.0, 1.0]
+        },
+        {
+            "name": "dirlight_7",
+            "type" : "directional",
+            "direction": [1.0, 1.0, -1.0]
+        },
+        {
+            "name": "dirlight_8",
+            "type" : "directional",
+            "direction": [1.0, 1.0, 1.0]
+        },
+        {
+            "name": "pointlight_1",
+            "type" : "point",
+            "position": [17.2,  18.2,  9.3]
+        },
+        {
+            "name": "pointlight_2",
+            "type" : "point",
+            "position": [27.0, 25.0, -67.5]
+        },
+        {
+            "name": "pointlight_3",
+            "type" : "point",
+            "position": [-28.4, 23.4, -37.2]
+        },
+        {
+            "name": "pointlight_4",
+            "type" : "point",
+            "position": [0.0,  10.0, -30.0]
+        }
+    ]
+}

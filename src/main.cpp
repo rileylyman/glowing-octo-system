@@ -74,7 +74,7 @@ int main()
     //Model sphere = construct_sphere(&vertex_buffer, 2.0f, 64, 64, PBR_SOLID);
 
     VertexBuffer vertex_buffer;
-    Scene scene("src/scenes/test.json", &vertex_buffer);
+    Scene scene("src/scenes/physics-test.json", &vertex_buffer);
     vertex_buffer.buffer_data();
 
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
