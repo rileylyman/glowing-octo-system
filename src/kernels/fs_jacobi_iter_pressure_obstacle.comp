@@ -9,12 +9,12 @@
 
 layout(local_size_x = 1, local_size_y = 1) in;
 
-layout(rgba32f) uniform image3D pressure;       // Pressure field iteration
-layout(rgba32f) uniform image3D div_w;          // Divergence of unprojected velocity field
+layout(rgba16f) uniform image3D pressure;       // Pressure field iteration
+layout(rgba16f) uniform image3D div_w;          // Divergence of unprojected velocity field
 uniform float pressure_air;                     // Ambient quantity q related to the air
-layout(rgba32f) uniform image3D pressure_next;  // Buffer to store next Jacobi iteration
+layout(rgba16f) uniform image3D pressure_next;  // Buffer to store next Jacobi iteration
 
-layout(rgba32f) uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
+layout(rgba16f) uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
 
 ivec3 center() {
     return ivec3(gl_GlobalInvocationID);

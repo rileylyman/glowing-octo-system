@@ -9,14 +9,14 @@
 
 layout(local_size_x = 1, local_size_y = 1) in;
 
-layout(rgba32f) uniform image3D w;              // Unprojected velocity field
-layout(rgba32f) uniform image3D f;              // Forces
+layout(rgba16f) uniform image3D w;              // Unprojected velocity field
+layout(rgba16f) uniform image3D f;              // Forces
 uniform float rho;                              // Density
 uniform float g;                                // Gravitational acceleration
 
-layout(rgba32f) uniform image3D w_next;         // Buffer to store next velocities
+layout(rgba16f) uniform image3D w_next;         // Buffer to store next velocities
 
-layout(rgba32f) uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
+layout(rgba16f) uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
 
 ivec3 center() {
     return ivec3(gl_GlobalInvocationID);
