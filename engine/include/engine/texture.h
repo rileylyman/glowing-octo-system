@@ -61,6 +61,11 @@ struct Texture3D {
         glBindTexture(GL_TEXTURE_3D, id);
     }
 
+    void use(uint32_t custom_unit) {
+        glActiveTexture(GL_TEXTURE0 + custom_unit);
+        glBindTexture(GL_TEXTURE_3D, id);
+    }
+
     static std::vector<float> debug_velocity(uint32_t width, uint32_t height, uint32_t depth) {
         std::vector<float> data;
         for (uint32_t h = 0; h < height; h++) {
