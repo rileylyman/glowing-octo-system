@@ -25,42 +25,6 @@ ivec3 center() {
     return ivec3(gl_GlobalInvocationID.xyz);
 }
 
-ivec3 left() {
-    return ivec3(int(gl_GlobalInvocationID.x) - 1,
-                 int(gl_GlobalInvocationID.y),
-                 int(gl_GlobalInvocationID.z));
-}
-
-ivec3 right() {
-    return ivec3(int(gl_GlobalInvocationID.x) + 1,
-                 int(gl_GlobalInvocationID.y),
-                 int(gl_GlobalInvocationID.z));
-}
-
-ivec3 bottom() {
-    return ivec3(int(gl_GlobalInvocationID.x),
-                 int(gl_GlobalInvocationID.y) - 1,
-                 int(gl_GlobalInvocationID.z));
-}
-
-ivec3 top() {
-    return ivec3(int(gl_GlobalInvocationID.x),
-                 int(gl_GlobalInvocationID.y) + 1,
-                 int(gl_GlobalInvocationID.z));
-}
-
-ivec3 up() {
-    return ivec3(int(gl_GlobalInvocationID.x),
-                 int(gl_GlobalInvocationID.y),
-                 int(gl_GlobalInvocationID.z) - 1);
-}
-
-ivec3 down() {
-    return ivec3(int(gl_GlobalInvocationID.x),
-                 int(gl_GlobalInvocationID.y),
-                 int(gl_GlobalInvocationID.z) + 1);
-}
-
 bool isSolidCell(ivec3 index) {
     return imageLoad(world_mask, index).r = 0.0;
 }
@@ -100,5 +64,5 @@ void main() {
     }
         
     // Write to buffer
-    imageStore(target_buffer, index, sample);
+    imageStore(target_buffer, center(), sample);
 }
