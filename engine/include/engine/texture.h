@@ -5,6 +5,11 @@
 #include <stdint.h>
 #include <glad/glad.h>
 
+#include <iostream>
+
+GLenum glCheckError_(const char *file, int line);
+#define glCheckError() glCheckError_(__FILE__, __LINE__) 
+
 enum TextureType {
     TEXTURE_TYPE_NORMAL_MAP = 0,
     TEXTURE_TYPE_ALBEDO_MAP,
@@ -56,14 +61,14 @@ struct Texture3D {
 
     void use() {
         glActiveTexture(GL_TEXTURE0 + unit);
-        glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
         glBindTexture(GL_TEXTURE_3D, id);
+        glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
     }
 
     void use(uint32_t tex_unit, uint32_t img_unit) {
         glActiveTexture(GL_TEXTURE0 + tex_unit);
-        glBindImageTexture(img_unit, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
         glBindTexture(GL_TEXTURE_3D, id);
+        glBindImageTexture(img_unit, id, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
     }
 
     static std::vector<float> debug_velocity(uint32_t width, uint32_t height, uint32_t depth) {
