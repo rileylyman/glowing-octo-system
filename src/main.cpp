@@ -24,6 +24,7 @@
 #include "engine/light.h"
 #include "engine/scene.h"
 #include "engine/framebuffer.h"
+#include "engine/debug.h"
 
 #include <fluidsim/fluidsim.h>
 

@@ -5,6 +5,7 @@ find_package(OpenGL REQUIRED)
 add_library(
     engine STATIC
 
+    src/debug.cpp
     src/window.cpp
     src/texture.cpp
     src/shader.cpp
@@ -21,6 +22,7 @@ add_library(
     src/fsrender.cpp
     src/physics.cpp
 
+    include/engine/debug.h
     include/engine/window.h
     include/engine/texture.h
     include/engine/shader.h
