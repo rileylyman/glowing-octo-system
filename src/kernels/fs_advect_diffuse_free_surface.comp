@@ -36,29 +36,29 @@ vec3 cell2texture(vec3 index) {
 
 void main() {
     vec4 q_sample;
-    vec3 pos = cell2texture(center());
+    
+    // Get position of cell in index-space
+    vec3 pos = center();
+    pos += vec3(0.5, 0.5, 0.5);
 
     // Sample Values
-    if (isSolidCell(pos)) {
+    if (isSolidCell(cell2texture(pos))) {
         // Solid-cell => keep as solid 
         q_sample = vec4(2.0, 0.0, 0.0, 0.0);
-    } else if (isAirCell(pos)) {
+    } else if (isAirCell(cell2texture(pos))) {
         // Air-cell => keep as air 
         q_sample = vec4(1.0, 0.0, 0.0, 0.0);
     } else {
         // Fluid-cell => advect
-        // Get position of cell in index-space
-        pos += vec3(0.5, 0.5, 0.5);
-
         // Advect backwards
         vec3 vel = texture(u, cell2texture(pos)).rgb;
         pos *= scale;
         pos -= dt * vel;
         pos /= scale;
 
-        if (isSolidCell(pos)) {
+        if (isSolidCell(cell2texture(pos))) {
             // don't advect solid; replace with vacuum
-        q_sample = vec4(1.0, 0.0, 0.0, 0.0);
+            q_sample = vec4(1.0, 0.0, 0.0, 0.0);
         } else {
             q_sample = texture(world_mask, cell2texture(pos));
         }

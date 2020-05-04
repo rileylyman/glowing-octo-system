@@ -77,9 +77,9 @@ struct Texture3D {
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
                 for (uint32_t w = 0; w < width; w++) {
-                    data.push_back(0.2f);
-                    data.push_back(0.2f);
-                    data.push_back(0.2f);
+                    data.push_back(10.0f);
+                    data.push_back(10.0f);
+                    data.push_back(10.0f);
                     data.push_back(1.0f);
                 }
             }
@@ -126,17 +126,42 @@ struct Texture3D {
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
                 for (uint32_t w = 0; w < width; w++) {
-                    data.push_back(0.0f);
-                    data.push_back(0.0f);
-                    data.push_back(0.0f);
-                    data.push_back(1.0f);
+                    if (h == 0 || h == height - 1 || d == 0 || d == depth - 1 || w == 0 || w == width - 1) {
+                        // Solid around boundaries
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(1.0f);
+                    } else if ((h >= (height * 2) / 5 && h <= (height * 3) / 5) &&
+                               (w >= (width * 2) / 5 && w <= (width * 3) / 5) &&
+                               (d >= (depth * 2) / 5 && d <= (depth * 3) / 5)) {
+                        // Box in the center
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(1.0f);
+                    } else if ((h >= (height * 1) / 5 && h <= (height * 4) / 5) &&
+                               (w >= (width * 1) / 5 && w <= (width * 4) / 5) &&
+                               (d >= (depth * 1) / 5 && d <= (depth * 4) / 5)) {
+                        // Air around the box
+                        data.push_back(1.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(1.0f);
+                    } else {
+                        // Water on the Periphery
+                        data.push_back(2.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(1.0f);
+                    }
                 }
             }
         }
         return data;
     }
 
-        static std::vector<float> zero(uint32_t width, uint32_t height, uint32_t depth) {
+    static std::vector<float> zero(uint32_t width, uint32_t height, uint32_t depth) {
         std::vector<float> data;
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
@@ -151,7 +176,22 @@ struct Texture3D {
         return data;
     }
 
-        static std::vector<float> two(uint32_t width, uint32_t height, uint32_t depth) {
+    static std::vector<float> one(uint32_t width, uint32_t height, uint32_t depth) {
+        std::vector<float> data;
+        for (uint32_t h = 0; h < height; h++) {
+            for (uint32_t d = 0; d < depth; d++) {
+                for (uint32_t w = 0; w < width; w++) {
+                    data.push_back(1.0f);
+                    data.push_back(1.0f);
+                    data.push_back(1.0f);
+                    data.push_back(0.0f);
+                }
+            }
+        }
+        return data;
+    }
+
+    static std::vector<float> two(uint32_t width, uint32_t height, uint32_t depth) {
         std::vector<float> data;
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
