@@ -89,9 +89,9 @@ int main()
 
     Texture3D u(grid_width, grid_height, grid_depth, 1, Texture3D::u(grid_width, grid_height, grid_depth));
     Texture3D q(grid_width, grid_height, grid_depth, 2, Texture3D::q(grid_width, grid_height, grid_depth));
-    Texture3D world_mask(grid_width, grid_height, grid_depth, 2, Texture3D::world_mask(grid_width, grid_height, grid_depth));
-    Texture3D w_next(grid_width, grid_height, grid_depth, 3, Texture3D::zero(grid_width, grid_height, grid_depth));
-    Texture3D zero(grid_width, grid_height, grid_depth, 4, Texture3D::zero(grid_width, grid_height, grid_depth));
+    Texture3D world_mask(grid_width, grid_height, grid_depth, 3, Texture3D::two(grid_width, grid_height, grid_depth));
+    Texture3D w_next(grid_width, grid_height, grid_depth, 4, Texture3D::zero(grid_width, grid_height, grid_depth));
+    Texture3D zero(grid_width, grid_height, grid_depth, 5, Texture3D::zero(grid_width, grid_height, grid_depth));
 
     //
     // Render loop
@@ -163,7 +163,7 @@ int main()
             fs_advect_diffuse.setInt("q_solid", zero.unit);
             fs_advect_diffuse.setInt("q_next", w_next.unit);
             fs_advect_diffuse.setInt("world_mask", world_mask.unit);
-            fs_advect_diffuse.setFloat("dt", 0.1f);
+            fs_advect_diffuse.setFloat("dt", 1.0f);
             fs_advect_diffuse.setVec3("scale", 0.2f, 0.2f, 0.2f);
             fs_advect_diffuse.setVec4("q_air", 0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -172,8 +172,8 @@ int main()
             glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
             
             fs_write_to.use();
-            fs_advect_diffuse.setInt("q_in", w_next.unit);
-            fs_advect_diffuse.setInt("q_out", q.unit);
+            fs_write_to.setInt("q_in", w_next.unit);
+            fs_write_to.setInt("q_out", q.unit);
 
             glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
 
