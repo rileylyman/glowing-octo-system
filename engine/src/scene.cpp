@@ -1,6 +1,7 @@
 #include <nlohmann/json.hpp>
 #include "engine/scene.h"
 #include "engine/physics.h"
+#include "engine/debug.h"
 #include <iostream>
 #include <fstream>
 
@@ -251,23 +252,35 @@ void Scene::draw(Camera *camera) {
         ShaderProgram shader = iter->first;
         std::vector<Model> models_to_render = iter->second;
 
+        glCheckError();
         shader.use();
+        glCheckError();
         shader.bind_lights(dirlights, pointlights, spotlights);
+        glCheckError();
 
         if (ImGuiInstance::reinhard_hdr) {
+        glCheckError();
             shader.setBool("u_Reinhard", true);
+        glCheckError();
         } else {
+        glCheckError();
             shader.setBool("u_Reinhard", false);
+        glCheckError();
         }
 
         for (Model model : models_to_render) {
             model.physics_obj.apply_force_to_center({10.0, 10.0, 10.0});
+        glCheckError();
             model.draw(shader, camera);
+        glCheckError();
             if (ImGuiInstance::draw_model_bb) model.draw_bounding_box(camera);
+        glCheckError();
 
         }
 
-        draw_ray(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 100.0f, 0.0f), camera->projection(), camera->view());
+        glCheckError();
+        //draw_ray(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 100.0f, 0.0f), camera->projection(), camera->view());
+        glCheckError();
 
     }
 

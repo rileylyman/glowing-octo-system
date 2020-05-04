@@ -120,6 +120,7 @@ int main()
         //sphere.model = glm::translate(glm::mat4(1.0f), glm::vec3(glfwGetTime(), 0.0f, 0.0f));
         //model.model = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime() * 0.02f, glm::vec3(0.0, 1.0, 0.0));
 
+        glCheckError();
         scene.draw(&camera);
 
         if (ImGuiInstance::fsdebug) {
