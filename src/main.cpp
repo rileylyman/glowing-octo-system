@@ -60,16 +60,12 @@ int main()
     //
     ImGuiInstance imgui_instance(window.window, &camera.position);
 
-<<<<<<< HEAD
-    fluidsim_testing123();
     Physics::init();
-=======
     // fluidsim_testing123();
 
     // DECLARE SHADERS
     KernelProgram dummy("src/kernels/fs_dummy.comp");
->>>>>>> origin/fluidsim
-
+    
     Framebuffer fb(window.window);
     fb.add_color_attachment();
     fb.add_depth_stencil_attachment();
