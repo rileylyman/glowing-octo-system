@@ -66,28 +66,26 @@ struct Texture3D {
         glBindImageTexture(img_unit, id, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
     }
 
-    static std::vector<float> debug_velocity(uint32_t width, uint32_t height, uint32_t depth) {
+    static std::vector<float> u(uint32_t width, uint32_t height, uint32_t depth) {
         std::vector<float> data;
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
                 for (uint32_t w = 0; w < width; w++) {
-
-                    data.push_back(1.0f);
-                    data.push_back(1.0f);
-                    data.push_back(1.0f);
+                    data.push_back(0.2f);
+                    data.push_back(0.2f);
+                    data.push_back(0.2f);
                     data.push_back(1.0f);
                 }
             }
         }
         return data;
     }
-
-    static std::vector<float> debug_pressure(uint32_t width, uint32_t height, uint32_t depth) {
+    
+    static std::vector<float> q(uint32_t width, uint32_t height, uint32_t depth) {
         std::vector<float> data;
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
                 for (uint32_t w = 0; w < width; w++) {
-
                     float x = (float)w / (float)width;
                     float y = (float)h / (float)height;
                     float z = (float)d / (float)depth;
@@ -104,21 +102,14 @@ struct Texture3D {
         return data;
     }
 
-    static std::vector<float> debug_mask(uint32_t width, uint32_t height, uint32_t depth) {
+    static std::vector<float> pressure(uint32_t width, uint32_t height, uint32_t depth) {
         std::vector<float> data;
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
                 for (uint32_t w = 0; w < width; w++) {
-
-                    float x = (float)w / (float)width;
-                    float y = (float)h / (float)height;
-                    float z = (float)d / (float)depth;
-
-                    x *= 2 * 3.1415, y *= 2 * 3.1415, z = 0.0;
-
-                    data.push_back(x);
-                    data.push_back(y);
-                    data.push_back(z);
+                    data.push_back(0.0f);
+                    data.push_back(0.0f);
+                    data.push_back(0.0f);
                     data.push_back(1.0f);
                 }
             }
@@ -126,18 +117,26 @@ struct Texture3D {
         return data;
     }
 
-        static std::vector<float> zero_mask(uint32_t width, uint32_t height, uint32_t depth) {
+    static std::vector<float> world_mask(uint32_t width, uint32_t height, uint32_t depth) {
         std::vector<float> data;
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
                 for (uint32_t w = 0; w < width; w++) {
+                    data.push_back(0.0f);
+                    data.push_back(0.0f);
+                    data.push_back(0.0f);
+                    data.push_back(1.0f);
+                }
+            }
+        }
+        return data;
+    }
 
-                    float x = (float)w / (float)width;
-                    float y = (float)h / (float)height;
-                    float z = (float)d / (float)depth;
-
-                    x *= 2 * 3.1415, y *= 2 * 3.1415, z = 0.0;
-
+        static std::vector<float> zero(uint32_t width, uint32_t height, uint32_t depth) {
+        std::vector<float> data;
+        for (uint32_t h = 0; h < height; h++) {
+            for (uint32_t d = 0; d < depth; d++) {
+                for (uint32_t w = 0; w < width; w++) {
                     data.push_back(0.0f);
                     data.push_back(0.0f);
                     data.push_back(0.0f);
@@ -148,18 +147,11 @@ struct Texture3D {
         return data;
     }
 
-        static std::vector<float> two_mask(uint32_t width, uint32_t height, uint32_t depth) {
+        static std::vector<float> two(uint32_t width, uint32_t height, uint32_t depth) {
         std::vector<float> data;
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
                 for (uint32_t w = 0; w < width; w++) {
-
-                    float x = (float)w / (float)width;
-                    float y = (float)h / (float)height;
-                    float z = (float)d / (float)depth;
-
-                    x *= 2 * 3.1415, y *= 2 * 3.1415, z = 0.0;
-
                     data.push_back(2.0f);
                     data.push_back(2.0f);
                     data.push_back(2.0f);
@@ -170,43 +162,14 @@ struct Texture3D {
         return data;
     }
 
-    static std::vector<float> debug_forces(uint32_t width, uint32_t height, uint32_t depth) {
+    static std::vector<float> forces(uint32_t width, uint32_t height, uint32_t depth) {
         std::vector<float> data;
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
                 for (uint32_t w = 0; w < width; w++) {
-
-                    float x = (float)w / (float)width;
-                    float y = (float)h / (float)height;
-                    float z = (float)d / (float)depth;
-
-                    x *= 2 * 3.1415, y *= 2 * 3.1415, z = 0.0;
-
-                    data.push_back(x);
-                    data.push_back(y);
-                    data.push_back(z);
-                    data.push_back(1.0f);
-                }
-            }
-        }
-        return data;
-    }
-
-    static std::vector<float> debug_zero(uint32_t width, uint32_t height, uint32_t depth) {
-        std::vector<float> data;
-        for (uint32_t h = 0; h < height; h++) {
-            for (uint32_t d = 0; d < depth; d++) {
-                for (uint32_t w = 0; w < width; w++) {
-
-                    float x = (float)w / (float)width;
-                    float y = (float)h / (float)height;
-                    float z = (float)d / (float)depth;
-
-                    x *= 2 * 3.1415, y *= 2 * 3.1415, z = 0.0;
-
-                    data.push_back(x);
-                    data.push_back(y);
-                    data.push_back(z);
+                    data.push_back(0.0f);
+                    data.push_back(0.0f);
+                    data.push_back(0.0f);
                     data.push_back(1.0f);
                 }
             }

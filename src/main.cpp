@@ -64,7 +64,8 @@ int main()
     // fluidsim_testing123();
 
     // DECLARE SHADERS
-    KernelProgram dummy("src/kernels/fs_dummy.comp");
+    KernelProgram fs_advect_diffuse("src/kernels/fs_advect_diffuse.comp");
+    KernelProgram fs_write_to("src/kernels/fs_write_to.comp");
     
     Framebuffer fb(window.window);
     fb.add_color_attachment();
@@ -86,8 +87,11 @@ int main()
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
     uint32_t grid_width = 20, grid_height = 20, grid_depth = 20;
 
-    Texture3D velocity_field1(grid_width, grid_height, grid_depth, 1, Texture3D::debug_velocity(grid_width, grid_height, grid_depth));  // VELOCITY 1
-    Texture3D velocity_field2(grid_width, grid_height, grid_depth, 2, Texture3D::debug_velocity(grid_width, grid_height, grid_depth));  // VELOCITY 2
+    Texture3D u(grid_width, grid_height, grid_depth, 1, Texture3D::u(grid_width, grid_height, grid_depth));
+    Texture3D q(grid_width, grid_height, grid_depth, 2, Texture3D::q(grid_width, grid_height, grid_depth));
+    Texture3D world_mask(grid_width, grid_height, grid_depth, 2, Texture3D::world_mask(grid_width, grid_height, grid_depth));
+    Texture3D w_next(grid_width, grid_height, grid_depth, 3, Texture3D::zero(grid_width, grid_height, grid_depth));
+    Texture3D zero(grid_width, grid_height, grid_depth, 4, Texture3D::zero(grid_width, grid_height, grid_depth));
 
     //
     // Render loop
@@ -147,17 +151,35 @@ int main()
             // advect_diffuse.setFloat("dt", 1000);
             // advect_diffuse.setVec3("scale", 1, 1, 1);
             // advect_diffuse.setVec4("q_air", 0, 0, 0, 0);
-            velocity_field1.use(velocity_field1.unit, 1);
-            velocity_field2.use(velocity_field2.unit, 2);
-            dummy.use();
-            dummy.setInt("q_in", 1);
-            dummy.setInt("q_out", 2);
+            u.use();
+            q.use();
+            w_next.use();
+            world_mask.use();
+            zero.use();
+            
+            fs_advect_diffuse.use();
+            fs_advect_diffuse.setInt("u", u.unit);
+            fs_advect_diffuse.setInt("q_prev", q.unit);
+            fs_advect_diffuse.setInt("q_solid", zero.unit);
+            fs_advect_diffuse.setInt("q_next", w_next.unit);
+            fs_advect_diffuse.setInt("world_mask", world_mask.unit);
+            fs_advect_diffuse.setFloat("dt", 0.1f);
+            fs_advect_diffuse.setVec3("scale", 0.2f, 0.2f, 0.2f);
+            fs_advect_diffuse.setVec4("q_air", 0.0f, 0.0f, 0.0f, 0.0f);
+
+            glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
+
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+            
+            fs_write_to.use();
+            fs_advect_diffuse.setInt("q_in", w_next.unit);
+            fs_advect_diffuse.setInt("q_out", q.unit);
 
             glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
 
             glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
-            fsdebug.draw(velocity_field2, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
+            fsdebug.draw(q, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
         }
 
         imgui_instance.draw();
