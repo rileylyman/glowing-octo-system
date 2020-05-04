@@ -17,5 +17,5 @@ ivec3 center() {
 }
 
 void main() {
-    imageStore(q_out, center(), imageLoad(q_in, center()));
+    imageStore(q_out, center(), vec4(0.0, 0.0, 0.0, 0.0));
 }
