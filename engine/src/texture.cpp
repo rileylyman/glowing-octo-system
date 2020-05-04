@@ -2,6 +2,7 @@
 #include <iostream>
 #include <stb_image.h>
 #include "engine/texture.h"
+#include "log.h"
 
 Cubemap::Cubemap(std::vector<std::string> filenames, uint32_t unit, bool srgb) {
     this->unit = unit;
@@ -66,6 +67,9 @@ Texture::Texture(std::string filename, uint32_t unit, bool srgb) : unit(unit) {
 }
 
 void Texture::use() {
+    if (unit == -1) {
+        return;
+    }
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, id);
 }

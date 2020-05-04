@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include "engine/shader.h"
+#include "engine/debug.h"
+#include "log.h"
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -202,51 +204,80 @@ ShaderProgram::ShaderProgram(
 }
 
 void ShaderProgram::setBool(const std::string &name, bool value) const {
+    glCheckError();
     glUniform1i(glGetUniformLocation(id, name.c_str()), (int)value); 
+    glCheckError();
 }
 
 void ShaderProgram::setInt(const std::string &name, int value) const {
-    glUniform1i(glGetUniformLocation(id, name.c_str()), value); 
+    if (value == -1) {
+        return;
+    }
+    glCheckError();
+    GLuint location = glGetUniformLocation(id, name.c_str());
+    glCheckError();
+    glUniform1i(location, (GLint)value); 
+    glCheckError();
 }
 
 void ShaderProgram::setFloat(const std::string &name, float value) const {
+    glCheckError();
     glUniform1f(glGetUniformLocation(id, name.c_str()), value); 
+    glCheckError();
 }
 
 void ShaderProgram::setVec2(const std::string &name, const glm::vec2 &value) const {
+    glCheckError();
     glUniform2fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]); 
+    glCheckError();
 }
 
 void ShaderProgram::setVec2(const std::string &name, float x, float y) const {
+    glCheckError();
     glUniform2f(glGetUniformLocation(id, name.c_str()), x, y); 
+    glCheckError();
 }
 
 void ShaderProgram::setVec3(const std::string &name, const glm::vec3 &value) const {
+    glCheckError();
     glUniform3fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]); 
+    glCheckError();
 }
 
 void ShaderProgram::setVec3(const std::string &name, float x, float y, float z) const {
+    glCheckError();
     glUniform3f(glGetUniformLocation(id, name.c_str()), x, y, z); 
+    glCheckError();
 }
 
 void ShaderProgram::setVec4(const std::string &name, const glm::vec4 &value) const {
+    glCheckError();
     glUniform4fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]); 
+    glCheckError();
 }
 
 void ShaderProgram::setVec4(const std::string &name, float x, float y, float z, float w)  {
+    glCheckError();
     glUniform4f(glGetUniformLocation(id, name.c_str()), x, y, z, w); 
+    glCheckError();
 }
 
 void ShaderProgram::setMat2(const std::string &name, const glm::mat2 &mat) const {
+    glCheckError();
     glUniformMatrix2fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+    glCheckError();
 }
 
 void ShaderProgram::setMat3(const std::string &name, const glm::mat3 &mat) const {
+    glCheckError();
     glUniformMatrix3fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+    glCheckError();
 }
 
 void ShaderProgram::setMat4(const std::string &name, const glm::mat4 &mat) const {
+    glCheckError();
     glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+    glCheckError();
 }
 
 void ShaderProgram::use() {
