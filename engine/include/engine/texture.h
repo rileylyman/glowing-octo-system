@@ -96,18 +96,6 @@ struct Texture3D {
                     float y = (float)h / (float)height;
                     float z = (float)d / (float)depth;
 
-                    x *= 2 * 3.1415, y *= 2 * 3.1415, z = 0.0;
-
-                    if (h % 2 == 0) {
-                        x = 0.5;
-                        y = 0.5;
-                        z = 0.5;
-                    } else {
-                        x = 2.0;
-                        y = 2.0;
-                        z = 2.0;
-                    }
-
                     data.push_back(x);
                     data.push_back(y);
                     data.push_back(z);
