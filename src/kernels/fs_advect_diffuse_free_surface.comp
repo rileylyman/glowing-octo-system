@@ -44,10 +44,7 @@ void main() {
     // Sample Values
     if (isSolidCell(cell2texture(pos))) {
         // Solid-cell => keep as solid 
-        q_sample = vec4(2.0, 0.0, 0.0, 0.0);
-    } else if (isAirCell(cell2texture(pos))) {
-        // Air-cell => keep as air 
-        q_sample = vec4(1.0, 0.0, 0.0, 0.0);
+        q_sample = vec4(0.0, 0.0, 0.0, 0.0);
     } else {
         // Fluid-cell => advect
         // Advect backwards

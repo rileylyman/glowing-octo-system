@@ -140,9 +140,9 @@ struct Texture3D {
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                         data.push_back(1.0f);
-                    } else if ((h >= (height * 1) / 5 && h <= (height * 4) / 5) &&
-                               (w >= (width * 1) / 5 && w <= (width * 4) / 5) &&
-                               (d >= (depth * 1) / 5 && d <= (depth * 4) / 5)) {
+                    } else if ((h >= (height * 3) / 10 && h <= (height * 7) / 10) &&
+                               (w >= (width * 3) / 10 && w <= (width * 7) / 10) &&
+                               (d >= (depth * 3) / 10 && d <= (depth * 7) / 10)) {
                         // Air around the box
                         data.push_back(1.0f);
                         data.push_back(0.0f);

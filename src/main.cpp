@@ -92,7 +92,7 @@ int main()
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
     uint32_t grid_width = 75, grid_height = 75, grid_depth = 75;
 
-    Texture3D u(grid_width, grid_height, grid_depth, 1, Texture3D::zero(grid_width, grid_height, grid_depth));
+    Texture3D u(grid_width, grid_height, grid_depth, 1, Texture3D::u(grid_width, grid_height, grid_depth));
     Texture3D world_mask(grid_width, grid_height, grid_depth, 2, Texture3D::world_mask(grid_width, grid_height, grid_depth), GL_NEAREST);
     Texture3D lin_buffer(grid_width, grid_height, grid_depth, 3, Texture3D::zero(grid_width, grid_height, grid_depth));
     Texture3D nearest_buffer(grid_width, grid_height, grid_depth, 4, Texture3D::zero(grid_width, grid_height, grid_depth), GL_NEAREST);
