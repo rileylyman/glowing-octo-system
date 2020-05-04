@@ -30,24 +30,30 @@ struct Texture3D {
     uint32_t id, unit;
     uint32_t width, height, depth;
 
-    Texture3D(uint32_t width, uint32_t height, uint32_t depth, uint32_t unit) : unit(unit), width(width), height(height), depth(depth) {
+    Texture3D(uint32_t width, uint32_t height, uint32_t depth, uint32_t unit, GLint sampling_type=GL_LINEAR) : unit(unit), width(width), height(height), depth(depth) {
         glGenTextures(1, &id);
         glBindTexture(GL_TEXTURE_3D, id);
 
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, sampling_type); 
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, sampling_type); 
 
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA16F, width, height, depth, 0, GL_RGBA, GL_FLOAT, NULL);
 
         glBindTexture(GL_TEXTURE_3D, 0);
     }
 
-    Texture3D(uint32_t width, uint32_t height, uint32_t depth, uint32_t unit, std::vector<float> data) : unit(unit), width(width), height(height), depth(depth) {
+    Texture3D(uint32_t width, uint32_t height, uint32_t depth, uint32_t unit, std::vector<float> data, GLint sampling_type=GL_LINEAR) : unit(unit), width(width), height(height), depth(depth) {
         glGenTextures(1, &id);
         glBindTexture(GL_TEXTURE_3D, id);
 
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, sampling_type); 
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, sampling_type); 
 
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA16F, width, height, depth, 0, GL_RGBA, GL_FLOAT, data.data());
 
@@ -57,13 +63,13 @@ struct Texture3D {
     void use() {
         glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_3D, id);
-        glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+        glBindImageTexture(unit, id, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA16F);
     }
 
     void use(uint32_t tex_unit, uint32_t img_unit) {
         glActiveTexture(GL_TEXTURE0 + tex_unit);
         glBindTexture(GL_TEXTURE_3D, id);
-        glBindImageTexture(img_unit, id, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+        glBindImageTexture(img_unit, id, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA16F);
     }
 
     static std::vector<float> u(uint32_t width, uint32_t height, uint32_t depth) {
@@ -91,6 +97,16 @@ struct Texture3D {
                     float z = (float)d / (float)depth;
 
                     x *= 2 * 3.1415, y *= 2 * 3.1415, z = 0.0;
+
+                    if (h % 2 == 0) {
+                        x = 0.5;
+                        y = 0.5;
+                        z = 0.5;
+                    } else {
+                        x = 2.0;
+                        y = 2.0;
+                        z = 2.0;
+                    }
 
                     data.push_back(x);
                     data.push_back(y);

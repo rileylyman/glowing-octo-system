@@ -9,13 +9,13 @@
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(binding=1, rgba16f) uniform image3D q_in;            // Input image
-layout(binding=2, rgba16f) uniform image3D q_out;           // Output to write to
+layout(rgba16f) uniform image3D q_in;            // Input image
+layout(rgba16f) uniform image3D q_out;           // Output to write to
 
 ivec3 center() {
     return ivec3(gl_GlobalInvocationID);
 }
 
 void main() {
-    imageStore(q_out, center(), vec4(0.0, 0.0, 0.0, 0.0));
+    imageStore(q_out, center(), vec4(10000.0, 10000.0, 10000.0, 0.0));
 }

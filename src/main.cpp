@@ -38,6 +38,9 @@ const unsigned int SCR_HEIGHT = 600;
 
 int main()
 {
+    Physics::init();
+    // fluidsim_testing123();
+
     gladLoadGL();
     //
     // Set up window
@@ -60,11 +63,12 @@ int main()
     //
     ImGuiInstance imgui_instance(window.window, &camera.position);
 
-    Physics::init();
-    // fluidsim_testing123();
-
     // DECLARE SHADERS
     KernelProgram fs_advect_diffuse("src/kernels/fs_advect_diffuse.comp");
+    KernelProgram fs_apply_force("src/kernels/fs_apply_force.comp");
+    KernelProgram fs_div("src/kernels/fs_divergence.comp");
+    KernelProgram fs_jacobi_iter("src/kernels/fs_jacobi_iter_pressure_obstacle.comp");
+    KernelProgram fs_pressure_proj("src/kernels/fs_pressure_projection_obstacle.comp");
     KernelProgram fs_write_to("src/kernels/fs_write_to.comp");
     
     Framebuffer fb(window.window);
@@ -85,17 +89,35 @@ int main()
     vertex_buffer.buffer_data();
 
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
-    uint32_t grid_width = 20, grid_height = 20, grid_depth = 20;
+    uint32_t grid_width = 10, grid_height = 10, grid_depth = 10;
 
-    Texture3D u(grid_width, grid_height, grid_depth, 1, Texture3D::u(grid_width, grid_height, grid_depth));
-    Texture3D q(grid_width, grid_height, grid_depth, 2, Texture3D::q(grid_width, grid_height, grid_depth));
-    Texture3D world_mask(grid_width, grid_height, grid_depth, 3, Texture3D::two(grid_width, grid_height, grid_depth));
-    Texture3D w_next(grid_width, grid_height, grid_depth, 4, Texture3D::zero(grid_width, grid_height, grid_depth));
-    Texture3D zero(grid_width, grid_height, grid_depth, 5, Texture3D::zero(grid_width, grid_height, grid_depth));
+    Texture3D first(grid_width, grid_height, grid_depth, 1, Texture3D::q(grid_width, grid_height, grid_depth), GL_NEAREST);
+    Texture3D second(grid_width, grid_height, grid_depth, 2, Texture3D::q(grid_width, grid_height, grid_depth), GL_NEAREST);
+
+    // Texture3D u(grid_width, grid_height, grid_depth, 1, Texture3D::u(grid_width, grid_height, grid_depth));
+    // Texture3D q(grid_width, grid_height, grid_depth, 2, Texture3D::q(grid_width, grid_height, grid_depth));
+    // Texture3D world_mask(grid_width, grid_height, grid_depth, 3, Texture3D::two(grid_width, grid_height, grid_depth), GL_NEAREST);
+    // Texture3D w_next(grid_width, grid_height, grid_depth, 4, Texture3D::zero(grid_width, grid_height, grid_depth));
+    // Texture3D zero(grid_width, grid_height, grid_depth, 5, Texture3D::zero(grid_width, grid_height, grid_depth));
 
     //
     // Render loop
     //
+
+    int work_grp_cnt[3];
+
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_grp_cnt[0]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &work_grp_cnt[1]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &work_grp_cnt[2]);
+
+    printf("max global (total) work group counts x:%i y:%i z:%i\n",
+    work_grp_cnt[0], work_grp_cnt[1], work_grp_cnt[2]);
+
+    GLint work_grp_inv;
+    glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &work_grp_inv);
+    printf("max local work group invocations %i\n", work_grp_inv);
+
+    
     while (!window.should_close())
     {
         if (ImGuiInstance::msaa) {
@@ -142,45 +164,38 @@ int main()
              *      (c) PROJECTION STEP FOR PRESSURE
             */
 
-            // velocity_field.use();
-            // advect_diffuse.use();
-            // advect_diffuse.setInt("u", velocity_field.unit);
-            // advect_diffuse.setInt("q_prev", world_mask.unit);
-            // advect_diffuse.setInt("q_solid", zero.unit);
-            // advect_diffuse.setInt("q_next", buffer.unit);
-            // advect_diffuse.setInt("world_mask", two.unit);
-            // advect_diffuse.setFloat("dt", 1000);
-            // advect_diffuse.setVec3("scale", 1, 1, 1);
-            // advect_diffuse.setVec4("q_air", 0, 0, 0, 0);
-            u.use();
-            q.use();
-            w_next.use();
-            world_mask.use();
-            zero.use();
+            // u.use();
+            // q.use();
+            // w_next.use();
+            // world_mask.use();
+            // zero.use();
             
-            fs_advect_diffuse.use();
-            fs_advect_diffuse.setInt("u", u.unit);
-            fs_advect_diffuse.setInt("q_prev", q.unit);
-            fs_advect_diffuse.setInt("q_solid", zero.unit);
-            fs_advect_diffuse.setInt("q_next", w_next.unit);
-            fs_advect_diffuse.setInt("world_mask", world_mask.unit);
-            fs_advect_diffuse.setFloat("dt", 1.0f);
-            fs_advect_diffuse.setVec3("scale", 0.2f, 0.2f, 0.2f);
-            fs_advect_diffuse.setVec4("q_air", 0.0f, 0.0f, 0.0f, 0.0f);
+            // fs_advect_diffuse.use();
+            // fs_advect_diffuse.setInt("u", u.unit);
+            // fs_advect_diffuse.setInt("q_prev", q.unit);
+            // fs_advect_diffuse.setInt("q_solid", zero.unit);
+            // fs_advect_diffuse.setInt("q_next", w_next.unit);
+            // fs_advect_diffuse.setInt("world_mask", world_mask.unit);
+            // fs_advect_diffuse.setFloat("dt", 1.0f);
+            // fs_advect_diffuse.setVec3("scale", 0.2f, 0.2f, 0.2f);
+            // fs_advect_diffuse.setVec4("q_air", 0.0f, 0.0f, 0.0f, 0.0f);
 
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
+            // glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
 
-            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+            // glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
             
+            first.use(1,1);
+            second.use(2,2);
+
             fs_write_to.use();
-            fs_write_to.setInt("q_in", w_next.unit);
-            fs_write_to.setInt("q_out", q.unit);
+            fs_write_to.setInt("q_in", 1);
+            fs_write_to.setInt("q_out", 2);
 
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
+            glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
 
-            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+            glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-            fsdebug.draw(q, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
+            fsdebug.draw(second, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
         }
 
         imgui_instance.draw();
