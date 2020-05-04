@@ -65,6 +65,7 @@ int main()
 
     // DECLARE SHADERS
     KernelProgram fs_advect_diffuse("src/kernels/fs_advect_diffuse.comp");
+    KernelProgram fs_advect_diffuse_free("src/kernels/fs_advect_diffuse_free_surface.comp");
     KernelProgram fs_apply_force("src/kernels/fs_apply_force.comp");
     KernelProgram fs_div("src/kernels/fs_divergence.comp");
     KernelProgram fs_jacobi_iter("src/kernels/fs_jacobi_iter_pressure_obstacle.comp");
