@@ -66,6 +66,7 @@ int main()
     // DECLARE SHADERS
     KernelProgram fs_advect_diffuse("src/kernels/fs_advect_diffuse.comp");
     KernelProgram fs_advect_diffuse_free("src/kernels/fs_advect_diffuse_free_surface.comp");
+    KernelProgram fs_advect_diffuse_mc("src/kernels/fs_advect_maccormack.comp");
     KernelProgram fs_apply_force("src/kernels/fs_apply_force.comp");
     KernelProgram fs_div("src/kernels/fs_divergence.comp");
     KernelProgram fs_jacobi_iter("src/kernels/fs_jacobi_iter_pressure_obstacle.comp");
@@ -90,7 +91,8 @@ int main()
     vertex_buffer.buffer_data();
 
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
-    uint32_t grid_width = 75, grid_height = 75, grid_depth = 75;
+    uint32_t grid_width = 64, grid_height = 64, grid_depth = 64;
+    int max_iterations = 5;
 
     Texture3D u(grid_width, grid_height, grid_depth, 1, Texture3D::zero(grid_width, grid_height, grid_depth));
     Texture3D world_mask(grid_width, grid_height, grid_depth, 2, Texture3D::world_mask(grid_width, grid_height, grid_depth), GL_NEAREST);
@@ -101,7 +103,8 @@ int main()
     Texture3D forces(grid_width, grid_height, grid_depth, 7, Texture3D::zero(grid_width, grid_height, grid_depth));
     Texture3D divq(grid_width, grid_height, grid_depth, 8, Texture3D::zero(grid_width, grid_height, grid_depth));
     Texture3D pres(grid_width, grid_height, grid_depth, 9, Texture3D::zero(grid_width, grid_height, grid_depth));
-
+    Texture3D lin_buffer2(grid_width, grid_height, grid_depth, 10, Texture3D::zero(grid_width, grid_height, grid_depth));
+    
 
     //
     // Render loop
@@ -180,43 +183,60 @@ int main()
             nearest_buffer.use(4, 4);
             zero.use(5, 5);
             q.use(6, 6);
+            lin_buffer2.use(7, 7);
 
-            // ADVECT THE WORLD_MASK FIELD
-            fs_advect_diffuse_free.use();
-            fs_advect_diffuse_free.setInt("u", 1);
-            fs_advect_diffuse_free.setInt("world_mask", 2);
-            fs_advect_diffuse_free.setInt("world_mask_next", 4);
-            fs_advect_diffuse_free.setFloat("dt", dt);
-            fs_advect_diffuse_free.setVec3("scale", sclx, scly, sclz);
+            // TODO: PROPER FREE SURFACE ADVECTION
+            // // ADVECT THE WORLD_MASK FIELD
+            // fs_advect_diffuse_free.use();
+            // fs_advect_diffuse_free.setInt("u", 1);
+            // fs_advect_diffuse_free.setInt("world_mask", 2);
+            // fs_advect_diffuse_free.setInt("world_mask_next", 4);
+            // fs_advect_diffuse_free.setFloat("dt", dt);
+            // fs_advect_diffuse_free.setVec3("scale", sclx, scly, sclz);
+
+            // glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
+            // glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+            // ADVECT SOME VELOCITY FIELD
+            fs_advect_diffuse_mc.use();
+            fs_advect_diffuse_mc.setInt("u", 1);
+            fs_advect_diffuse_mc.setInt("q_prev", 1);
+            fs_advect_diffuse_mc.setInt("q_solid", 5);
+            fs_advect_diffuse_mc.setInt("q_next", 3);
+            fs_advect_diffuse_mc.setInt("world_mask", 2);
+            fs_advect_diffuse_mc.setFloat("dt", dt);
+            fs_advect_diffuse_mc.setVec3("scale", sclx, scly, sclz);
+            fs_advect_diffuse_mc.setVec4("q_air", 0.0f, 0.0f, 0.0f, 0.0f);
 
             glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
             glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
             // ADVECT SOME QUANTITY FIELD
-            fs_advect_diffuse.use();
-            fs_advect_diffuse.setInt("u", 1);
-            fs_advect_diffuse.setInt("q_prev", 1);
-            fs_advect_diffuse.setInt("q_solid", 5);
-            fs_advect_diffuse.setInt("q_next", 3);
-            fs_advect_diffuse.setInt("world_mask", 2);
-            fs_advect_diffuse.setFloat("dt", dt);
-            fs_advect_diffuse.setVec3("scale", sclx, scly, sclz);
-            fs_advect_diffuse.setVec4("q_air", 0.0f, 0.0f, 0.0f, 0.0f);
+            fs_advect_diffuse_mc.use();
+            fs_advect_diffuse_mc.setInt("u", 1);
+            fs_advect_diffuse_mc.setInt("q_prev", 6);
+            fs_advect_diffuse_mc.setInt("q_solid", 5);
+            fs_advect_diffuse_mc.setInt("q_next", 7);
+            fs_advect_diffuse_mc.setInt("world_mask", 2);
+            fs_advect_diffuse_mc.setFloat("dt", dt);
+            fs_advect_diffuse_mc.setVec3("scale", sclx, scly, sclz);
+            fs_advect_diffuse_mc.setVec4("q_air", 0.0f, 0.0f, 0.0f, 0.0f);
 
             glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
             glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-            // WRITE TO NEW VALUES
+            // WRITE W_NEXT TO U
             fs_write_to.use();
-            fs_write_to.setInt("q_in", 4);
-            fs_write_to.setInt("q_out", 2);
+            fs_write_to.setInt("q_in", 3);
+            fs_write_to.setInt("q_out", 1);
 
             glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
             glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
+            // WRITE Q_NEXT TO Q
             fs_write_to.use();
-            fs_write_to.setInt("q_in", 3);
-            fs_write_to.setInt("q_out", 1);
+            fs_write_to.setInt("q_in", 7);
+            fs_write_to.setInt("q_out", 6);
 
             glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
             glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -270,7 +290,7 @@ int main()
 
             // JACOBBBBBBIIIIIIIIIIII
 
-            for(int iter = 0; iter < 1; iter++) {
+            for(int iter = 0; iter < max_iterations; iter++) {
                 // JACOBOBBOBOIBSOFIBODFIBODFIBODBIBOIIIII
                 fs_jacobi_iter.use();
                 fs_jacobi_iter.setInt("pressure", 6);
@@ -313,7 +333,7 @@ int main()
             glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
-            fsdebug.draw(world_mask, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
+            fsdebug.draw(q, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
         }
 
         imgui_instance.draw();

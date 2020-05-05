@@ -7,7 +7,7 @@
 // in uvec3 gl_GlobalInvocationID;      Represents [x,y,z] position in grid
 // in uint  gl_LocalInvocationIndex;
 
-layout(local_size_x = 1, local_size_y = 1) in;
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 layout(rgba16f) uniform image3D w;              // Unprojected velocity field
 layout(rgba16f) uniform image3D f;              // Forces
@@ -44,7 +44,7 @@ void main() {
         force += imageLoad(f, center());
 
         // Apply Gravitational Force
-        vec4 gforce = vec4(100.0, 0.0, 0.0, 0.0);
+        vec4 gforce = vec4(0.0, 100.0, 0.0, 0.0);
         gforce *= mass * g;
         force += gforce;
 
