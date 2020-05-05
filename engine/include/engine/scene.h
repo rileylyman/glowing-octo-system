@@ -31,8 +31,17 @@ struct Scene {
 
     inline ShaderProgram *get_shader(std::string name) { return &shaders[name]; }
 
-    std::vector<Mask> get_mesh_masks() {
+    std::vector<Model> get_models() {
+        std::vector<Model> ret_models;
+        for (std::map<ShaderProgram, std::vector<Model>>::iterator iter = models.begin(); iter != models.end(); iter++) {
+            for (Model model : iter->second) {
+                ret_models.push_back(model);
+            }
+        }
+        return ret_models;
+    }
 
+    std::vector<Mask> get_mesh_masks() {
         uint32_t i = 0;
         std::vector<Mask> mesh_masks;
         for (std::map<ShaderProgram, std::vector<Model>>::iterator iter = models.begin(); iter != models.end(); iter++) {
