@@ -143,8 +143,8 @@ struct Texture3D {
                     } else if ((h >= (height * 3) / 10 && h <= (height * 7) / 10) &&
                                (w >= (width * 3) / 10 && w <= (width * 7) / 10) &&
                                (d >= (depth * 3) / 10 && d <= (depth * 7) / 10)) {
-                        // Air around the box
-                        data.push_back(1.0f);
+                        // Water around the box
+                        data.push_back(2.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                         data.push_back(1.0f);
