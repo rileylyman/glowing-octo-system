@@ -1,0 +1,64 @@
+#version 460 core
+
+// Built-in Variables
+// in uvec3 gl_NumWorkGroups;
+// in uvec3 gl_WorkGroupID;
+// in uvec3 gl_LocalInvocationID;
+// in uvec3 gl_GlobalInvocationID;      Represents [x,y,z] position in grid
+// in uint  gl_LocalInvocationIndex;
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+uniform vec3 u_Least;
+uniform vec3 u_Most;
+uniform vec3 u_GridOffset;
+uniform vec3 u_GridDimensions;
+
+uniform mat4 u_InverseWorld;
+
+uniform vec3 u_GridNumCells;
+uniform vec3 u_MaskNumCells;
+
+layout(rgba16f) uniform image3D u_Grid;     
+layout(rgba16f) uniform image3D u_Mask;     
+
+ivec3 center() {
+    return ivec3(gl_GlobalInvocationID);
+}
+
+void main() {
+    // Position in grid
+    // position in world (using grid dimensions and offset)
+    // position in mesh mask grid (using transformation on mesh bbox vertices)
+
+    ivec3 pos_in_grid_i = center();
+    pos_in_grid_i = pos_in_grid_i.xzy;
+    
+    vec3 pos_in_grid = vec3(pos_in_grid_i);
+    vec3 pos_in_world = (2.0 * (pos_in_grid / u_GridNumCells) - 1.0) * u_GridDimensions / 2.0 + u_GridOffset;
+
+    vec3 pos_in_local = vec3(u_InverseWorld * vec4(pos_in_world, 1.0));
+    //vec3 pos_in_local = pos_in_world;
+    vec3 pos_in_mask = (pos_in_local - u_Least) / (u_Most - u_Least);
+
+    vec4 nothing = vec4(0.1, 0.0, 0.1, 1.0);
+
+    if (pos_in_mask.x < 0.0 || pos_in_mask.x > 1.0 ||
+        pos_in_mask.y < 0.0 || pos_in_mask.y > 1.0 ||
+        pos_in_mask.z < 0.0 || pos_in_mask.z > 1.0)
+    {
+        //imageStore(u_Grid, center(), vec4(0.1, 0.0, 0.1, 1.0));
+    }
+    else {
+        ivec3 pos_in_mask_i = ivec3(pos_in_mask * u_MaskNumCells);
+        pos_in_mask_i = pos_in_mask_i.xzy;
+        
+        vec4 mask_value = imageLoad(u_Mask, pos_in_mask_i);
+        if (mask_value.x == 0.0 && mask_value.y == 0.0 && mask_value.z == 0.0) {
+            mask_value = nothing;
+        } else {
+            //imageStore(u_Grid, center(), mask_value);
+        }
+        imageStore(u_Grid, center(), vec4(1.0, 1.0, 1.0, 1.0));
+    }
+}

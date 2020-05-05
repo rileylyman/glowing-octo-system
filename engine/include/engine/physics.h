@@ -66,7 +66,7 @@ struct Physics {
             accumulator -= timestep;
         }
 
-        double alpha = accumulator * 60.0;
+        double alpha = accumulator / (double)timestep;
 
         for (PhysicsObject *po : physics_objects) {
             po->current_transform = rp3d::Transform::interpolateTransforms(po->previous_transform, po->body->getTransform(), rp3d::decimal(alpha));

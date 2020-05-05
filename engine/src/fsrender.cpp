@@ -1,7 +1,15 @@
+#include <iostream>
 #include "engine/fsrender.h"
 
-FluidDebugRenderer::FluidDebugRenderer(Camera *cam, float plane_width, float plane_height, float plane_z_offset)
-: shader(ShaderProgram("src/shaders/fsdebug.vert", "src/shaders/fsdebug.frag")), camera(cam), plane_width(plane_width), plane_height(plane_height), plane_z_offset(plane_z_offset) 
+FluidDebugRenderer::FluidDebugRenderer(Camera *cam, float plane_width, float plane_height, float plane_z_offset, glm::vec3 grid_offset, glm::vec3 grid_worldspace_whd)
+: draw_shader(ShaderProgram("src/shaders/fsdebug.vert", "src/shaders/fsdebug.frag")), 
+overlay_compute_shader(KernelProgram("src/kernels/fs_overlay.comp")),
+camera(cam), 
+plane_width(plane_width), 
+plane_height(plane_height), 
+plane_z_offset(plane_z_offset),
+grid_offset(grid_offset),
+grid_worldspace_whd(grid_worldspace_whd)
 {
     glm::mat4 camera_to_world = glm::inverse(cam->view());
 
@@ -53,21 +61,42 @@ void FluidDebugRenderer::plane_vectors(glm::vec3 *plane_x, glm::vec3 *plane_y) {
 
 }
 
-void FluidDebugRenderer::draw(Texture3D grid, bool scalar, glm::vec3 offset, glm::vec3 worldspace_whd) {
+void FluidDebugRenderer::overlay_mask(Mask mask, Texture3D *grid) {
+
+    grid->use(1, 1);
+    mask.tex.use(2, 2);
+
+    overlay_compute_shader.use();
+    overlay_compute_shader.setVec3("u_Least", glm::vec4(mask.bbox_least, 1.0));
+    overlay_compute_shader.setVec3("u_Most",  glm::vec4(mask.bbox_most, 1.0));
+    overlay_compute_shader.setMat4("u_InverseWorld", glm::inverse(mask.parent->model() * mask.bind_matrix));
+    overlay_compute_shader.setInt("u_Grid", 1);
+    overlay_compute_shader.setInt("u_Mask", 2);
+    overlay_compute_shader.setVec3("u_GridOffset", grid_offset);
+    overlay_compute_shader.setVec3("u_GridDimensions", grid_worldspace_whd);
+    overlay_compute_shader.setVec3("u_GridNumCells", (float)grid->width, (float)grid->height, (float)grid->depth);
+    overlay_compute_shader.setVec3("u_MaskNumCells", (float)mask.tex.width, (float)mask.tex.height, (float)mask.tex.depth);
+
+    glDispatchCompute((GLuint) grid->width, (GLuint) grid->depth, (GLuint) grid->height);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+}
+
+void FluidDebugRenderer::draw(Texture3D grid, bool scalar) {
 
     glm::vec3 plane_x, plane_y;
     plane_vectors(&plane_x, &plane_y);
 
-    shader.use();
+    draw_shader.use();
     grid.use();
-    shader.setInt("u_Grid", grid.unit);
-    shader.setBool("u_Scalar", scalar);
-    shader.setVec3("u_Offset", offset);
-    shader.setVec3("u_PlaneX", plane_x);
-    shader.setVec3("u_PlaneY", plane_y);
-    shader.setVec3("u_Dimensions", worldspace_whd);
-    shader.setMat4("u_Projection", camera->projection());
-    shader.setMat4("u_InverseView", glm::inverse(camera->view()));
+    draw_shader.setInt("u_Grid", grid.unit);
+    draw_shader.setBool("u_Scalar", scalar);
+    draw_shader.setVec3("u_Offset", grid_offset);
+    draw_shader.setVec3("u_PlaneX", plane_x);
+    draw_shader.setVec3("u_PlaneY", plane_y);
+    draw_shader.setVec3("u_Dimensions", grid_worldspace_whd);
+    draw_shader.setMat4("u_Projection", camera->projection());
+    draw_shader.setMat4("u_InverseView", glm::inverse(camera->view()));
     glBindVertexArray(quad_vao);
+
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }

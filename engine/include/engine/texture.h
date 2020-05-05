@@ -35,7 +35,7 @@ struct Texture3D {
         glBindTexture(GL_TEXTURE_3D, id);
 
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); 
 
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA16F, width, height, depth, 0, GL_RGBA, GL_FLOAT, NULL);
 
@@ -47,7 +47,7 @@ struct Texture3D {
         glBindTexture(GL_TEXTURE_3D, id);
 
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); 
 
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA16F, width, height, depth, 0, GL_RGBA, GL_FLOAT, data.data());
 
@@ -57,13 +57,13 @@ struct Texture3D {
     void use() {
         glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_3D, id);
-        glBindImageTexture(unit, id, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+        glBindImageTexture(unit, id, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
     }
 
     void use(uint32_t tex_unit, uint32_t img_unit) {
         glActiveTexture(GL_TEXTURE0 + tex_unit);
         glBindTexture(GL_TEXTURE_3D, id);
-        glBindImageTexture(img_unit, id, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+        glBindImageTexture(img_unit, id, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
     }
 
     static std::vector<float> debug_velocity(uint32_t width, uint32_t height, uint32_t depth) {
@@ -114,8 +114,6 @@ struct Texture3D {
                     float y = (float)h / (float)height;
                     float z = (float)d / (float)depth;
 
-                    x *= 2 * 3.1415, y *= 2 * 3.1415, z = 0.0;
-
                     data.push_back(x);
                     data.push_back(y);
                     data.push_back(z);
@@ -126,7 +124,7 @@ struct Texture3D {
         return data;
     }
 
-        static std::vector<float> zero_mask(uint32_t width, uint32_t height, uint32_t depth) {
+    static std::vector<float> zero_mask(uint32_t width, uint32_t height, uint32_t depth) {
         std::vector<float> data;
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {

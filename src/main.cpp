@@ -83,11 +83,14 @@ int main()
     Scene scene("src/scenes/test.json", &vertex_buffer);
     vertex_buffer.buffer_data();
 
-    FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
-    uint32_t grid_width = 20, grid_height = 20, grid_depth = 20;
+    FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f, {0.0, 0.0, 0.0}, {20.0, 20.0, 20.0});    
+    uint32_t grid_width = 100, grid_height = 100, grid_depth = 100;
 
     Texture3D velocity_field1(grid_width, grid_height, grid_depth, 1, Texture3D::debug_velocity(grid_width, grid_height, grid_depth));  // VELOCITY 1
     Texture3D velocity_field2(grid_width, grid_height, grid_depth, 2, Texture3D::debug_velocity(grid_width, grid_height, grid_depth));  // VELOCITY 2
+
+    std::vector<Mask> mesh_masks = scene.get_mesh_masks();
+    Texture3D output_grid(grid_width, grid_height, grid_depth, 0, Texture3D::zero_mask(grid_width, grid_height, grid_depth));
 
     //
     // Render loop
@@ -148,17 +151,20 @@ int main()
             // advect_diffuse.setFloat("dt", 1000);
             // advect_diffuse.setVec3("scale", 1, 1, 1);
             // advect_diffuse.setVec4("q_air", 0, 0, 0, 0);
-            velocity_field1.use(velocity_field1.unit, 1);
-            velocity_field2.use(velocity_field2.unit, 2);
-            dummy.use();
-            dummy.setInt("q_in", 1);
-            dummy.setInt("q_out", 2);
+            //velocity_field1.use(velocity_field1.unit, 1);
+            //velocity_field2.use(velocity_field2.unit, 2);
+            //dummy.use();
+            //dummy.setInt("q_in", 1);
+            //dummy.setInt("q_out", 2);
 
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
+            //glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
 
-            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+            //glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
-            fsdebug.draw(velocity_field2, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
+            for (Mask &mask : mesh_masks) {
+                fsdebug.overlay_mask(mask, &output_grid);
+            }
+            fsdebug.draw(output_grid, ImGuiInstance::fsdebug_scalar);
         }
 
         imgui_instance.draw();

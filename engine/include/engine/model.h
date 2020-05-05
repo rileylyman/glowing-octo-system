@@ -43,6 +43,15 @@ enum MeshShaderBits {
 struct Model;
 struct Mesh;
 
+struct Mask {
+    Mask(Texture3D tex, Model *parent, glm::mat4 bind_matrix, glm::vec3 least, glm::vec3 most) 
+    : parent(parent), tex(tex), bind_matrix(bind_matrix), bbox_least(least), bbox_most(most) {}
+    Texture3D tex;
+    glm::mat4 bind_matrix;
+    Model *parent;
+    glm::vec3 bbox_most, bbox_least;
+};
+
 //
 // A Mesh is the atomic unit of a model. It describes a particular set
 // of vertices, as well as how they should be shaded and drawn.
@@ -58,6 +67,9 @@ struct Mesh {
     // The coordinates of the extrema of this mesh's bounding box 
     //
     glm::vec3 bbox_least, bbox_most;
+
+    uint32_t mask_width = 20, mask_height = 20, mask_depth = 20;
+    std::vector<float> mask_data;
 
     //
     // The constructor takes a (possibly empty) vertex
@@ -89,7 +101,17 @@ struct Mesh {
     //
     glm::mat4 model(); 
 
+    //
+    // Get the 3D mask texture for this mesh
+    //
+    Mask get_mask(uint32_t unit);
+
 private:
+
+    uint64_t hash_position(glm::vec3 position);
+    uint64_t hash_func(uint32_t ix, uint32_t iy, uint32_t iz);
+    void generate_mask_data(std::vector<Vertex> vertices);
+
     //
     // The mesh local->model local transformation
     //
@@ -232,6 +254,8 @@ struct Model {
     glm::mat4 model() {
         return physics_obj.get_model_matrix();
     }
+
+    inline std::vector<Mesh> get_meshes() { return meshes; }
 
 
     PhysicsObject physics_obj;

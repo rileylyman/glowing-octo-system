@@ -1,6 +1,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <assimp/pbrmaterial.h>
 #include <iostream>
+#include <set>
+#include <tgmath.h>
 #include "engine/model.h"
 #include "engine/imgui-instance.h"
 
@@ -39,7 +41,63 @@ Mesh::Mesh(
         bbox_most.y = std::max(position.y, bbox_most.y);
         bbox_most.z = std::max(position.z, bbox_most.z);
     }
+
+    generate_mask_data(vertices);
+
     vertex_buffer_index = vertex_buffer->add_data(vertices, indices);
+}
+
+
+uint64_t Mesh::hash_position(glm::vec3 position) {
+    float x = (position.x - bbox_least.x) / (bbox_most.x - bbox_least.x) * (float) mask_width;
+    float y = (position.y - bbox_least.y) / (bbox_most.y - bbox_least.y) * (float) mask_height;
+    float z = (position.z - bbox_least.z) / (bbox_most.z - bbox_least.z) * (float) mask_depth;
+
+    uint32_t ix = static_cast<uint32_t> (std::floor(x));
+    uint32_t iy = static_cast<uint32_t> (std::floor(y));
+    uint32_t iz = static_cast<uint32_t> (std::floor(z));
+
+    return hash_func(ix, iy, iz);
+}
+
+uint64_t Mesh::hash_func(uint32_t ix, uint32_t iy, uint32_t iz) {
+    uint64_t hash = iz << 32 + iy << 16 + ix;
+    return hash * 2654435761 >> 16;
+}
+
+void Mesh::generate_mask_data(std::vector<Vertex> vertices) {
+
+    std::set<uint64_t> spatial_hm;
+
+    for (Vertex &vert: vertices) {
+        float pos_hash = hash_position(vert.position);
+        spatial_hm.insert(pos_hash);
+    }
+
+    mask_data.reserve(4 * mask_width * mask_height * mask_depth);
+    for (uint32_t h = 0; h < mask_height; h++) {
+        for (uint32_t d = 0; d < mask_depth; d++) {
+            for (uint32_t w = 0; w < mask_width; w++) {
+
+                uint64_t hash = hash_func(w, h, d);
+                if (spatial_hm.count(hash) > 0) {
+                    mask_data.push_back(1.0f);
+                    mask_data.push_back(0.0f);
+                    mask_data.push_back(0.0f);
+                    mask_data.push_back(1.0f);
+                }  else {
+                    mask_data.push_back(0.0f);
+                    mask_data.push_back(0.0f);
+                    mask_data.push_back(0.0f);
+                    mask_data.push_back(1.0f);
+                }
+            }
+        }
+    }
+}
+
+Mask Mesh::get_mask(uint32_t unit) {
+    return Mask(Texture3D(mask_width, mask_height, mask_depth, unit, mask_data), parent_model, bind_matrix, bbox_least, bbox_most);
 }
 
 glm::mat4 Mesh::model() {
@@ -273,7 +331,7 @@ glm::mat4 Model::convert_matrix(const aiMatrix4x4 &aiMat) {
 void Model::load_model(std::string pathname, MeshShaderType shader_type, uint32_t shader_flags, bool height_normals) {
     
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(pathname, aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate | aiProcess_GenNormals);
+    const aiScene* scene = importer.ReadFile(pathname, aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_PreTransformVertices);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
     {
         std::cout << "Assimp importer error: " << importer.GetErrorString() << std::endl;

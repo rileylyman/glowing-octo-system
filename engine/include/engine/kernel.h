@@ -5,8 +5,8 @@
 #include <string>
 #include <glm/glm.hpp>
 #include <vector>
-#include "light.h"
-#include "texture.h"
+#include "engine/light.h"
+#include "engine/texture.h"
 
 //
 // Represents the final, linked shader program that is used by the

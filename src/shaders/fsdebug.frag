@@ -22,13 +22,15 @@ void main() {
 
     sampleLocation += u_Dimensions / 2.0;
     sampleLocation /= u_Dimensions;
+    sampleLocation = sampleLocation.xzy;
+
     if (sampleLocation.x > 1.0 || sampleLocation.x <= 0.0 || sampleLocation.y > 1.0 || sampleLocation.y <= 0.0 || sampleLocation.z > 1.0 || sampleLocation.z <= 0.0) {
         FragColor = vec4(0.0, 0.0, 0.0, 0.0);
     } else {
 
         vec3 qValue;
         if (u_Scalar) {
-            FragColor = vec4(texture(u_Grid, sampleLocation).r, 0.0, 0.0, 1.0);
+            FragColor = vec4(hsv2rgb(vec3(texture(u_Grid, sampleLocation).r, 1.0, 1.0)), 1.0);
             return;
         } else {
             qValue = texture(u_Grid, sampleLocation).rgb;
@@ -42,5 +44,6 @@ void main() {
         float theta =  atan(y, x);
 
         FragColor = vec4(hsv2rgb(vec3(theta, 1.0, r)), 1.0);
+        FragColor = vec4(normalize(qValue), 1.0);
     }
 }
