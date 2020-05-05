@@ -126,7 +126,7 @@ void main() {
             pU = pressure_air;
         }
 
-        iter = (pL + pR + pB + pT + pD + pU) / 6.0;
+        iter = (pL + pR + pB + pT + pD + pU - dC) / 6.0;
     }
 
            
