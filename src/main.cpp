@@ -92,7 +92,7 @@ int main()
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
     uint32_t grid_width = 75, grid_height = 75, grid_depth = 75;
 
-    Texture3D u(grid_width, grid_height, grid_depth, 1, Texture3D::u(grid_width, grid_height, grid_depth));
+    Texture3D u(grid_width, grid_height, grid_depth, 1, Texture3D::zero(grid_width, grid_height, grid_depth));
     Texture3D world_mask(grid_width, grid_height, grid_depth, 2, Texture3D::world_mask(grid_width, grid_height, grid_depth), GL_NEAREST);
     Texture3D lin_buffer(grid_width, grid_height, grid_depth, 3, Texture3D::zero(grid_width, grid_height, grid_depth));
     Texture3D nearest_buffer(grid_width, grid_height, grid_depth, 4, Texture3D::zero(grid_width, grid_height, grid_depth), GL_NEAREST);
@@ -298,6 +298,7 @@ int main()
             fs_pressure_proj.setInt("w", 1);
             fs_pressure_proj.setInt("pressure", 6);
             fs_pressure_proj.setInt("u_next", 3);
+            fs_pressure_proj.setInt("u_solid", 4);
             fs_pressure_proj.setInt("world_mask", 2);
 
             glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
@@ -312,7 +313,7 @@ int main()
             glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 
-            fsdebug.draw(u, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
+            fsdebug.draw(world_mask, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
         }
 
         imgui_instance.draw();
