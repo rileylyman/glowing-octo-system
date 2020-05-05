@@ -1,4 +1,4 @@
-#version 430 core
+#version 460 core
 
 // Built-in Variables
 // in uvec3 gl_NumWorkGroups;
@@ -7,7 +7,7 @@
 // in uvec3 gl_GlobalInvocationID;      Represents [x,y,z] position in grid
 // in uint  gl_LocalInvocationIndex;
 
-layout(local_size_x = 1, local_size_y = 1) in;
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 uniform sampler3D u;                            // Velocity field
 

@@ -1,4 +1,4 @@
-#version 430 core
+#version 460 core
 
 // Built-in Variables
 // in uvec3 gl_NumWorkGroups;
@@ -7,12 +7,15 @@
 // in uvec3 gl_GlobalInvocationID;      Represents [x,y,z] position in grid
 // in uint  gl_LocalInvocationIndex;
 
-layout(local_size_x = 1, local_size_y = 1) in;
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 layout(rgba16f) uniform image3D w;              // Unprojected velocity field
 layout(rgba16f) uniform image3D f;              // Forces
 uniform float rho;                              // Density
 uniform float g;                                // Gravitational acceleration
+
+uniform vec3 scale;                             // Dimensions of a cell in x,y,z
+uniform float dt;                               // Delta time
 
 layout(rgba16f) uniform image3D w_next;         // Buffer to store next velocities
 
@@ -33,14 +36,23 @@ bool isAirCell(ivec3 index) {
 void main() {
     vec4 vel = imageLoad(w, center());
 
-    if (!(isSolidCell(center()) || !(isAirCell(center())))) {
+    if (!isSolidCell(center())) {
+        float mass = rho * scale.x * scale.y * scale.z;
+        vec4 force = vec4(0.0, 0.0, 0.0, 0.0);
+
         // Apply Force
-        vel += imageLoad(f, center());
+        force += imageLoad(f, center());
 
         // Apply Gravitational Force
-        vec4 gravity = vec4(1.0, 1.0, 1.0, 0.0);
-        gravity *= rho * g;
-        vel += gravity;
+        vec4 gforce = vec4(0.0, 100.0, 0.0, 0.0);
+        gforce *= mass * g;
+        force += gforce;
+
+        // Get Acceleration
+        vec4 acceleration = force / mass;
+
+        // Add to velocity via Newton's Method
+        vel += acceleration * dt;
     }
 
     imageStore(w_next, center(), vel);

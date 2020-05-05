@@ -38,6 +38,8 @@ const unsigned int SCR_HEIGHT = 600;
 
 int main()
 {
+    Physics::init();
+
     gladLoadGL();
     //
     // Set up window
@@ -55,17 +57,12 @@ int main()
     glEnable(GL_MULTISAMPLE);
     //glfwSwapInterval(0);
 
+
     //
     // Set up imgui instance
     //
     ImGuiInstance imgui_instance(window.window, &camera.position);
-
-    Physics::init();
-    // fluidsim_testing123();
-
-    // DECLARE SHADERS
-    KernelProgram dummy("src/kernels/fs_dummy.comp");
-
+    
     Framebuffer fb(window.window);
     fb.add_color_attachment();
     fb.add_depth_stencil_attachment();
@@ -83,18 +80,34 @@ int main()
     Scene scene("src/scenes/test.json", &vertex_buffer);
     vertex_buffer.buffer_data();
 
-    FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f, {0.0, 0.0, 0.0}, {20.0, 20.0, 20.0});    
-    uint32_t grid_width = 100, grid_height = 100, grid_depth = 100;
+    //
+    // Init Fluidsim
+    uint32_t grid_width = 64, grid_height = 64, grid_depth = 64;
+    Fluidsim::Engine fs(grid_width, grid_height, grid_depth, 0.25f, 0.25f, 0.25f);
 
-    Texture3D velocity_field1(grid_width, grid_height, grid_depth, 1, Texture3D::debug_velocity(grid_width, grid_height, grid_depth));  // VELOCITY 1
-    Texture3D velocity_field2(grid_width, grid_height, grid_depth, 2, Texture3D::debug_velocity(grid_width, grid_height, grid_depth));  // VELOCITY 2
+    FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f, {0.0, 0.0, 0.0}, {20.0, 20.0, 20.0});    
 
     std::vector<Mask> mesh_masks = scene.get_mesh_masks();
-    Texture3D output_grid(grid_width, grid_height, grid_depth, 0, Texture3D::zero_mask(grid_width, grid_height, grid_depth));
+    Texture3D output_grid(grid_width, grid_height, grid_depth, 0, Texture3D::zero(grid_width, grid_height, grid_depth), GL_NEAREST);
 
     //
     // Render loop
     //
+
+    int work_grp_cnt[3];
+
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_grp_cnt[0]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &work_grp_cnt[1]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &work_grp_cnt[2]);
+
+    printf("max global (total) work group counts x:%i y:%i z:%i\n",
+    work_grp_cnt[0], work_grp_cnt[1], work_grp_cnt[2]);
+
+    GLint work_grp_inv;
+    glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &work_grp_inv);
+    printf("max local work group invocations %i\n", work_grp_inv);
+
+    
     while (!window.should_close())
     {
         if (ImGuiInstance::msaa) {
@@ -122,50 +135,23 @@ int main()
         glCheckError();
         scene.draw(&camera);
 
-        if (ImGuiInstance::fsdebug) {
-            /**
-             * Physics Steps:
-             * 
-             * (1) ADVECTION
-             *      (a) VELOCITY
-             *      (b) WORLD MASK
-             *      
-             * (2) DIFFUSION (NOT IMPLEMENTED)
-             * 
-             * (3) FORCE APPLICATION
-             *      (a) VELOCITY
-             * 
-             * (4) PRESSURE PROJECTION
-             *      (a) DIVERGENCE OF  UNPROJECTED VELOCITY
-             *      (b) JACOBI ITERATIONS FOR PRESSURE
-             *      (c) PROJECTION STEP FOR PRESSURE
-            */
+        //
+        // Fluid Simulation (TODO: move to scene.draw)
+        //
 
-            // velocity_field.use();
-            // advect_diffuse.use();
-            // advect_diffuse.setInt("u", velocity_field.unit);
-            // advect_diffuse.setInt("q_prev", world_mask.unit);
-            // advect_diffuse.setInt("q_solid", zero.unit);
-            // advect_diffuse.setInt("q_next", buffer.unit);
-            // advect_diffuse.setInt("world_mask", two.unit);
-            // advect_diffuse.setFloat("dt", 1000);
-            // advect_diffuse.setVec3("scale", 1, 1, 1);
-            // advect_diffuse.setVec4("q_air", 0, 0, 0, 0);
-            //velocity_field1.use(velocity_field1.unit, 1);
-            //velocity_field2.use(velocity_field2.unit, 2);
-            //dummy.use();
-            //dummy.setInt("q_in", 1);
-            //dummy.setInt("q_out", 2);
-
-            //glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
-
-            //glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
+        fs.step(0.01);
+        if (ImGuiInstance::mask_overlay) {
             for (Mask &mask : mesh_masks) {
                 fsdebug.overlay_mask(mask, &output_grid);
             }
             fsdebug.draw(output_grid, ImGuiInstance::fsdebug_scalar);
+        } else if (ImGuiInstance::fluid_overlay) {
+            fsdebug.draw(fs.q, ImGuiInstance::fsdebug_scalar);
         }
+        
+        //
+        // End Fluid Simulation
+        //
 
         imgui_instance.draw();
 

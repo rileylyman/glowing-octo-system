@@ -1,0 +1,66 @@
+#version 460 core
+
+// Built-in Variables
+// in uvec3 gl_NumWorkGroups;
+// in uvec3 gl_WorkGroupID;
+// in uvec3 gl_LocalInvocationID;
+// in uvec3 gl_GlobalInvocationID;      Represents [x,y,z] position in grid
+// in uint  gl_LocalInvocationIndex;
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+uniform sampler3D u;                                // Velocity field
+
+// Assumes the world_mask texture has GL_NEAREST sampling
+uniform sampler3D world_mask;                       // World mask (records free surfaces and solids)
+layout(rgba16f) uniform image3D world_mask_next;    // Buffer to store advected free surfaces
+
+uniform vec3 scale;                                 // Dimensions of a cell in x,y,z
+uniform float dt;                                   // Delta time
+
+vec3 center() {
+    return vec3(gl_GlobalInvocationID);
+}
+
+bool isSolidCell(vec3 pos) {
+    return texture(world_mask, pos).r == 0.0;
+}
+
+bool isAirCell(vec3 pos) {
+    return texture(world_mask, pos).r == 1.0;
+}
+
+vec3 cell2texture(vec3 index) {
+    return index / vec3(gl_NumWorkGroups);
+}
+
+void main() {
+    vec4 q_sample;
+    
+    // Get position of cell in index-space
+    vec3 pos = center();
+    pos += vec3(0.5, 0.5, 0.5);
+
+    // Sample Values
+    if (isSolidCell(cell2texture(pos))) {
+        // Solid-cell => keep as solid 
+        q_sample = vec4(0.0, 0.0, 0.0, 0.0);
+    } else {
+        // Fluid-cell => advect
+        // Advect backwards
+        vec3 vel = texture(u, cell2texture(pos)).rgb;
+        pos *= scale;
+        pos -= dt * vel;
+        pos /= scale;
+
+        if (isSolidCell(cell2texture(pos))) {
+            // don't advect solid; replace with vacuum
+            q_sample = vec4(1.0, 0.0, 0.0, 0.0);
+        } else {
+            q_sample = texture(world_mask, cell2texture(pos));
+        }
+    }
+        
+    // Write to buffer
+    imageStore(world_mask_next, ivec3(gl_GlobalInvocationID), q_sample);
+}
