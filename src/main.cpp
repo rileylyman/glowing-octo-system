@@ -39,7 +39,6 @@ const unsigned int SCR_HEIGHT = 600;
 int main()
 {
     Physics::init();
-    // fluidsim_testing123();
 
     gladLoadGL();
     //
@@ -58,20 +57,17 @@ int main()
     glEnable(GL_MULTISAMPLE);
     //glfwSwapInterval(0);
 
+
+    //
+    // Init Fluidsim
+    uint32_t grid_width = 64, grid_height = 64, grid_depth = 64;
+    Fluidsim::Engine fs(grid_width, grid_height, grid_depth, 0.25f, 0.25f, 0.25f);
+    //
+
     //
     // Set up imgui instance
     //
     ImGuiInstance imgui_instance(window.window, &camera.position);
-
-    // DECLARE SHADERS
-    KernelProgram fs_advect_diffuse("src/kernels/fs_advect_diffuse.comp");
-    KernelProgram fs_advect_diffuse_free("src/kernels/fs_advect_diffuse_free_surface.comp");
-    KernelProgram fs_advect_diffuse_mc("src/kernels/fs_advect_maccormack.comp");
-    KernelProgram fs_apply_force("src/kernels/fs_apply_force.comp");
-    KernelProgram fs_div("src/kernels/fs_divergence.comp");
-    KernelProgram fs_jacobi_iter("src/kernels/fs_jacobi_iter_pressure_obstacle.comp");
-    KernelProgram fs_pressure_proj("src/kernels/fs_pressure_projection_obstacle.comp");
-    KernelProgram fs_write_to("src/kernels/fs_write_to.comp");
     
     Framebuffer fb(window.window);
     fb.add_color_attachment();
@@ -91,20 +87,6 @@ int main()
     vertex_buffer.buffer_data();
 
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
-    uint32_t grid_width = 64, grid_height = 64, grid_depth = 64;
-    int max_iterations = 5;
-
-    Texture3D u(grid_width, grid_height, grid_depth, 1, Texture3D::zero(grid_width, grid_height, grid_depth));
-    Texture3D world_mask(grid_width, grid_height, grid_depth, 2, Texture3D::world_mask(grid_width, grid_height, grid_depth), GL_NEAREST);
-    Texture3D lin_buffer(grid_width, grid_height, grid_depth, 3, Texture3D::zero(grid_width, grid_height, grid_depth));
-    Texture3D nearest_buffer(grid_width, grid_height, grid_depth, 4, Texture3D::zero(grid_width, grid_height, grid_depth), GL_NEAREST);
-    Texture3D zero(grid_width, grid_height, grid_depth, 5, Texture3D::zero(grid_width, grid_height, grid_depth));
-    Texture3D q(grid_width, grid_height, grid_depth, 6, Texture3D::q(grid_width, grid_height, grid_depth));
-    Texture3D forces(grid_width, grid_height, grid_depth, 7, Texture3D::zero(grid_width, grid_height, grid_depth));
-    Texture3D divq(grid_width, grid_height, grid_depth, 8, Texture3D::zero(grid_width, grid_height, grid_depth));
-    Texture3D pres(grid_width, grid_height, grid_depth, 9, Texture3D::zero(grid_width, grid_height, grid_depth));
-    Texture3D lin_buffer2(grid_width, grid_height, grid_depth, 10, Texture3D::zero(grid_width, grid_height, grid_depth));
-    
 
     //
     // Render loop
@@ -151,190 +133,18 @@ int main()
         glCheckError();
         scene.draw(&camera);
 
+        //
+        // Fluid Simulation (TODO: move to scene.draw)
+        //
+
+        fs.step(0.01);
         if (ImGuiInstance::fsdebug) {
-            /**
-             * Physics Steps:
-             * 
-             * (1) ADVECTION
-             *      (a) VELOCITY
-             *      (b) WORLD MASK
-             *      
-             * (2) DIFFUSION (NOT IMPLEMENTED)
-             * 
-             * (3) FORCE APPLICATION
-             *      (a) VELOCITY
-             * 
-             * (4) PRESSURE PROJECTION
-             *      (a) DIVERGENCE OF  UNPROJECTED VELOCITY
-             *      (b) JACOBI ITERATIONS FOR PRESSURE
-             *      (c) PROJECTION STEP FOR PRESSURE
-            */
-
-            // PARAMS
-            float dt = 0.01f;
-            float sclx = 0.2f;
-            float scly = 0.2f;
-            float sclz = 0.2f;
-
-            // ADVECTION
-            u.use(1, 1);
-            world_mask.use(2, 2);
-            lin_buffer.use(3, 3);
-            nearest_buffer.use(4, 4);
-            zero.use(5, 5);
-            q.use(6, 6);
-            lin_buffer2.use(7, 7);
-
-            // TODO: PROPER FREE SURFACE ADVECTION
-            // // ADVECT THE WORLD_MASK FIELD
-            // fs_advect_diffuse_free.use();
-            // fs_advect_diffuse_free.setInt("u", 1);
-            // fs_advect_diffuse_free.setInt("world_mask", 2);
-            // fs_advect_diffuse_free.setInt("world_mask_next", 4);
-            // fs_advect_diffuse_free.setFloat("dt", dt);
-            // fs_advect_diffuse_free.setVec3("scale", sclx, scly, sclz);
-
-            // glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
-            // glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-            // ADVECT SOME VELOCITY FIELD
-            fs_advect_diffuse_mc.use();
-            fs_advect_diffuse_mc.setInt("u", 1);
-            fs_advect_diffuse_mc.setInt("q_prev", 1);
-            fs_advect_diffuse_mc.setInt("q_solid", 5);
-            fs_advect_diffuse_mc.setInt("q_next", 3);
-            fs_advect_diffuse_mc.setInt("world_mask", 2);
-            fs_advect_diffuse_mc.setFloat("dt", dt);
-            fs_advect_diffuse_mc.setVec3("scale", sclx, scly, sclz);
-            fs_advect_diffuse_mc.setVec4("q_air", 0.0f, 0.0f, 0.0f, 0.0f);
-
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
-            glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-            // ADVECT SOME QUANTITY FIELD
-            fs_advect_diffuse_mc.use();
-            fs_advect_diffuse_mc.setInt("u", 1);
-            fs_advect_diffuse_mc.setInt("q_prev", 6);
-            fs_advect_diffuse_mc.setInt("q_solid", 5);
-            fs_advect_diffuse_mc.setInt("q_next", 7);
-            fs_advect_diffuse_mc.setInt("world_mask", 2);
-            fs_advect_diffuse_mc.setFloat("dt", dt);
-            fs_advect_diffuse_mc.setVec3("scale", sclx, scly, sclz);
-            fs_advect_diffuse_mc.setVec4("q_air", 0.0f, 0.0f, 0.0f, 0.0f);
-
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
-            glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-            // WRITE W_NEXT TO U
-            fs_write_to.use();
-            fs_write_to.setInt("q_in", 3);
-            fs_write_to.setInt("q_out", 1);
-
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
-            glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-            // WRITE Q_NEXT TO Q
-            fs_write_to.use();
-            fs_write_to.setInt("q_in", 7);
-            fs_write_to.setInt("q_out", 6);
-
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
-            glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-            
-            // EXTERNAL FORCES
-            u.use(1, 1);
-            world_mask.use(2, 2);
-            lin_buffer.use(3, 3);
-            zero.use(4, 4);
-            forces.use(5, 5);
-
-            fs_apply_force.use();
-            fs_apply_force.setInt("w", 1);
-            fs_apply_force.setInt("f", 5);
-            fs_apply_force.setFloat("rho", 1.0f);
-            fs_apply_force.setFloat("g", -9.8f);
-            fs_apply_force.setVec3("scale", sclx, scly, sclz);
-            fs_apply_force.setFloat("dt", dt);
-            fs_apply_force.setInt("w_next", 3);
-            fs_apply_force.setInt("world_mask", 2);
-
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
-            glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-            // WRITE TO NEW VALUES
-            fs_write_to.use();
-            fs_write_to.setInt("q_in", 3);
-            fs_write_to.setInt("q_out", 1);
-
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
-            glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-            
-            // APPLY DIVERGENCE TO W the JACOBBIIIBIBIBIBIBBIBBIBIBIBIBI
-            u.use(1, 1);
-            world_mask.use(2, 2);
-            lin_buffer.use(3, 3);
-            zero.use(4, 4);
-            divq.use(5, 5);
-            pres.use(6, 6);
-
-            fs_div.use();
-            fs_div.setInt("q", 1);
-            fs_div.setInt("q_solid", 4);
-            fs_div.setInt("div_q", 5);
-            fs_div.setInt("world_mask", 2);
-
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
-            glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-            // JACOBBBBBBIIIIIIIIIIII
-
-            for(int iter = 0; iter < max_iterations; iter++) {
-                // JACOBOBBOBOIBSOFIBODFIBODFIBODBIBOIIIII
-                fs_jacobi_iter.use();
-                fs_jacobi_iter.setInt("pressure", 6);
-                fs_jacobi_iter.setInt("div_w", 5);
-                fs_jacobi_iter.setInt("pressure_next", 3);
-                fs_jacobi_iter.setInt("world_mask", 2);
-                fs_jacobi_iter.setFloat("pressure_air", 0.0f);
-
-                glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
-                glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-                fs_jacobi_iter.use();
-                fs_jacobi_iter.setInt("pressure", 3);
-                fs_jacobi_iter.setInt("div_w", 5);
-                fs_jacobi_iter.setInt("pressure_next", 6);
-                fs_jacobi_iter.setInt("world_mask", 2);
-                fs_jacobi_iter.setFloat("pressure_air", 0.0f);
-
-                glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
-                glMemoryBarrier(GL_ALL_BARRIER_BITS);
-            }
-
-            // Presure Projection Time!!!!
-            fs_pressure_proj.use();
-            fs_pressure_proj.setInt("w", 1);
-            fs_pressure_proj.setInt("pressure", 6);
-            fs_pressure_proj.setInt("u_next", 3);
-            fs_pressure_proj.setInt("u_solid", 4);
-            fs_pressure_proj.setInt("world_mask", 2);
-
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
-            glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-            // WRITE TO NEW VALUES
-            fs_write_to.use();
-            fs_write_to.setInt("q_in", 3);
-            fs_write_to.setInt("q_out", 1);
-
-            glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
-            glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-
-            fsdebug.draw(q, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
+            fsdebug.draw(fs.q, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
         }
+        
+        //
+        // End Fluid Simulation
+        //
 
         imgui_instance.draw();
 

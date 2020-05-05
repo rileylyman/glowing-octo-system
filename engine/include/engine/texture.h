@@ -30,6 +30,8 @@ struct Texture3D {
     uint32_t id, unit;
     uint32_t width, height, depth;
 
+    Texture3D(): id(UINT32_MAX), unit(UINT32_MAX) {}
+
     Texture3D(uint32_t width, uint32_t height, uint32_t depth, uint32_t unit, GLint sampling_type=GL_LINEAR) : unit(unit), width(width), height(height), depth(depth) {
         glGenTextures(1, &id);
         glBindTexture(GL_TEXTURE_3D, id);
