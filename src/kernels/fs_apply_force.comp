@@ -44,7 +44,7 @@ void main() {
         force += imageLoad(f, center());
 
         // Apply Gravitational Force
-        vec4 gforce = vec4(1.0, 0.0, 0.0, 0.0);
+        vec4 gforce = vec4(100.0, 0.0, 0.0, 0.0);
         gforce *= mass * g;
         force += gforce;
 
