@@ -3,9 +3,10 @@
 #include <GLFW/glfw3.h>
 #include "reactphysics3d.h"
 #include <glm/glm.hpp>
+#include <iostream>
 #include <vector>
 
-namespace rp3d = reactphysics3d;
+using namespace reactphysics3d;
 
 enum RigidBodyType {
     STATIC, 
@@ -17,8 +18,8 @@ struct PhysicsObject {
     rp3d::RigidBody *body = nullptr;
     rp3d::Transform previous_transform = rp3d::Transform::identity(), current_transform = rp3d::Transform::identity();
 
-    PhysicsObject() {}
-    PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype = RigidBodyType::DYNAMIC, bool gravity = true); 
+    //TODO: deal with half extents for all meshes
+    PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype = RigidBodyType::DYNAMIC, bool gravity = true, glm::vec3 half_extents = glm::vec3(1.0)); 
     ~PhysicsObject();
 
     void set_bounciness(double bounciness);
@@ -35,22 +36,29 @@ struct PhysicsObject {
 };
 
 struct Physics {
-    static rp3d::DynamicsWorld world;
-    static uint32_t num_velocity_solver_iters, num_position_solver_iters;
 
-    static double previous_time;
-    static double accumulator;
+    static Physics* instance;
 
-    static std::vector<PhysicsObject *> physics_objects;
+    rp3d::DynamicsWorld *world = nullptr;
+    uint32_t num_velocity_solver_iters = 10, num_position_solver_iters = 5;
 
-    static void init() {
-        world.setNbIterationsVelocitySolver(num_velocity_solver_iters);
-        world.setNbIterationsPositionSolver(num_position_solver_iters);
+    double previous_time = 0.0;
+    double accumulator = 0.0;
+
+    std::vector<PhysicsObject *> physics_objects;
+
+    Physics() {
+        world = new rp3d::DynamicsWorld({0.0, -9.81, 0.0});
+
+        world->setNbIterationsVelocitySolver(num_velocity_solver_iters);
+        world->setNbIterationsPositionSolver(num_position_solver_iters);
 
         previous_time = glfwGetTime();
+
+        instance = this;
     }
 
-    static void tick() {
+    void tick() {
         const double timestep = 1.0 / 60.0;
 
         double current_time = glfwGetTime(); 
@@ -58,18 +66,25 @@ struct Physics {
         previous_time = current_time;
 
         accumulator += frame_time;
+        //accumulator += timestep / 2.0;
         while (accumulator >= timestep) {
             for (PhysicsObject *po : physics_objects) {
-                po->previous_transform = po->current_transform;
+                po->previous_transform = po->body->getTransform();
+                //if (po->body->getTransform().getOrientation().length() <= 0.00000001) {
+                //    po->body->setTransform({po->body->getTransform().getPosition(), rp3d::Quaternion::identity()});
+                //}
             }
-            world.update(timestep);
+
+
+            world->update(timestep);
             accumulator -= timestep;
         }
 
-        double alpha = accumulator * 60.0;
+        double alpha = accumulator / (double)timestep;
 
         for (PhysicsObject *po : physics_objects) {
-            po->current_transform = rp3d::Transform::interpolateTransforms(po->previous_transform, po->body->getTransform(), rp3d::decimal(alpha));
+            //po->current_transform = rp3d::Transform::interpolateTransforms(po->previous_transform, po->body->getTransform(), rp3d::decimal(alpha));
+            po->current_transform = po->body->getTransform();
         }
     }
 };

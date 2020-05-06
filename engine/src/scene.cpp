@@ -155,6 +155,8 @@ Scene::Scene(std::string filename, VertexBuffer *vertex_buffer) {
 
         bool gravity = model_json["gravity"];
 
+        //Model m(vertex_buffer, path, shader_type, 0, rbtype, initial_position, initial_rotation, gravity, height_normals);
+        //models[shaders[shader_ref]].push_back(m);
         models[shaders[shader_ref]].emplace_back(vertex_buffer, path, shader_type, 0, rbtype, initial_position, initial_rotation, gravity, height_normals);
     }
 
@@ -247,7 +249,7 @@ void Scene::add_lights(std::vector<DirLight *> new_dirlights, std::vector<PointL
 
 void Scene::draw(Camera *camera) {
     
-    Physics::tick();
+    Physics::instance->tick();
     for (std::map<ShaderProgram, std::vector<Model>>::iterator iter = models.begin(); iter != models.end(); iter++) {
         ShaderProgram shader = iter->first;
         std::vector<Model> models_to_render = iter->second;
@@ -268,8 +270,8 @@ void Scene::draw(Camera *camera) {
         glCheckError();
         }
 
-        for (Model model : models_to_render) {
-            model.physics_obj.apply_force_to_center({10.0, 10.0, 10.0});
+        for (Model &model : models_to_render) {
+        //    model.physics_obj->apply_force_to_center({10.0, 10.0, 10.0});
         glCheckError();
             model.draw(shader, camera);
         glCheckError();

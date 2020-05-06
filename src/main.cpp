@@ -38,7 +38,7 @@ const unsigned int SCR_HEIGHT = 600;
 
 int main()
 {
-    Physics::init();
+    Physics *physics = new Physics();
 
     gladLoadGL();
     //
@@ -57,12 +57,6 @@ int main()
     glEnable(GL_MULTISAMPLE);
     //glfwSwapInterval(0);
 
-
-    //
-    // Init Fluidsim
-    uint32_t grid_width = 32, grid_height = 32, grid_depth = 32;
-    Fluidsim::Engine fs(grid_width, grid_height, grid_depth, 0.25f, 0.25f, 0.25f);
-    //
 
     //
     // Set up imgui instance
@@ -86,7 +80,16 @@ int main()
     Scene scene("src/scenes/test.json", &vertex_buffer);
     vertex_buffer.buffer_data();
 
-    FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f);    
+    //
+    // Init Fluidsim
+    //
+    uint32_t grid_width = 32, grid_height = 32, grid_depth = 32;
+    Fluidsim::Engine fs(grid_width, grid_height, grid_depth, 0.25f, 0.25f, 0.25f);
+
+    FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f, {0.0, 0.0, 0.0}, {20.0, 20.0, 20.0});    
+
+    std::vector<Mask> mesh_masks = scene.get_mesh_masks();
+    Texture3D output_grid(grid_width, grid_height, grid_depth, 0, Texture3D::zero(grid_width, grid_height, grid_depth), GL_NEAREST);
 
     //
     // Render loop
@@ -131,6 +134,9 @@ int main()
         //model.model = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime() * 0.02f, glm::vec3(0.0, 1.0, 0.0));
 
         glCheckError();
+        for (Model &model : scene.get_models()) {
+            //model.physics_obj->apply_force_to_center({0.0, 0.0, -1.0});
+        }
         scene.draw(&camera);
 
         //
@@ -138,8 +144,13 @@ int main()
         //
 
         fs.step(0.01);
-        if (ImGuiInstance::fsdebug) {
-            fsdebug.draw(fs.temp, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
+        if (ImGuiInstance::mask_overlay) {
+            for (Mask &mask : mesh_masks) {
+                fsdebug.overlay_mask(mask, &output_grid);
+            }
+            fsdebug.draw(output_grid, ImGuiInstance::fsdebug_scalar);
+        } else if (ImGuiInstance::fluid_overlay) {
+            fsdebug.draw(fs.temp, ImGuiInstance::fsdebug_scalar);
         }
         
         //

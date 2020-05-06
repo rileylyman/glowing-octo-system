@@ -2,14 +2,9 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-rp3d::DynamicsWorld Physics::world = rp3d::DynamicsWorld({0.0, -9.81, 0.0});
-uint32_t Physics::num_position_solver_iters = 5;
-uint32_t Physics::num_velocity_solver_iters = 10;
-double Physics::accumulator = 0.0;
-std::vector<PhysicsObject *> Physics::physics_objects;
-double Physics::previous_time = 0.0;
+Physics *Physics::instance = nullptr;
 
-PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype, bool gravity) {
+PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype, bool gravity, glm::vec3 half_extents_) {
     glm::quat quaternion = glm::quat(rotation); 
     rp3d::Quaternion orientation;
     orientation.x = quaternion.x;
@@ -18,9 +13,13 @@ PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyTy
     orientation.w = quaternion.w;
 
     rp3d::Transform transform({position.x, position.y, position.z}, orientation);
-    body = Physics::world.createRigidBody(transform);
+    body = Physics::instance->world->createRigidBody(transform);
 
-    current_transform = transform;
+    rp3d::Vector3 half_extents = { half_extents_.x, half_extents_.y, half_extents_.z };
+
+    body->addCollisionShape(new rp3d::BoxShape(half_extents), transform, 1000.0);
+
+    current_transform =  transform;
     previous_transform = transform;
 
     switch (rbtype) {
@@ -37,12 +36,12 @@ PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyTy
 
     body->enableGravity(gravity);
 
-    Physics::physics_objects.push_back(this);
+    Physics::instance->physics_objects.push_back(this);
 }
 
 PhysicsObject::~PhysicsObject() {
-    //TODO: remove self from Physics::physics_objects
-    //Physics::world.destroyRigidBody(body);
+    //TODO: remove self from Physics::instance->physics_objects
+    //Physics::instance->world.destroyRigidBody(body);
 }
 
 void PhysicsObject::set_bounciness(double bounciness) {

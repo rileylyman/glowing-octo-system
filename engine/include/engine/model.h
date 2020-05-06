@@ -43,6 +43,15 @@ enum MeshShaderBits {
 struct Model;
 struct Mesh;
 
+struct Mask {
+    Mask(Texture3D tex, Model *parent, glm::mat4 bind_matrix, glm::vec3 least, glm::vec3 most) 
+    : parent(parent), tex(tex), bind_matrix(bind_matrix), bbox_least(least), bbox_most(most) {}
+    Texture3D tex;
+    glm::mat4 bind_matrix;
+    Model *parent;
+    glm::vec3 bbox_most, bbox_least;
+};
+
 //
 // A Mesh is the atomic unit of a model. It describes a particular set
 // of vertices, as well as how they should be shaded and drawn.
@@ -58,6 +67,9 @@ struct Mesh {
     // The coordinates of the extrema of this mesh's bounding box 
     //
     glm::vec3 bbox_least, bbox_most;
+
+    uint32_t mask_width = 20, mask_height = 20, mask_depth = 20;
+    std::vector<float> mask_data;
 
     //
     // The constructor takes a (possibly empty) vertex
@@ -89,7 +101,17 @@ struct Mesh {
     //
     glm::mat4 model(); 
 
+    //
+    // Get the 3D mask texture for this mesh
+    //
+    Mask get_mask(uint32_t unit);
+
 private:
+
+    uint64_t hash_position(glm::vec3 position);
+    uint64_t hash_func(uint32_t ix, uint32_t iy, uint32_t iz);
+    void generate_mask_data(std::vector<Vertex> vertices);
+
     //
     // The mesh local->model local transformation
     //
@@ -167,7 +189,7 @@ struct Model {
         glm::vec3 initial_position,
         glm::vec3 initial_rotation,
         bool gravity = true
-    ): physics_obj(initial_position, initial_rotation, type, gravity) {
+    ): physics_obj(new PhysicsObject(initial_position, initial_rotation, type, gravity)) {
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, BP_SOLID, 0, {}) };
         meshes[0].bp_solid_material = material;
         gen_bbox(vertices);
@@ -185,7 +207,7 @@ struct Model {
         glm::vec3 initial_position,
         glm::vec3 initial_rotation,
         bool gravity = true
-    ) : physics_obj(initial_position, initial_rotation, type, gravity) {
+    ) : physics_obj(new PhysicsObject(initial_position, initial_rotation, type, gravity)) {
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, PBR_SOLID, 0, {}) };
         meshes[0].pbr_solid_material = material;
         gen_bbox(vertices);
@@ -203,7 +225,7 @@ struct Model {
         glm::vec3 initial_position,
         glm::vec3 initial_rotation,
         bool gravity = true
-    ) : physics_obj(initial_position, initial_rotation, type, gravity) {
+    ) : physics_obj(new PhysicsObject(initial_position, initial_rotation, type, gravity)) {
         directory = "";
         Texture tex = load_texture_from_name(texture, true);
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, RAW_TEXTURE, 0, {{TEXTURE_TYPE_DIFFUSE_MAP , tex}}) };
@@ -226,15 +248,28 @@ struct Model {
     //
     void draw_bounding_box(Camera *camera);
 
+    void pressure_force(Texture3D f1, Texture3D pressure) {
+        // body is the reactphysics3d dynamic collision body
+        // physics_obj->body->applyTorque();
+        // physics_obj->body->applyForce()
+        
+        // coordinates of least extent of bounding box are in bbox_least
+        // coordinates of greatest extent                     bbox_most
+
+        // call this every frame
+    }
+
     //
     // The local->world space transform for this model
     //
     glm::mat4 model() {
-        return physics_obj.get_model_matrix();
+        return physics_obj->get_model_matrix();
     }
 
+    inline std::vector<Mesh> get_meshes() { return meshes; }
 
-    PhysicsObject physics_obj;
+
+    PhysicsObject *physics_obj;
 private:
     std::string name;
 
