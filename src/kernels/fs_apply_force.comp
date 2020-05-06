@@ -11,8 +11,11 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 layout(rgba16f) uniform image3D w;              // Unprojected velocity field
 layout(rgba16f) uniform image3D f;              // Forces
+layout(rgba16f) uniform image3D temp;           // Temperature
+layout(rgba16f) uniform image3D pressure;       // Pressure
 uniform float rho;                              // Density
 uniform float g;                                // Gravitational acceleration
+uniform float temp_air;                         // Air temperature
 
 uniform vec3 scale;                             // Dimensions of a cell in x,y,z
 uniform float dt;                               // Delta time
@@ -23,6 +26,42 @@ layout(rgba16f) uniform image3D world_mask;     // Mask which shows the solid, f
 
 ivec3 center() {
     return ivec3(gl_GlobalInvocationID);
+}
+
+ivec3 left() {
+    return ivec3(int(gl_GlobalInvocationID.x) - 1,
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 right() {
+    return ivec3(int(gl_GlobalInvocationID.x) + 1,
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 bottom() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y) - 1,
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 top() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y) + 1,
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 down() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z) + 1);
+}
+
+ivec3 up() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z) - 1);
 }
 
 bool isSolidCell(ivec3 index) {
@@ -42,6 +81,19 @@ void main() {
 
         // Apply Force
         force += imageLoad(f, center());
+
+        // Apply Buoyant Force
+        vec4 buoyant = vec4(0.0, -1000, 0.0, 0.0);
+        float temp_avg = ((imageLoad(temp, center()) +
+                           imageLoad(temp, left()) +
+                           imageLoad(temp, right()) +
+                           imageLoad(temp, bottom()) +
+                           imageLoad(temp, top()) +
+                           imageLoad(temp, left()) +
+                           imageLoad(temp, right()))/7.0).r;
+        float delta_temp = (1 / temp_air) - (1 / temp_avg);
+        buoyant *= (delta_temp * mass * g * (imageLoad(pressure, center()).r)) / 8.314;
+        force += buoyant;
 
         // Apply Gravitational Force
         vec4 gforce = vec4(0.0, 100.0, 0.0, 0.0);

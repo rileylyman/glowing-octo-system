@@ -88,7 +88,9 @@ void main() {
         vec4 v_solid = imageLoad(u_solid, left());
         vec4 n = vec4(1.0, 0.0, 0.0, 0.0);
         v_next = v_next - proj(v_next, n) + proj(v_solid, n);
-    } else if (isSolidCell(right())) {
+    }
+    
+    if (isSolidCell(right())) {
         // Enforce free slip conditions
         vec4 v_solid = imageLoad(u_solid, right());
         vec4 n = vec4(1.0, 0.0, 0.0, 0.0);
@@ -100,7 +102,9 @@ void main() {
         vec4 v_solid = imageLoad(u_solid, bottom());
         vec4 n = vec4(0.0, 1.0, 0.0, 0.0);
         v_next = v_next - proj(v_next, n) + proj(v_solid, n);
-    } else if (isSolidCell(top())) {
+    }
+    
+    if (isSolidCell(top())) {
         // Enforce free slip conditions
         vec4 v_solid = imageLoad(u_solid, top());
         vec4 n = vec4(0.0, 1.0, 0.0, 0.0);
@@ -112,7 +116,9 @@ void main() {
         vec4 v_solid = imageLoad(u_solid, down());
         vec4 n = vec4(0.0, 0.0, 1.0, 0.0);
         v_next = v_next - proj(v_next, n) + proj(v_solid, n);
-    } else if (isSolidCell(up())) {
+    }
+    
+    if (isSolidCell(up())) {
         // Enforce free slip conditions
         vec4 v_solid = imageLoad(u_solid, up());
         vec4 n = vec4(0.0, 0.0, 1.0, 0.0);
