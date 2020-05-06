@@ -22,8 +22,8 @@ public:
     uint32_t grid_width, grid_height, grid_depth;
     float sclx, scly, sclz;
 
-    // DECLARE MAXIMUM JACOBI ITERATIONS
-    int max_iterations = 5;
+    // DECLARE MAXIMUM JACOBI ITERATIONS * 2
+    int max_iterations = 10;
 
     // DECLARE TEXTURES
     Texture3D u;

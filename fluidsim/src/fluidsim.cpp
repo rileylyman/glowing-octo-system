@@ -116,7 +116,7 @@ void Engine::step(float dt) {
     q.use(6, 6);
     lin_buffer2.use(7, 7);
 
-    // TODO: PROPER FREE SURFACE ADVECTION
+    // // TODO: PROPER FREE SURFACE ADVECTION
     // // ADVECT THE WORLD_MASK FIELD
     // fs_advect_diffuse_free.use();
     // fs_advect_diffuse_free.setInt("u", 1);
@@ -155,6 +155,14 @@ void Engine::step(float dt) {
 
     glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+    // // WRITE WORLD_MASK_NEXT TO WORLDMASK
+    // fs_write_to.use();
+    // fs_write_to.setInt("q_in", 4);
+    // fs_write_to.setInt("q_out", 2);
+
+    // glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
+    // glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
     // WRITE W_NEXT TO U
     fs_write_to.use();
