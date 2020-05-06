@@ -11,7 +11,7 @@ class Engine {
 public:
     KernelProgram fs_advect_diffuse;
     KernelProgram fs_advect_diffuse_free;
-    KernelProgram fs_advect_diffuse_mc;
+    KernelProgram fs_advect_mc;
     KernelProgram fs_apply_force;
     KernelProgram fs_div;
     KernelProgram fs_jacobi_iter;
@@ -33,6 +33,8 @@ public:
     Texture3D zero;
     Texture3D q;
     Texture3D forces;
+    Texture3D temp;
+    Texture3D temp_solid;
     Texture3D divq;
     Texture3D pres;
     Texture3D lin_buffer2;
