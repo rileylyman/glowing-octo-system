@@ -249,7 +249,9 @@ void Scene::add_lights(std::vector<DirLight *> new_dirlights, std::vector<PointL
 
 void Scene::draw(Camera *camera) {
     
-    Physics::instance->tick();
+    if (ImGuiInstance::physics_enabled) {
+        Physics::instance->tick();
+    }
     for (std::map<ShaderProgram, std::vector<Model>>::iterator iter = models.begin(); iter != models.end(); iter++) {
         ShaderProgram shader = iter->first;
         std::vector<Model> models_to_render = iter->second;

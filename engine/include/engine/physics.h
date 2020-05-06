@@ -58,7 +58,7 @@ struct Physics {
         instance = this;
     }
 
-    void tick() {
+    void tick(bool single_tick = false) {
         const double timestep = 1.0 / 60.0;
 
         double current_time = glfwGetTime(); 
@@ -78,13 +78,15 @@ struct Physics {
 
             world->update(timestep);
             accumulator -= timestep;
+
+            if (single_tick) break;
         }
 
         double alpha = accumulator / (double)timestep;
 
         for (PhysicsObject *po : physics_objects) {
-            //po->current_transform = rp3d::Transform::interpolateTransforms(po->previous_transform, po->body->getTransform(), rp3d::decimal(alpha));
-            po->current_transform = po->body->getTransform();
+            if (single_tick) po->current_transform = po->body->getTransform();
+            else po->current_transform = rp3d::Transform::interpolateTransforms(po->previous_transform, po->body->getTransform(), rp3d::decimal(alpha));
         }
     }
 };

@@ -1,4 +1,5 @@
 #include "engine/imgui-instance.h"
+#include "engine/physics.h"
 
 bool ImGuiInstance::gui_enabled = false; 
 bool ImGuiInstance::render_normals = true; 
@@ -7,6 +8,7 @@ bool ImGuiInstance::cull_back_face = true;
 bool ImGuiInstance::mask_overlay = false;
 bool ImGuiInstance::fluid_overlay = false;
 bool ImGuiInstance::fsdebug_scalar = false;
+bool ImGuiInstance::physics_enabled = false;
 bool ImGuiInstance::draw_model_bb = false;
 bool ImGuiInstance::msaa = false;
 bool ImGuiInstance::reinhard_hdr = true;
@@ -64,6 +66,10 @@ void ImGuiInstance::draw() {
 
         ImGui::Text("Render Settings");
 
+        ImGui::Checkbox("Physics Enabled", &physics_enabled);
+        if (ImGui::Button("Tick Physics") && !physics_enabled) {
+            Physics::instance->tick(true);
+        }
         ImGui::Checkbox("Normal mapping", &render_normals);
         ImGui::Checkbox("Render skybox", &render_skybox);
         ImGui::Checkbox("Cull Back Face", &cull_back_face);

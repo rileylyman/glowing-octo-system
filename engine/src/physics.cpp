@@ -1,6 +1,7 @@
 #include "engine/physics.h"
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 Physics *Physics::instance = nullptr;
 
@@ -17,7 +18,7 @@ PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyTy
 
     rp3d::Vector3 half_extents = { half_extents_.x, half_extents_.y, half_extents_.z };
 
-    body->addCollisionShape(new rp3d::BoxShape(half_extents), transform, 1000.0);
+    body->addCollisionShape(new rp3d::BoxShape(half_extents), transform, 1.0);
 
     current_transform =  transform;
     previous_transform = transform;
@@ -66,12 +67,12 @@ void PhysicsObject::apply_force_to_center(glm::vec3 force_in_newtons) {
 }
 
 glm::vec3 PhysicsObject::position() {
-    rp3d::Vector3 pos = current_transform.getPosition();
+    rp3d::Vector3 pos = body->getTransform().getPosition();
     return {pos.x, pos.y, pos.z};
 }
 
 glm::quat PhysicsObject::orientation() {
-    rp3d::Quaternion orientation = current_transform.getOrientation();
+    rp3d::Quaternion orientation = body->getTransform().getOrientation();
     glm::quat q;
     q.x = orientation.x;
     q.y = orientation.y;
@@ -81,7 +82,20 @@ glm::quat PhysicsObject::orientation() {
 }
 
 glm::mat4 PhysicsObject::get_model_matrix() {
-    float matrix[16];
-    current_transform.getOpenGLMatrix(matrix);
-    return glm::make_mat4(matrix);
+    //float matrix[16];
+    //current_transform.getOpenGLMatrix(matrix);
+    //return glm::make_mat4(matrix);
+
+    glm::vec3 pos = position();
+    glm::quat ori = orientation();
+
+    glm::vec3 euler = glm::eulerAngles(ori) * 3.14159f / 180.f;
+
+    std::cout << "Pos: (" << pos.x << ", " << pos.y << ", " << pos.z << ") Rot: (" << euler.x << ", " << euler.y << ", " << euler.z << ")" << std::endl;
+
+    glm::mat4 rotation = glm::eulerAngleYXZ(euler.y, euler.x, euler.z);
+    glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
+
+    return translation * rotation;
+
 }
