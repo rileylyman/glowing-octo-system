@@ -270,8 +270,8 @@ void Scene::draw(Camera *camera) {
         glCheckError();
         }
 
-        for (Model model : models_to_render) {
-            model.physics_obj->apply_force_to_center({10.0, 10.0, 10.0});
+        for (Model &model : models_to_render) {
+        //    model.physics_obj->apply_force_to_center({10.0, 10.0, 10.0});
         glCheckError();
             model.draw(shader, camera);
         glCheckError();

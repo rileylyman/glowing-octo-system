@@ -28,12 +28,12 @@
             "name": "leaf",
             "modelPath": "resources/models/glowingleaf/scene.gltf",
             "shaderType": "blinnphong_textured",
-            "heightNormals": false,
+            "heightNormals": true,
             "shader": "phong",
-            "physics": "static" ,
-            "gravity": false,
-            "initial_position": [0.0, 0.0, 0.0],
-            "initial_rotation": [0.0, 0.0, 0.0]
+            "physics": "dynamic",
+            "gravity": true,
+            "initial_position": [0.0, 1.0, 0.0],
+            "initial_rotation": [0.0, 1.0, 0.0]
         },
         {
             "name": "nanosuit",
@@ -41,21 +41,21 @@
             "shaderType": "blinnphong_textured",
             "heightNormals": true,
             "shader": "phong",
-            "physics": "static",
-            "gravity": false,
-            "initial_position": [0.0, 0.0, 0.0],
+            "physics": "dynamic",
+            "gravity": true,
+            "initial_position": [10.0, 0.0, 100.0],
             "initial_rotation": [0.0, 0.0, 0.0]
         },
         {
-            "name": "rifle",
+            "name": "naniu",
             "modelPath": "resources/models/super/scene.fbx",
             "shaderType": "pbr_textured",
-            "heightNormals": false,
+            "heightNormals": true,
             "shader": "pbr",
             "physics": "static",
-            "gravity": false,
-            "initial_position": [0.0, 0.0, 0.0],
-            "initial_rotation": [0.0, 0.0, 0.0]
+            "gravity": true,
+            "initial_position": [20.0, 1.0, 0.0],
+            "initial_rotation": [0.0, 0.0, 1.0]
         }
     ],
     "lights": [

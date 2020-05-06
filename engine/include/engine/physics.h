@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include "reactphysics3d.h"
 #include <glm/glm.hpp>
+#include <iostream>
 #include <vector>
 
 using namespace reactphysics3d;
@@ -17,7 +18,8 @@ struct PhysicsObject {
     rp3d::RigidBody *body = nullptr;
     rp3d::Transform previous_transform = rp3d::Transform::identity(), current_transform = rp3d::Transform::identity();
 
-    PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype = RigidBodyType::DYNAMIC, bool gravity = true); 
+    //TODO: deal with half extents for all meshes
+    PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype = RigidBodyType::DYNAMIC, bool gravity = true, glm::vec3 half_extents = glm::vec3(1.0)); 
     ~PhysicsObject();
 
     void set_bounciness(double bounciness);
@@ -64,10 +66,16 @@ struct Physics {
         previous_time = current_time;
 
         accumulator += frame_time;
+        //accumulator += timestep / 2.0;
         while (accumulator >= timestep) {
             for (PhysicsObject *po : physics_objects) {
-                po->previous_transform = po->current_transform;
+                po->previous_transform = po->body->getTransform();
+                //if (po->body->getTransform().getOrientation().length() <= 0.00000001) {
+                //    po->body->setTransform({po->body->getTransform().getPosition(), rp3d::Quaternion::identity()});
+                //}
             }
+
+
             world->update(timestep);
             accumulator -= timestep;
         }
@@ -75,7 +83,8 @@ struct Physics {
         double alpha = accumulator / (double)timestep;
 
         for (PhysicsObject *po : physics_objects) {
-            po->current_transform = rp3d::Transform::interpolateTransforms(po->previous_transform, po->body->getTransform(), rp3d::decimal(alpha));
+            //po->current_transform = rp3d::Transform::interpolateTransforms(po->previous_transform, po->body->getTransform(), rp3d::decimal(alpha));
+            po->current_transform = po->body->getTransform();
         }
     }
 };

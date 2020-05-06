@@ -203,14 +203,21 @@ Model::Model(
     glm::vec3 initial_rotation,
     bool gravity,
     bool height_normals)
-: vertex_buffer(vertex_buffer), physics_obj(new PhysicsObject(initial_position, initial_rotation, type, gravity))
+: vertex_buffer(vertex_buffer) 
 {
     if (bbox_shader == nullptr) {
         bbox_shader = new ShaderProgram("src/shaders/bbox.vert", "src/shaders/bbox.frag");
     }
     bbox_least = glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX);
     bbox_most = glm::vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
     load_model(pathname, shader_type, shader_flags, height_normals);
+
+    glm::vec3 half_extents;
+    half_extents.x = (bbox_most.x - bbox_least.x) / 2.0;
+    half_extents.y = (bbox_most.y - bbox_least.y) / 2.0;
+    half_extents.z = (bbox_most.z - bbox_least.z) / 2.0;
+    physics_obj = new PhysicsObject(initial_position, initial_rotation, type, gravity, half_extents);
 }
 
 void Model::draw(ShaderProgram shader_prog, Camera *camera) {

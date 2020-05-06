@@ -133,8 +133,8 @@ int main()
         //model.model = glm::rotate(glm::mat4(1.0f), (float) glfwGetTime() * 0.02f, glm::vec3(0.0, 1.0, 0.0));
 
         glCheckError();
-        for (Model model : scene.get_models()) {
-            model.physics_obj->apply_force_to_center({0.0, 0.0, -1.0});
+        for (Model &model : scene.get_models()) {
+            //model.physics_obj->apply_force_to_center({0.0, 0.0, -1.0});
         }
         scene.draw(&camera);
 

@@ -4,7 +4,7 @@
 
 Physics *Physics::instance = nullptr;
 
-PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype, bool gravity) {
+PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype, bool gravity, glm::vec3 half_extents_) {
     glm::quat quaternion = glm::quat(rotation); 
     rp3d::Quaternion orientation;
     orientation.x = quaternion.x;
@@ -15,7 +15,9 @@ PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyTy
     rp3d::Transform transform({position.x, position.y, position.z}, orientation);
     body = Physics::instance->world->createRigidBody(transform);
 
-    //body->addCollisionShape(new rp3d::BoxShape({2.0, 3.0, 4.0}), transform, 1.0);
+    rp3d::Vector3 half_extents = { half_extents_.x, half_extents_.y, half_extents_.z };
+
+    body->addCollisionShape(new rp3d::BoxShape(half_extents), transform, 1000.0);
 
     current_transform =  transform;
     previous_transform = transform;
