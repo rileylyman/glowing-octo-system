@@ -222,6 +222,74 @@ struct Texture3D {
         }
         return data;
     }
+
+    static std::vector<float> temperature(uint32_t width, uint32_t height, uint32_t depth) {
+        std::vector<float> data;
+        for (uint32_t h = 0; h < height; h++) {
+            for (uint32_t d = 0; d < depth; d++) {
+                for (uint32_t w = 0; w < width; w++) {
+                    if (d >= 2 * depth / 3) {
+                        data.push_back(293.15f + 100.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                    } else if (d >= depth / 3) {
+                        float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                        data.push_back(293.15f - 100.0f * r * r);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                    } else {
+                        data.push_back(293.15f + 100.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                    }
+                }
+            }
+        }
+        return data;
+    }
+
+    static std::vector<float> temperatureSolid(uint32_t width, uint32_t height, uint32_t depth) {
+        std::vector<float> data;
+        for (uint32_t h = 0; h < height; h++) {
+            for (uint32_t d = 0; d < depth; d++) {
+                for (uint32_t w = 0; w < width; w++) {
+                    if (h == 0 || h == height - 1 || d == 0 || d == depth - 1 || w == 0 || w == width - 1) {
+                        // sOLID around boundaries
+                        data.push_back(500.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(1.0f);
+                    } else if ((h >= (height * 2) / 5 && h <= (height * 3) / 5) &&
+                               (w >= (width * 2) / 5 && w <= (width * 3) / 5) &&
+                               (d >= (depth * 2) / 5 && d <= (depth * 3) / 5)) {
+                        // Box in the center
+                        data.push_back(500.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(1.0f);
+                    } else if ((h >= (height * 3) / 10 && h <= (height * 7) / 10) &&
+                               (w >= (width * 3) / 10 && w <= (width * 7) / 10) &&
+                               (d >= (depth * 3) / 10 && d <= (depth * 7) / 10)) {
+                        // Water around the box
+                        data.push_back(2.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(1.0f);
+                    } else {
+                        // Water on the Periphery
+                        data.push_back(2.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(1.0f);
+                    }
+                }
+            }
+        }
+        return data;
+    }
 };
 
 struct Cubemap {
