@@ -60,7 +60,7 @@ int main()
 
     //
     // Init Fluidsim
-    uint32_t grid_width = 64, grid_height = 64, grid_depth = 64;
+    uint32_t grid_width = 32, grid_height = 32, grid_depth = 32;
     Fluidsim::Engine fs(grid_width, grid_height, grid_depth, 0.25f, 0.25f, 0.25f);
     //
 
@@ -139,7 +139,7 @@ int main()
 
         fs.step(0.01);
         if (ImGuiInstance::fsdebug) {
-            fsdebug.draw(fs.q, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
+            fsdebug.draw(fs.temp, ImGuiInstance::fsdebug_scalar, {0.0, 0.0, 0.0}, {16.0, 16.0, 16.0});
         }
         
         //
