@@ -31,9 +31,9 @@
             "heightNormals": false,
             "shader": "phong",
             "physics": "static" ,
-            "gravity": true,
+            "gravity": false,
             "initial_position": [0.0, 0.0, 0.0],
-            "initial_rotation": [0.0, 0.0, 1.0]
+            "initial_rotation": [0.0, 0.0, 0.0]
         },
         {
             "name": "nanosuit",
@@ -42,9 +42,9 @@
             "heightNormals": true,
             "shader": "phong",
             "physics": "static",
-            "gravity": true,
+            "gravity": false,
             "initial_position": [0.0, 0.0, 0.0],
-            "initial_rotation": [0.0, 1.0, 0.0]
+            "initial_rotation": [0.0, 0.0, 0.0]
         },
         {
             "name": "rifle",
@@ -53,7 +53,7 @@
             "heightNormals": false,
             "shader": "pbr",
             "physics": "static",
-            "gravity": true,
+            "gravity": false,
             "initial_position": [0.0, 0.0, 0.0],
             "initial_rotation": [0.0, 0.0, 0.0]
         }

@@ -189,7 +189,7 @@ struct Model {
         glm::vec3 initial_position,
         glm::vec3 initial_rotation,
         bool gravity = true
-    ): physics_obj(initial_position, initial_rotation, type, gravity) {
+    ): physics_obj(new PhysicsObject(initial_position, initial_rotation, type, gravity)) {
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, BP_SOLID, 0, {}) };
         meshes[0].bp_solid_material = material;
         gen_bbox(vertices);
@@ -207,7 +207,7 @@ struct Model {
         glm::vec3 initial_position,
         glm::vec3 initial_rotation,
         bool gravity = true
-    ) : physics_obj(initial_position, initial_rotation, type, gravity) {
+    ) : physics_obj(new PhysicsObject(initial_position, initial_rotation, type, gravity)) {
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, PBR_SOLID, 0, {}) };
         meshes[0].pbr_solid_material = material;
         gen_bbox(vertices);
@@ -225,7 +225,7 @@ struct Model {
         glm::vec3 initial_position,
         glm::vec3 initial_rotation,
         bool gravity = true
-    ) : physics_obj(initial_position, initial_rotation, type, gravity) {
+    ) : physics_obj(new PhysicsObject(initial_position, initial_rotation, type, gravity)) {
         directory = "";
         Texture tex = load_texture_from_name(texture, true);
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, RAW_TEXTURE, 0, {{TEXTURE_TYPE_DIFFUSE_MAP , tex}}) };
@@ -252,13 +252,13 @@ struct Model {
     // The local->world space transform for this model
     //
     glm::mat4 model() {
-        return physics_obj.get_model_matrix();
+        return physics_obj->get_model_matrix();
     }
 
     inline std::vector<Mesh> get_meshes() { return meshes; }
 
 
-    PhysicsObject physics_obj;
+    PhysicsObject *physics_obj;
 private:
     std::string name;
 

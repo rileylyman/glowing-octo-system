@@ -2,3 +2,5 @@ build
 resources/models/*
 imgui.ini
 resources/models.zip
+rp3d*
+engine/world

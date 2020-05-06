@@ -203,7 +203,7 @@ Model::Model(
     glm::vec3 initial_rotation,
     bool gravity,
     bool height_normals)
-: vertex_buffer(vertex_buffer), physics_obj(initial_position, initial_rotation, type, gravity)
+: vertex_buffer(vertex_buffer), physics_obj(new PhysicsObject(initial_position, initial_rotation, type, gravity))
 {
     if (bbox_shader == nullptr) {
         bbox_shader = new ShaderProgram("src/shaders/bbox.vert", "src/shaders/bbox.frag");
@@ -215,6 +215,7 @@ Model::Model(
 
 void Model::draw(ShaderProgram shader_prog, Camera *camera) {
     for (Mesh mesh : meshes) {
+        mesh.parent_model = this;
         mesh.draw(shader_prog, camera);
     }
     if (ImGuiInstance::draw_mesh_bb) {
