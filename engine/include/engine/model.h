@@ -248,6 +248,17 @@ struct Model {
     //
     void draw_bounding_box(Camera *camera);
 
+    void pressure_force(Texture3D f1, Texture3D pressure) {
+        // body is the reactphysics3d dynamic collision body
+        // physics_obj->body->applyTorque();
+        // physics_obj->body->applyForce()
+        
+        // coordinates of least extent of bounding box are in bbox_least
+        // coordinates of greatest extent                     bbox_most
+
+        // call this every frame
+    }
+
     //
     // The local->world space transform for this model
     //
