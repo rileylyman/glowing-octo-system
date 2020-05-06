@@ -7,95 +7,81 @@ Physics *Physics::instance = nullptr;
 
 PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype, bool gravity, glm::vec3 half_extents_) {
     glm::quat quaternion = glm::quat(rotation); 
-    rp3d::Quaternion orientation;
-    orientation.x = quaternion.x;
-    orientation.y = quaternion.y;
-    orientation.z = quaternion.z;
-    orientation.w = quaternion.w;
+    half_extents = half_extents_;
 
-    rp3d::Transform transform({position.x, position.y, position.z}, orientation);
-    body = Physics::instance->world->createRigidBody(transform);
+    btCollisionShape *colShape = new btBoxShape(btVector3(btScalar(half_extents_.x), btScalar(half_extents_.y), btScalar(half_extents_.z)));
+    btTransform startTransform;
+    startTransform.setOrigin(btVector3(position.x, position.y, position.z));
+    startTransform.setRotation(btQuaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w));
 
-    rp3d::Vector3 half_extents = { half_extents_.x, half_extents_.y, half_extents_.z };
-
-    body->addCollisionShape(new rp3d::BoxShape(half_extents), transform, 1.0);
-
-    current_transform =  transform;
-    previous_transform = transform;
-
-    switch (rbtype) {
-        case RigidBodyType::DYNAMIC:
-            body->setType(rp3d::BodyType::DYNAMIC);
-        break;
-        case RigidBodyType::KINEMATIC:
-            body->setType(rp3d::BodyType::KINEMATIC);
-        break;
-        case RigidBodyType::STATIC:
-            body->setType(rp3d::BodyType::STATIC);
-        break;
+    btScalar mass(1.f);
+    btVector3 localInertia(0, 0, 0);
+    if (rbtype == RigidBodyType::DYNAMIC) {
+        colShape->calculateLocalInertia(mass, localInertia);
+    } else if (rbtype == RigidBodyType::STATIC) {
+        mass = btScalar(0.f);
+    } else {
+        std::cout << "ERROR: kinematic types not yet implemented" << std::endl;
+        throw false;
     }
 
-    body->enableGravity(gravity);
+    btDefaultMotionState *myMotionState = new btDefaultMotionState(startTransform);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
+    body = new btRigidBody(rbInfo);
 
-    Physics::instance->physics_objects.push_back(this);
+    Physics::instance->dynamicsWorld->addRigidBody(body);
 }
 
 PhysicsObject::~PhysicsObject() {
-    //TODO: remove self from Physics::instance->physics_objects
-    //Physics::instance->world.destroyRigidBody(body);
+    //TODO: cleanup
 }
 
-void PhysicsObject::set_bounciness(double bounciness) {
-    assert(bounciness >= 0.0 && bounciness <= 1.0);
-    rp3d::Material &material = body->getMaterial();
-    material.setBounciness(bounciness);
-}
-
-void PhysicsObject::set_friction_coefficient(double coeff) {
-    assert(coeff >= 0.0 && coeff <= 1.0);
-    rp3d::Material &material = body->getMaterial();
-    material.setFrictionCoefficient(coeff);
-}
-
-
-void PhysicsObject::apply_force_to_point(glm::vec3 force_in_newtons, glm::vec3 world_space_point) {
-    body->applyForce({force_in_newtons.x, force_in_newtons.y, force_in_newtons.z}, {world_space_point.x, world_space_point.y, world_space_point.z});
+void PhysicsObject::apply_force_to_point(glm::vec3 force_in_newtons, glm::vec3 point) {
+    body->applyForce({force_in_newtons.x, force_in_newtons.y, force_in_newtons.z}, {point.x, point.y, point.z});
 }
 
 void PhysicsObject::apply_force_to_center(glm::vec3 force_in_newtons) {
-    body->applyForceToCenterOfMass({force_in_newtons.x, force_in_newtons.y, force_in_newtons.z});
+    body->applyForce({force_in_newtons.x, force_in_newtons.y, force_in_newtons.z}, {0.0, 0.0, 0.0});
+}
+
+void PhysicsObject::apply_torque(glm::vec3 torque) {
+    body->applyTorque({torque.x, torque.y, torque.z});
 }
 
 glm::vec3 PhysicsObject::position() {
-    rp3d::Vector3 pos = body->getTransform().getPosition();
-    return {pos.x, pos.y, pos.z};
+    btTransform trans;
+    body->getMotionState()->getWorldTransform(trans);
+
+    btVector3 pos = trans.getOrigin();
+    return {pos.getX(), pos.getY(), pos.getZ()};
 }
 
 glm::quat PhysicsObject::orientation() {
-    rp3d::Quaternion orientation = body->getTransform().getOrientation();
+    btTransform trans;
+    body->getMotionState()->getWorldTransform(trans);
+
+    btQuaternion orientation = trans.getRotation();
     glm::quat q;
-    q.x = orientation.x;
-    q.y = orientation.y;
-    q.z = orientation.z;
-    q.w = orientation.w;
+    q.x = orientation.getX();
+    q.y = orientation.getY();
+    q.z = orientation.getZ();
+    q.w = orientation.getW();
     return q;
 }
 
 glm::mat4 PhysicsObject::get_model_matrix() {
-    //float matrix[16];
-    //current_transform.getOpenGLMatrix(matrix);
-    //return glm::make_mat4(matrix);
 
     glm::vec3 pos = position();
     glm::quat ori = orientation();
-
     glm::vec3 euler = glm::eulerAngles(ori) * 3.14159f / 180.f;
 
     std::cout << "Pos: (" << pos.x << ", " << pos.y << ", " << pos.z << ") Rot: (" << euler.x << ", " << euler.y << ", " << euler.z << ")" << std::endl;
 
-    glm::mat4 rotation = glm::eulerAngleYXZ(euler.y, euler.x, euler.z);
-    glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
 
-    return translation * rotation;
+    float matrix[16];
+    btTransform trans;
+    body->getMotionState()->getWorldTransform(trans);
+    trans.getOpenGLMatrix(matrix);
 
+    return glm::make_mat4(matrix);
 }

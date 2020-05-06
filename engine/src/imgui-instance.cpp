@@ -68,7 +68,7 @@ void ImGuiInstance::draw() {
 
         ImGui::Checkbox("Physics Enabled", &physics_enabled);
         if (ImGui::Button("Tick Physics") && !physics_enabled) {
-            Physics::instance->tick(true);
+            Physics::instance->tick();
         }
         ImGui::Checkbox("Normal mapping", &render_normals);
         ImGui::Checkbox("Render skybox", &render_skybox);

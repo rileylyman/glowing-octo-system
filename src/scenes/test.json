@@ -32,7 +32,18 @@
             "shader": "phong",
             "physics": "dynamic",
             "gravity": true,
-            "initial_position": [0.0, 0.0, -3.0],
+            "initial_position": [0.0, 0.0, 0.0],
+            "initial_rotation": [0.0, 0.0, 0.0]
+        },
+        {
+            "name": "naniu",
+            "modelPath": "resources/models/super/scene.fbx",
+            "shaderType": "pbr_textured",
+            "heightNormals": true,
+            "shader": "pbr",
+            "physics": "static",
+            "gravity": true,
+            "initial_position": [0.0, -10.0, 0.0],
             "initial_rotation": [0.0, 0.0, 0.0]
         }
     ],

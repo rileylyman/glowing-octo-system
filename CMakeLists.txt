@@ -3,14 +3,14 @@ project(opengl VERSION 0.1.0)
 
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 
-set(RP3D_LOGS_ENABLED ON)
-set(RP3D_PROFILING_ENABLED OFF)
-
 set(CMAKE_BUILD_TYPE Debug)
+
+set(BulletLib BulletDynamics BulletCollision)
+set(BULLET_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/external/bullet3/src)
 
 add_subdirectory(external/stb)
 add_subdirectory(external/json)
-add_subdirectory(external/reactphysics3d)
+add_subdirectory(external/bullet3)
 add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
 add_subdirectory(external/glad)

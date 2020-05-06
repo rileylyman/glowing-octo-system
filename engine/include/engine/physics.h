@@ -1,12 +1,10 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include "reactphysics3d.h"
 #include <glm/glm.hpp>
 #include <iostream>
 #include <vector>
-
-using namespace reactphysics3d;
+#include <btBulletDynamicsCommon.h>
 
 enum RigidBodyType {
     STATIC, 
@@ -15,19 +13,17 @@ enum RigidBodyType {
 };
 
 struct PhysicsObject {
-    rp3d::RigidBody *body = nullptr;
-    rp3d::Transform previous_transform = rp3d::Transform::identity(), current_transform = rp3d::Transform::identity();
+    btRigidBody *body = nullptr;
+    glm::vec3 half_extents;
 
     //TODO: deal with half extents for all meshes
     PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype = RigidBodyType::DYNAMIC, bool gravity = true, glm::vec3 half_extents = glm::vec3(1.0)); 
     ~PhysicsObject();
 
-    void set_bounciness(double bounciness);
-    void set_friction_coefficient(double coeff);
-
     //TODO : apply this force over time, or over duration of a tick??
-    void apply_force_to_point(glm::vec3 force_in_newtons, glm::vec3 world_space_point);
-    void apply_force_to_center(glm::vec3 force_in_newtons);
+    void apply_force_to_point(glm::vec3 force_in_newtons, glm::vec3 point);
+    void apply_force_to_center(glm::vec3 force_in_newtons); 
+    void apply_torque(glm::vec3 torque); 
 
     glm::vec3 position();
     glm::quat orientation();
@@ -39,55 +35,35 @@ struct Physics {
 
     static Physics* instance;
 
-    rp3d::DynamicsWorld *world = nullptr;
-    uint32_t num_velocity_solver_iters = 10, num_position_solver_iters = 5;
-
     double previous_time = 0.0;
-    double accumulator = 0.0;
 
-    std::vector<PhysicsObject *> physics_objects;
+    btDefaultCollisionConfiguration* collisionConfig;
+    btCollisionDispatcher *dispatcher;
+    btBroadphaseInterface *overlappingPairCache;
+    btSequentialImpulseConstraintSolver *solver;
+    btDiscreteDynamicsWorld *dynamicsWorld; 
 
     Physics() {
-        world = new rp3d::DynamicsWorld({0.0, -9.81, 0.0});
 
-        world->setNbIterationsVelocitySolver(num_velocity_solver_iters);
-        world->setNbIterationsPositionSolver(num_position_solver_iters);
+        collisionConfig = new btDefaultCollisionConfiguration();
+        dispatcher = new btCollisionDispatcher(collisionConfig);
+        overlappingPairCache = new btDbvtBroadphase();
+        solver = new btSequentialImpulseConstraintSolver;
+        dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfig);
+        dynamicsWorld->setGravity(btVector3(0, -10, 0));
 
         previous_time = glfwGetTime();
 
         instance = this;
     }
 
-    void tick(bool single_tick = false) {
-        const double timestep = 1.0 / 60.0;
+    void tick() {
 
         double current_time = glfwGetTime(); 
         double frame_time = current_time - previous_time;
         previous_time = current_time;
 
-        accumulator += frame_time;
-        //accumulator += timestep / 2.0;
-        while (accumulator >= timestep) {
-            for (PhysicsObject *po : physics_objects) {
-                po->previous_transform = po->body->getTransform();
-                //if (po->body->getTransform().getOrientation().length() <= 0.00000001) {
-                //    po->body->setTransform({po->body->getTransform().getPosition(), rp3d::Quaternion::identity()});
-                //}
-            }
-
-
-            world->update(timestep);
-            accumulator -= timestep;
-
-            if (single_tick) break;
-        }
-
-        double alpha = accumulator / (double)timestep;
-
-        for (PhysicsObject *po : physics_objects) {
-            if (single_tick) po->current_transform = po->body->getTransform();
-            else po->current_transform = rp3d::Transform::interpolateTransforms(po->previous_transform, po->body->getTransform(), rp3d::decimal(alpha));
-        }
+        dynamicsWorld->stepSimulation(frame_time, 10);
     }
 };
 

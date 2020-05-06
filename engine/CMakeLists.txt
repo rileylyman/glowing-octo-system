@@ -44,9 +44,13 @@ set(CMAKE_BUILD_TYPE Debug)
 set(COMPILE_FLAGS "-g -DLOG_USE_COLOR ${COMPILE_FLAGS}")
 
 target_include_directories(engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(engine PRIVATE ${BULLET_INCLUDE_DIR})
+
+message(STATUS "(engine) BULLET_INCLUDE_DIR = ${BULLET_INCLUDE_DIR}")
+message(STATUS "(engine) BulletLib  = ${BulletLib}")
 
 IF (WIN32)
-    target_link_libraries(engine PRIVATE fluidsim nlohmann_json::nlohmann_json reactphysics3d assimp glfw imgui glm stb log glad opengl32)
+    target_link_libraries(engine PRIVATE fluidsim nlohmann_json::nlohmann_json ${BulletLib} assimp glfw imgui glm stb log glad opengl32)
 ELSE()
-    target_link_libraries(engine PRIVATE fluidsim nlohmann_json::nlohmann_json reactphysics3d assimp glfw imgui glm stb GL log glad rt dl m Xrandr Xi X11 pthread xcb Xau Xdmcp)
+    target_link_libraries(engine PRIVATE fluidsim nlohmann_json::nlohmann_json ${BulletLib} assimp glfw imgui glm stb GL log glad rt dl m Xrandr Xi X11 pthread xcb Xau Xdmcp)
 ENDIF()

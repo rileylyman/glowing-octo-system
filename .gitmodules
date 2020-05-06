@@ -16,6 +16,6 @@
 [submodule "external/json"]
 	path = external/json
 	url = https://github.com/nlohmann/json.git
-[submodule "external/reactphysics3d"]
-	path = external/reactphysics3d
-	url = https://github.com/DanielChappuis/reactphysics3d.git
+[submodule "external/bullet3"]
+	path = external/bullet3
+	url = https://github.com/bulletphysics/bullet3.git
