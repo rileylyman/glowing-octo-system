@@ -90,7 +90,10 @@ int main()
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f, {0.0, 0.0, 0.0}, {20.0, 20.0, 20.0});    
 
     std::vector<Mask> mesh_masks = scene.get_mesh_masks();
-    Texture3D output_grid(grid_width, grid_height, grid_depth, 0, Texture3D::zero(grid_width, grid_height, grid_depth), GL_NEAREST);
+    
+    Texture3D output_solid_mask(grid_width, grid_height, grid_depth, 0, Texture3D::zero(grid_width, grid_height, grid_depth), GL_NEAREST);
+    Texture3D zero = Texture3D(grid_width, grid_height, grid_depth, 5, Texture3D::zero(grid_width, grid_height, grid_depth));
+
 
     //
     // Render loop
@@ -145,14 +148,29 @@ int main()
         // Fluid Simulation (TODO: move to scene.draw)
         //
 
-        fs.step(0.01);
+        // Zero the World Mask
+        zero.use(1, 1);
+        output_solid_mask.use(2, 2);
+        fs.fs_write_to.use();
+        fs.fs_write_to.setInt("q_in", 1);
+        fs.fs_write_to.setInt("q_out", 2);
+
+        glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
+        glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+        // Get Objects in the Worldview and Stick into World Mask
+        for (Mask &mask : mesh_masks) {
+            fsdebug.overlay_mask(mask, &output_solid_mask);
+        }
+
+        // Fluid Physics
+        fs.step(0.01, &output_solid_mask);
+
+        // Fluid Debugger
         if (ImGuiInstance::mask_overlay) {
-            for (Mask &mask : mesh_masks) {
-                fsdebug.overlay_mask(mask, &output_grid);
-            }
-            fsdebug.draw(output_grid, ImGuiInstance::fsdebug_scalar);
+            fsdebug.draw(output_solid_mask, ImGuiInstance::fsdebug_scalar);
         } else if (ImGuiInstance::fluid_overlay) {
-            fsdebug.draw(fs.temp, ImGuiInstance::fsdebug_scalar);
+            fsdebug.draw(fs.q, ImGuiInstance::fsdebug_scalar);
         }
         
         //

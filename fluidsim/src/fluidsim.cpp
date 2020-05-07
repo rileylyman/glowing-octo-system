@@ -59,6 +59,7 @@ void Engine::fluidsim_testing123() {
 }
 
 Engine::Engine(uint32_t w, uint32_t h, uint32_t d, float dx, float dy, float dz) {
+    fs_apply_overlay = KernelProgram("src/kernels/fs_apply_overlay.comp");
     fs_advect_diffuse = KernelProgram("src/kernels/fs_advect_diffuse.comp");
     fs_advect_diffuse_free = KernelProgram("src/kernels/fs_advect_diffuse_free_surface.comp");
     fs_advect_mc = KernelProgram("src/kernels/fs_advect_maccormack.comp");
@@ -93,7 +94,7 @@ Engine::Engine(uint32_t w, uint32_t h, uint32_t d, float dx, float dy, float dz)
     prescpy[2]      = Texture3D(grid_width, grid_height, grid_depth, 15, Texture3D::zero(grid_width, grid_height, grid_depth));
 }
 
-void Engine::step(float dt) {
+void Engine::step(float dt, Texture3D *solidmask) {
     /**
      * Physics Steps:
      * 
@@ -111,9 +112,32 @@ void Engine::step(float dt) {
      *      (b) JACOBI ITERATIONS FOR PRESSURE
      *      (c) PROJECTION STEP FOR PRESSURE
     */
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
     // ADVANCE ITERATION
     iter += 1;
     if (iter % 3 == 0) iter = 0;
+
+    // WRITE TO CURRENT SOLID MASK
+    solidmask->use(1, 1);
+    world_mask.use(2, 2);
+    nearest_buffer.use(3, 3);
+
+    fs_apply_overlay.use();
+    fs_apply_overlay.setInt("solid_mask", 1);
+    fs_apply_overlay.setInt("world_mask", 2);
+    fs_apply_overlay.setInt("world_mask_next", 3);
+
+    glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+    // WRITE WORLD_MASK_NEXT TO WORLD_MASK    
+    fs_write_to.use();
+    fs_write_to.setInt("q_in", 3);
+    fs_write_to.setInt("q_out", 2);
+
+    glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
     // ADVECTION
     u.use(1, 1);
