@@ -19,7 +19,7 @@ Physics::Physics() {
     instance = this;
 }
 
-PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype, bool gravity, glm::vec3 half_extents_, glm::vec3 bbox_min_) {
+PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype, float mass_, bool gravity, glm::vec3 half_extents_, glm::vec3 bbox_min_) {
     glm::quat quaternion = glm::quat(rotation); 
     bbox_min = bbox_min_;
     half_extents = half_extents_;
@@ -30,7 +30,7 @@ PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyTy
     startTransform.setOrigin(btVector3(position.x, position.y, position.z));
     startTransform.setRotation(btQuaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w));
 
-    btScalar mass(1.f);
+    btScalar mass(mass_);
     btVector3 localInertia(0, 0, 0);
     if (rbtype == RigidBodyType::DYNAMIC) {
         colShape->calculateLocalInertia(mass, localInertia);
