@@ -306,7 +306,7 @@ struct Model {
                     sample_loc += center_box_offset;
 
                     // Get the probability of the left side of the box
-                    float prob = 1 / (depth * height * num_side_subdivisions * num_side_subdivisions);
+                    float prob = 1 / (depth * height / (num_side_subdivisions * num_side_subdivisions));
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
@@ -318,8 +318,10 @@ struct Model {
                     glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
 
                     // Integrate small force
-                    force += p / prob / (float)num_samples_sides;
+                    force += p / prob;
                 }
+                
+                force /= (float)num_samples_sides;
                     
                 glm::vec4 location2applyForce(
                     0,
