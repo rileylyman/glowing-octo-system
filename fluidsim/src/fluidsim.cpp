@@ -297,7 +297,7 @@ void Engine::step(float dt, Texture3D *solid_mask, Texture3D *velocity_mask, Tex
     u.use(1, 1);
     world_mask.use(2, 2);
     lin_buffer.use(3, 3);
-    zero.use(4, 4);
+    velocity_mask->use(4, 4);
     divq.use(5, 5);
     pres.use(6, 6);
 
