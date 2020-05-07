@@ -24,6 +24,9 @@ public:
 
     // DECLARE MAXIMUM JACOBI ITERATIONS * 2
     int max_iterations = 10;
+    
+    // DECLARE COUNTER FOR WRITING PIXEL BUFFERS
+    int iter = 0;
 
     // DECLARE TEXTURES
     Texture3D u;
@@ -38,6 +41,7 @@ public:
     Texture3D divq;
     Texture3D pres;
     Texture3D lin_buffer2;
+    Texture3D prescpy[3];
 
     Engine(uint32_t w, uint32_t h, uint32_t d, float dx, float dy, float dz);
 

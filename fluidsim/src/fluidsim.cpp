@@ -88,6 +88,9 @@ Engine::Engine(uint32_t w, uint32_t h, uint32_t d, float dx, float dy, float dz)
     pres            = Texture3D(grid_width, grid_height, grid_depth, 9, Texture3D::zero(grid_width, grid_height, grid_depth));
     lin_buffer2     = Texture3D(grid_width, grid_height, grid_depth, 10, Texture3D::zero(grid_width, grid_height, grid_depth));
     temp_solid      = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::temperatureSolid(grid_width, grid_height, grid_depth));
+    prescpy[0]      = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::zero(grid_width, grid_height, grid_depth));
+    prescpy[1]      = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::zero(grid_width, grid_height, grid_depth));
+    prescpy[2]      = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::zero(grid_width, grid_height, grid_depth));
 }
 
 void Engine::step(float dt) {
@@ -108,6 +111,9 @@ void Engine::step(float dt) {
      *      (b) JACOBI ITERATIONS FOR PRESSURE
      *      (c) PROJECTION STEP FOR PRESSURE
     */
+    // ADVANCE ITERATION
+    iter += 1;
+    if (iter % 3 == 0) iter = 0;
 
     // ADVECTION
     u.use(1, 1);
@@ -305,6 +311,19 @@ void Engine::step(float dt) {
     fs_write_to.use();
     fs_write_to.setInt("q_in", 3);
     fs_write_to.setInt("q_out", 1);
+    
+    // WRITE TO PRESSURE BUFFER
+    if (iter % 3 == 0) {
+        prescpy[0].use(2, 2);
+    } else if (iter % 3 == 0) {
+        prescpy[1].use(2, 2);
+    } else {
+        prescpy[2].use(2, 2);
+    }
+
+    fs_write_to.use();
+    fs_write_to.setInt("q_in", 6);
+    fs_write_to.setInt("q_out", 2);
 
     glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
