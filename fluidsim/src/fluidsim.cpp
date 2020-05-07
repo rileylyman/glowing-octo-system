@@ -94,7 +94,18 @@ Engine::Engine(uint32_t w, uint32_t h, uint32_t d, float dx, float dy, float dz)
     prescpy[2]      = Texture3D(grid_width, grid_height, grid_depth, 15, Texture3D::zero(grid_width, grid_height, grid_depth));
 }
 
+void Engine::step(float dt, Texture3D *solidmask, int max_steps) {
+
+    const float timestep = 1.0 / 60.0;
+    while (dt >= timestep && max_steps > 0) {
+        step(timestep, solidmask);
+        dt -= timestep;
+        max_steps--;
+    }
+}
+
 void Engine::step(float dt, Texture3D *solidmask) {
+
     /**
      * Physics Steps:
      * 

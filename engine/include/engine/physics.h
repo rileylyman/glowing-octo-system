@@ -6,6 +6,10 @@
 #include <vector>
 #include <btBulletDynamicsCommon.h>
 
+namespace Fluidsim {
+    class Engine;
+}
+
 enum RigidBodyType {
     STATIC, 
     KINEMATIC,
@@ -47,18 +51,14 @@ struct Physics {
     btBroadphaseInterface *overlappingPairCache;
     btSequentialImpulseConstraintSolver *solver;
     btDiscreteDynamicsWorld *dynamicsWorld; 
+    Fluidsim::Engine *fs = nullptr;
 
     uint32_t pbos[3];
 
     Physics(); 
 
-    void tick() {
-
-        double current_time = glfwGetTime(); 
-        double frame_time = current_time - previous_time;
-        previous_time = current_time;
-
-        dynamicsWorld->stepSimulation(frame_time, 10);
+    void tick(double frame_time, bool tick = false) {
+        dynamicsWorld->stepSimulation(frame_time, tick ? 1 : 10);
     }
 };
 

@@ -86,6 +86,7 @@ int main()
     // Init Fluidsim
     //
     Fluidsim::Engine fs(grid_width, grid_height, grid_depth, 0.25f, 0.25f, 0.25f);
+    Physics::instance->fs = &fs;
 
     glm::vec3 grid_offset = glm::vec3(0.0);
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f, grid_offset, {20.0, 20.0, 20.0});    
@@ -171,7 +172,13 @@ int main()
         }
 
         // Fluid Physics
-        fs.step(0.01, &output_solid_mask);
+        if (ImGuiInstance::physics_enabled) {
+            double current_time = glfwGetTime();
+            double frame_time = current_time - Physics::instance->previous_time;
+            Physics::instance->previous_time = current_time;
+            fs.step(frame_time, &output_solid_mask, 10);
+            Physics::instance->tick(frame_time);
+        }
 
         // Fluid Debugger
         if (ImGuiInstance::mask_overlay) {
