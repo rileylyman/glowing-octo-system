@@ -152,13 +152,25 @@ int main()
         //
         // Fluid Simulation (TODO: move to scene.draw)
         //
-
-        // Zero the World Mask
         zero.use(1, 1);
         output_solid_mask.use(2, 2);
+        output_velocity_mask.use(3, 3);
+        output_temperature_mask.use(4, 4);
+
+        // Zero the World Mask
         fs.fs_write_to.use();
         fs.fs_write_to.setInt("q_in", 1);
         fs.fs_write_to.setInt("q_out", 2);
+
+        // Zero the Velocity Mask
+        fs.fs_write_to.use();
+        fs.fs_write_to.setInt("q_in", 1);
+        fs.fs_write_to.setInt("q_out", 3);
+
+        // Zero the Texture Mask
+        fs.fs_write_to.use();
+        fs.fs_write_to.setInt("q_in", 1);
+        fs.fs_write_to.setInt("q_out", 4);
 
         glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
         glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -166,16 +178,16 @@ int main()
         // Get Objects in the Worldview and Stick into World Mask
         for (Mask &mask : mesh_masks) {
             glm::vec3 velocity = mask.parent->physics_obj->get_velocity();
-            fsdebug.overlay_mask(mask, &output_solid_mask, glm::vec3(1.0, 1.0, 1.0));
+            fsdebug.overlay_mask(mask, &output_solid_mask, glm::vec3(0.0, 0.0, 0.0));
             fsdebug.overlay_mask(mask, &output_velocity_mask, velocity);
-            fsdebug.overlay_mask(mask, &output_temperature_mask, glm::vec3(0.0, 0.0, 0.0));
+            fsdebug.overlay_mask(mask, &output_temperature_mask, glm::vec3(293.15f + 100.0f, 0.0, 0.0));
         }
 
         // Fluid Physics
         if (ImGuiInstance::physics_enabled) {
             double current_time = glfwGetTime();
             double frame_time = current_time - Physics::instance->previous_time;
-            fs.step(frame_time, &output_solid_mask, &output_velocity_mask, &output_temperature_mask, 10);
+            fs.step(frame_time, &output_solid_mask, &output_velocity_mask, &output_temperature_mask, 1);
             Physics::instance->tick(frame_time);
             Physics::instance->previous_time = current_time;
         }
