@@ -9,7 +9,7 @@ namespace Fluidsim {
 class Engine {
     // DECLARE SHADERS
 public:
-    KernelProgram fs_apply_overlay;
+    KernelProgram fs_apply_world_mask_overlay;
     KernelProgram fs_advect_diffuse;
     KernelProgram fs_advect_diffuse_free;
     KernelProgram fs_advect_mc;
@@ -46,7 +46,7 @@ public:
 
     Engine(uint32_t w, uint32_t h, uint32_t d, float dx, float dy, float dz);
 
-    void step(float dt, Texture3D *solidmask);
+    void step(float dt, Texture3D *solid_mask, Texture3D *velocity_mask, Texture3D *temperature_mask);
 
     void fluidsim_testing123();
 

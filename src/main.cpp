@@ -167,17 +167,17 @@ int main()
             glm::vec3 velocity = mask.parent->physics_obj->get_velocity();
             fsdebug.overlay_mask(mask, &output_solid_mask, glm::vec3(1.0, 1.0, 1.0));
             fsdebug.overlay_mask(mask, &output_velocity_mask, velocity);
-            fsdebug.overlay_mask(mask, &output_temperature_mask, glm::vec3(300., 0.0, 0.0));
+            fsdebug.overlay_mask(mask, &output_temperature_mask, glm::vec3(0.0, 0.0, 0.0));
         }
 
         // Fluid Physics
-        fs.step(0.01, &output_solid_mask);
+        fs.step(0.01, &output_solid_mask, &output_velocity_mask, &output_temperature_mask);
 
         // Fluid Debugger
         if (ImGuiInstance::mask_overlay) {
             fsdebug.draw(output_solid_mask, ImGuiInstance::fsdebug_scalar);
         } else if (ImGuiInstance::fluid_overlay) {
-            fsdebug.draw(fs.q, ImGuiInstance::fsdebug_scalar);
+            fsdebug.draw(fs.temp, ImGuiInstance::fsdebug_scalar);
         }
         
         //

@@ -9,7 +9,7 @@
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(rgba16f) uniform image3D solid_mask;                 // Input image
+layout(rgba16f) uniform image3D world_overlay;              // Input image
 layout(rgba16f) uniform image3D world_mask;                 // Mask which shows the solid, fluid, and air
 layout(rgba16f) uniform image3D world_mask_next;            // Output to write to
 
@@ -24,7 +24,7 @@ void main() {
         current = 2.0;     // When Free Surface Advection is Implemented, Make this Air
     }
 
-    float isSolid = imageLoad(solid_mask, center()).r;
+    float isSolid = imageLoad(world_overlay, center()).a;
 
     if (isSolid == 1.0) {
         current = 0.0;

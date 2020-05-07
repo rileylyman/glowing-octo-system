@@ -59,7 +59,7 @@ void Engine::fluidsim_testing123() {
 }
 
 Engine::Engine(uint32_t w, uint32_t h, uint32_t d, float dx, float dy, float dz) {
-    fs_apply_overlay = KernelProgram("src/kernels/fs_apply_overlay.comp");
+    fs_apply_world_mask_overlay = KernelProgram("src/kernels/fs_apply_world_mask_overlay.comp");
     fs_advect_diffuse = KernelProgram("src/kernels/fs_advect_diffuse.comp");
     fs_advect_diffuse_free = KernelProgram("src/kernels/fs_advect_diffuse_free_surface.comp");
     fs_advect_mc = KernelProgram("src/kernels/fs_advect_maccormack.comp");
@@ -94,7 +94,7 @@ Engine::Engine(uint32_t w, uint32_t h, uint32_t d, float dx, float dy, float dz)
     prescpy[2]      = Texture3D(grid_width, grid_height, grid_depth, 15, Texture3D::zero(grid_width, grid_height, grid_depth));
 }
 
-void Engine::step(float dt, Texture3D *solidmask) {
+void Engine::step(float dt, Texture3D *solid_mask, Texture3D *velocity_mask, Texture3D *temperature_mask) {
     /**
      * Physics Steps:
      * 
@@ -119,14 +119,14 @@ void Engine::step(float dt, Texture3D *solidmask) {
     if (iter % 3 == 0) iter = 0;
 
     // WRITE TO CURRENT SOLID MASK
-    solidmask->use(1, 1);
+    solid_mask->use(1, 1);
     world_mask.use(2, 2);
     nearest_buffer.use(3, 3);
 
-    fs_apply_overlay.use();
-    fs_apply_overlay.setInt("solid_mask", 1);
-    fs_apply_overlay.setInt("world_mask", 2);
-    fs_apply_overlay.setInt("world_mask_next", 3);
+    fs_apply_world_mask_overlay.use();
+    fs_apply_world_mask_overlay.setInt("world_overlay", 1);
+    fs_apply_world_mask_overlay.setInt("world_mask", 2);
+    fs_apply_world_mask_overlay.setInt("world_mask_next", 3);
 
     glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -161,6 +161,8 @@ void Engine::step(float dt, Texture3D *solidmask) {
     // glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
     // ADVECT SOME VELOCITY FIELD
+    velocity_mask->use(5, 5);
+
     fs_advect_mc.use();
     fs_advect_mc.setInt("u", 1);
     fs_advect_mc.setInt("q_prev", 1);
@@ -173,6 +175,8 @@ void Engine::step(float dt, Texture3D *solidmask) {
 
     glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
+    
+    zero.use(5, 5);
 
     // ADVECT SOME QUANTITY Q
     fs_advect_mc.use();
@@ -198,7 +202,7 @@ void Engine::step(float dt, Texture3D *solidmask) {
 
     // ADVECT TEMPERATURE FIELD
     temp.use(6, 6);
-    temp_solid.use(4, 4);
+    temperature_mask->use(4, 4);
 
     fs_advect_diffuse.use();
     fs_advect_diffuse.setInt("u", 1);
