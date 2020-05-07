@@ -177,6 +177,7 @@ struct Model {
         RigidBodyType type,
         glm::vec3 initial_position,
         glm::vec3 initial_rotation,
+        float mass,
         bool gravity = true,
         bool height_normals=false);
 
@@ -192,7 +193,7 @@ struct Model {
         glm::vec3 initial_position,
         glm::vec3 initial_rotation,
         bool gravity = true
-    ): physics_obj(new PhysicsObject(initial_position, initial_rotation, type, gravity)) {
+    ): physics_obj(new PhysicsObject(initial_position, initial_rotation, type, 10.0, gravity)) {
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, BP_SOLID, 0, {}) };
         meshes[0].bp_solid_material = material;
         gen_bbox(vertices);
@@ -210,7 +211,7 @@ struct Model {
         glm::vec3 initial_position,
         glm::vec3 initial_rotation,
         bool gravity = true
-    ) : physics_obj(new PhysicsObject(initial_position, initial_rotation, type, gravity)) {
+    ) : physics_obj(new PhysicsObject(initial_position, initial_rotation, type, 10.0, gravity)) {
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, PBR_SOLID, 0, {}) };
         meshes[0].pbr_solid_material = material;
         gen_bbox(vertices);
@@ -228,7 +229,7 @@ struct Model {
         glm::vec3 initial_position,
         glm::vec3 initial_rotation,
         bool gravity = true
-    ) : physics_obj(new PhysicsObject(initial_position, initial_rotation, type, gravity)) {
+    ) : physics_obj(new PhysicsObject(initial_position, initial_rotation, type, 10.0, gravity)) {
         directory = "";
         Texture tex = load_texture_from_name(texture, true);
         meshes = { Mesh(vertex_buffer, vertices, indices, glm::mat4(1.0f), this, RAW_TEXTURE, 0, {{TEXTURE_TYPE_DIFFUSE_MAP , tex}}) };

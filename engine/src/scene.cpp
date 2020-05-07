@@ -125,6 +125,10 @@ Scene::Scene(std::string filename, VertexBuffer *vertex_buffer) {
             std::cout << "SCENE PARSE ERROR: Field 'models.gravity' not found" << std::endl;
             throw false;
         }
+        if (model_json.find("mass") == model_json.end()) {
+            std::cout << "SCENE PARSE ERROR: Field 'models.mass' not found" << std::endl;
+            throw false;
+        }
 
         std::string physics_type = model_json["physics"];
         RigidBodyType rbtype;
@@ -154,10 +158,11 @@ Scene::Scene(std::string filename, VertexBuffer *vertex_buffer) {
         glm::vec3 initial_rotation = {initial_rotation_vec[0], initial_rotation_vec[1], initial_rotation_vec[2]};
 
         bool gravity = model_json["gravity"];
+        float mass = model_json["mass"];
 
         //Model m(vertex_buffer, path, shader_type, 0, rbtype, initial_position, initial_rotation, gravity, height_normals);
         //models[shaders[shader_ref]].push_back(m);
-        models[shaders[shader_ref]].emplace_back(vertex_buffer, path, shader_type, 0, rbtype, initial_position, initial_rotation, gravity, height_normals);
+        models[shaders[shader_ref]].emplace_back(vertex_buffer, path, shader_type, 0, rbtype, initial_position, initial_rotation, mass, gravity, height_normals);
     }
 
     if (scene_json.find("lights") == scene_json.end()) {

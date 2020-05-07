@@ -201,6 +201,7 @@ Model::Model(
     RigidBodyType type,
     glm::vec3 initial_position,
     glm::vec3 initial_rotation,
+    float mass, 
     bool gravity,
     bool height_normals)
 : vertex_buffer(vertex_buffer) 
@@ -217,7 +218,7 @@ Model::Model(
     half_extents.x = (bbox_most.x - bbox_least.x) / 2.0;
     half_extents.y = (bbox_most.y - bbox_least.y) / 2.0;
     half_extents.z = (bbox_most.z - bbox_least.z) / 2.0;
-    physics_obj = new PhysicsObject(initial_position, initial_rotation, type, gravity, half_extents, bbox_least);
+    physics_obj = new PhysicsObject(initial_position, initial_rotation, type, mass, gravity, half_extents, bbox_least);
 
     glm::vec3 bbox_center = -(bbox_most + bbox_least) / 2.0f;
     inverse_bbox_center_transform = glm::translate(glm::mat4(1.0), bbox_center);

@@ -83,7 +83,7 @@ Engine::Engine(uint32_t w, uint32_t h, uint32_t d, float dx, float dy, float dz)
     nearest_buffer  = Texture3D(grid_width, grid_height, grid_depth, 4, Texture3D::zero(grid_width, grid_height, grid_depth), GL_NEAREST);
     zero            = Texture3D(grid_width, grid_height, grid_depth, 5, Texture3D::zero(grid_width, grid_height, grid_depth));
     q               = Texture3D(grid_width, grid_height, grid_depth, 6, Texture3D::q(grid_width, grid_height, grid_depth));
-    forces          = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::zero(grid_width, grid_height, grid_depth));
+    forces          = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::forces(grid_width, grid_height, grid_depth));
     temp            = Texture3D(grid_width, grid_height, grid_depth, 8, Texture3D::temperature(grid_width, grid_height, grid_depth));
     divq            = Texture3D(grid_width, grid_height, grid_depth, 9, Texture3D::zero(grid_width, grid_height, grid_depth));
     pres            = Texture3D(grid_width, grid_height, grid_depth, 10, Texture3D::zero(grid_width, grid_height, grid_depth));
