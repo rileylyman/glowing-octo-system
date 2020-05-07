@@ -88,8 +88,8 @@ void FluidDebugRenderer::draw(Texture3D grid, bool scalar) {
     plane_vectors(&plane_x, &plane_y);
 
     draw_shader.use();
-    grid.use();
-    draw_shader.setInt("u_Grid", grid.unit);
+    grid.use(1,1);
+    draw_shader.setInt("u_Grid", 1);
     draw_shader.setBool("u_Scalar", scalar);
     draw_shader.setVec3("u_Offset", grid_offset);
     draw_shader.setVec3("u_PlaneX", plane_x);
