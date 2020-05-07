@@ -311,6 +311,9 @@ void Engine::step(float dt) {
     fs_write_to.use();
     fs_write_to.setInt("q_in", 3);
     fs_write_to.setInt("q_out", 1);
+
+    glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
     
     // WRITE TO PRESSURE BUFFER
     if (iter % 3 == 0) {

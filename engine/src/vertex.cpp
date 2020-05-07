@@ -1,6 +1,18 @@
 #include <iostream>
 #include <glad/glad.h>
 #include "engine/vertex.h"
+#include "engine/physics.h"
+
+void VertexBuffer::init_pbos(uint32_t w, uint32_t h, uint32_t d) {
+
+    glGenBuffers(3, Physics::instance->pbos);
+    for (int i = 0; i < 3; i++) {
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, Physics::instance->pbos[i]);
+        glBufferData(GL_PIXEL_PACK_BUFFER, 4 * sizeof(GLfloat) * w * h * d, nullptr, GL_STREAM_READ);
+    }
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+}
 
 void Vertex::setup_attrib_pointers() {
     // position attribute

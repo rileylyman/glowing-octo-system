@@ -38,7 +38,7 @@ const unsigned int SCR_HEIGHT = 600;
 
 int main()
 {
-    Physics *physics = new Physics();
+    uint32_t grid_width = 32, grid_height = 32, grid_depth = 32;
 
     gladLoadGL();
     //
@@ -57,6 +57,8 @@ int main()
     glEnable(GL_MULTISAMPLE);
     //glfwSwapInterval(0);
 
+    Physics *physics = new Physics();
+    VertexBuffer::init_pbos(grid_width, grid_height, grid_depth);
 
     //
     // Set up imgui instance
@@ -83,7 +85,6 @@ int main()
     //
     // Init Fluidsim
     //
-    uint32_t grid_width = 32, grid_height = 32, grid_depth = 32;
     Fluidsim::Engine fs(grid_width, grid_height, grid_depth, 0.25f, 0.25f, 0.25f);
 
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f, {0.0, 0.0, 0.0}, {20.0, 20.0, 20.0});    
@@ -136,6 +137,7 @@ int main()
         glCheckError();
         for (Model &model : scene.get_models()) {
             //model.physics_obj->apply_force_to_center({0.0, 0.0, -1.0});
+            model.pressure_force(fs, 4, 2);
         }
         scene.draw(&camera);
 

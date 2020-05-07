@@ -3,9 +3,11 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <vector>
+#include <fluidsim/fluidsim.h>
 #include "engine/shader.h"
 #include "engine/texture.h"
 #include "engine/vertex.h"
+#include "engine/debug.h"
 #include "engine/camera.h"
 #include "engine/physics.h"
 #include <glm/glm.hpp>
@@ -248,7 +250,7 @@ struct Model {
     //
     void draw_bounding_box(Camera *camera);
 
-    void pressure_force(Texture3D f1, Texture3D pressure, int num_samples_sides, int num_side_subdivisions) {
+    void pressure_force(Fluidsim::Engine &fs, int num_samples_sides, int num_side_subdivisions) {
         // body is the reactphysics3d dynamic collision body
         // physics_obj->body->applyTorque();
         // physics_obj->body->applyForce()
@@ -268,9 +270,30 @@ struct Model {
         glm::mat4x4 object2world_rotate;
         glm::mat4x4 object2world = object2world_offset * object2world_rotate;
 
-        auto sample_pressure_from_box_coord = [object2world_offset, object2world_rotate](glm::vec4 box_coord) {
+        auto sample_pressure_from_box_coord = [fs, object2world_offset, object2world_rotate](glm::vec4 box_coord) {
             glm::vec4 world_coord = object2world_offset * object2world_rotate * box_coord;
             // Sample from image based on world coords
+
+            static int index = 0;
+            int next_index = (index + 1) % 3;
+
+            glGetError();
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, Physics::instance->pbos[index]);
+            glBindTexture(GL_TEXTURE_3D, fs.prescpy[index].id);
+            glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, 0);
+
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, Physics::instance->pbos[next_index]);
+            GLfloat *ptr = (GLfloat *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+            if (ptr) {
+                // process pixels
+                std::cout << "First read byte: " << ptr[0] << std::endl;
+                glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+            }
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+            glGetError();
+
+            index = next_index;
+
             float pressure = 0.0f;
             return pressure;
         };

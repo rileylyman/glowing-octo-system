@@ -43,19 +43,9 @@ struct Physics {
     btSequentialImpulseConstraintSolver *solver;
     btDiscreteDynamicsWorld *dynamicsWorld; 
 
-    Physics() {
+    uint32_t pbos[3];
 
-        collisionConfig = new btDefaultCollisionConfiguration();
-        dispatcher = new btCollisionDispatcher(collisionConfig);
-        overlappingPairCache = new btDbvtBroadphase();
-        solver = new btSequentialImpulseConstraintSolver;
-        dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfig);
-        dynamicsWorld->setGravity(btVector3(0, -10, 0));
-
-        previous_time = glfwGetTime();
-
-        instance = this;
-    }
+    Physics(); 
 
     void tick() {
 

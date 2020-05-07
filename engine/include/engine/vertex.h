@@ -14,6 +14,8 @@ struct Vertex {
 
 struct VertexBuffer {
 
+    static void init_pbos(uint32_t w, uint32_t h, uint32_t d);
+
     bool filled;
     uint32_t vbo, vao;
     std::vector<uint32_t> ebos;

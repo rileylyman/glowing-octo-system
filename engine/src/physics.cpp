@@ -5,6 +5,20 @@
 
 Physics *Physics::instance = nullptr;
 
+Physics::Physics() {
+
+    collisionConfig = new btDefaultCollisionConfiguration();
+    dispatcher = new btCollisionDispatcher(collisionConfig);
+    overlappingPairCache = new btDbvtBroadphase();
+    solver = new btSequentialImpulseConstraintSolver;
+    dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfig);
+    dynamicsWorld->setGravity(btVector3(0, -10, 0));
+
+    previous_time = glfwGetTime();
+
+    instance = this;
+}
+
 PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype, bool gravity, glm::vec3 half_extents_, glm::vec3 bbox_min_) {
     glm::quat quaternion = glm::quat(rotation); 
     bbox_min = bbox_min_;

@@ -5,6 +5,7 @@
 #undef  IMGUI_IMPL_OPENGL_LOADER_GLEW
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include "imgui.h"
+#include "engine/physics.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "glm/glm.hpp"
