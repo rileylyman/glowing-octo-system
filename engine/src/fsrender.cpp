@@ -61,12 +61,13 @@ void FluidDebugRenderer::plane_vectors(glm::vec3 *plane_x, glm::vec3 *plane_y) {
 
 }
 
-void FluidDebugRenderer::overlay_mask(Mask mask, Texture3D *grid) {
+void FluidDebugRenderer::overlay_mask(Mask mask, Texture3D *grid, glm::vec3 value_to_write) {
 
     grid->use(1, 1);
     mask.tex.use(2, 2);
 
     overlay_compute_shader.use();
+    overlay_compute_shader.setVec3("u_ValueToWrite", value_to_write);
     overlay_compute_shader.setVec3("u_Least", glm::vec4(mask.bbox_least, 1.0));
     overlay_compute_shader.setVec3("u_Most",  glm::vec4(mask.bbox_most, 1.0));
     overlay_compute_shader.setMat4("u_InverseWorld", glm::inverse(mask.parent->model() * mask.bind_matrix));

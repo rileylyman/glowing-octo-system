@@ -14,6 +14,8 @@ uniform vec3 u_Most;
 uniform vec3 u_GridOffset;
 uniform vec3 u_GridDimensions;
 
+uniform vec3 u_ValueToWrite;
+
 uniform mat4 u_InverseWorld;
 
 uniform vec3 u_GridNumCells;
@@ -59,6 +61,6 @@ void main() {
         } else {
             //imageStore(u_Grid, center(), mask_value);
         }
-        imageStore(u_Grid, center(), vec4(1.0, 1.0, 1.0, 1.0));
+        imageStore(u_Grid, center(), vec4(u_ValueToWrite, 1.0));
     }
 }

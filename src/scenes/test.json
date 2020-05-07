@@ -44,7 +44,7 @@
             "physics": "static",
             "gravity": true,
             "initial_position": [0.0, -10.0, 0.0],
-            "initial_rotation": [0.0, 0.0, 0.0]
+            "initial_rotation": [0.0, 1.0, 1.0]
         }
     ],
     "lights": [

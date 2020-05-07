@@ -23,7 +23,7 @@ public:
     FluidDebugRenderer(Camera *cam, float plane_width, float plane_height, float plane_z_offset, glm::vec3 grid_offset, glm::vec3 grid_worldspace_whd);
 
 
-    void overlay_mask(Mask mask, Texture3D *grid);
+    void overlay_mask(Mask mask, Texture3D *grid, glm::vec3 value_to_write);
     void draw(Texture3D grid, bool scalar);
 
     void plane_vectors(glm::vec3 *plane_x, glm::vec3 *plane_y); 

@@ -29,6 +29,11 @@ struct PhysicsObject {
     glm::quat orientation();
     glm::mat4 get_model_matrix();
 
+    glm::vec3 get_velocity() {
+        btVector3 lin_vel = body->getLinearVelocity();
+        return {lin_vel.getX(), lin_vel.getY(), lin_vel.getZ()};
+    }
+
 };
 
 struct Physics {

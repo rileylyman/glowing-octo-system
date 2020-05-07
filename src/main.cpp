@@ -93,6 +93,9 @@ int main()
     std::vector<Mask> mesh_masks = scene.get_mesh_masks();
     
     Texture3D output_solid_mask(grid_width, grid_height, grid_depth, 0, Texture3D::zero(grid_width, grid_height, grid_depth), GL_NEAREST);
+    Texture3D output_velocity_mask(grid_width, grid_height, grid_depth, 0, Texture3D::zero(grid_width, grid_height, grid_depth), GL_NEAREST);
+    Texture3D output_temperature_mask(grid_width, grid_height, grid_depth, 0, Texture3D::zero(grid_width, grid_height, grid_depth), GL_NEAREST);
+
     Texture3D zero = Texture3D(grid_width, grid_height, grid_depth, 5, Texture3D::zero(grid_width, grid_height, grid_depth));
 
 
@@ -161,7 +164,10 @@ int main()
 
         // Get Objects in the Worldview and Stick into World Mask
         for (Mask &mask : mesh_masks) {
-            fsdebug.overlay_mask(mask, &output_solid_mask);
+            glm::vec3 velocity = mask.parent->physics_obj->get_velocity();
+            fsdebug.overlay_mask(mask, &output_solid_mask, glm::vec3(1.0, 1.0, 1.0));
+            fsdebug.overlay_mask(mask, &output_velocity_mask, velocity);
+            fsdebug.overlay_mask(mask, &output_temperature_mask, glm::vec3(300., 0.0, 0.0));
         }
 
         // Fluid Physics
