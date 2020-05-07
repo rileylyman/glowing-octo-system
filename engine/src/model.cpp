@@ -217,7 +217,10 @@ Model::Model(
     half_extents.x = (bbox_most.x - bbox_least.x) / 2.0;
     half_extents.y = (bbox_most.y - bbox_least.y) / 2.0;
     half_extents.z = (bbox_most.z - bbox_least.z) / 2.0;
-    physics_obj = new PhysicsObject(initial_position, initial_rotation, type, gravity, half_extents);
+    physics_obj = new PhysicsObject(initial_position, initial_rotation, type, gravity, half_extents, bbox_least);
+
+    glm::vec3 bbox_center = -(bbox_most + bbox_least) / 2.0f;
+    inverse_bbox_center_transform = glm::translate(glm::mat4(1.0), bbox_center);
 }
 
 void Model::draw(ShaderProgram shader_prog, Camera *camera) {
@@ -251,6 +254,7 @@ void Model::gen_bbox(std::vector<Vertex> verts) {
         bbox_most.y = std::max(position.y, bbox_most.y);
         bbox_most.z = std::max(position.z, bbox_most.z);
     }
+
 }
 
 void draw_bounding_box_general(glm::vec3 bbox_least, glm::vec3 bbox_most, GLuint vao, GLuint vbo, ShaderProgram *bbox_shader, glm::mat4 model, Camera *camera) {

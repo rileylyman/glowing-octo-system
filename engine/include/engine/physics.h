@@ -14,10 +14,10 @@ enum RigidBodyType {
 
 struct PhysicsObject {
     btRigidBody *body = nullptr;
-    glm::vec3 half_extents;
+    glm::vec3 half_extents, bbox_min;
 
     //TODO: deal with half extents for all meshes
-    PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype = RigidBodyType::DYNAMIC, bool gravity = true, glm::vec3 half_extents = glm::vec3(1.0)); 
+    PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype = RigidBodyType::DYNAMIC, bool gravity = true, glm::vec3 half_extents = glm::vec3(1.0), glm::vec3 bbox_min = glm::vec3(0.0)); 
     ~PhysicsObject();
 
     //TODO : apply this force over time, or over duration of a tick??

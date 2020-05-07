@@ -263,7 +263,7 @@ struct Model {
     // The local->world space transform for this model
     //
     glm::mat4 model() {
-        return physics_obj->get_model_matrix();
+        return physics_obj->get_model_matrix() * inverse_bbox_center_transform;
     }
 
     inline std::vector<Mesh> get_meshes() { return meshes; }
@@ -284,6 +284,9 @@ private:
     GLuint bbox_vao = 0, bbox_vbo = 0;
     glm::vec3 bbox_least, bbox_most;
     static ShaderProgram *bbox_shader;
+
+
+    glm::mat4 inverse_bbox_center_transform = glm::mat4(-1.0);
 
     //
     // Vertex buffer which stores all of the data for all of

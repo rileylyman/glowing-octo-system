@@ -5,12 +5,14 @@
 
 Physics *Physics::instance = nullptr;
 
-PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype, bool gravity, glm::vec3 half_extents_) {
+PhysicsObject::PhysicsObject(glm::vec3 position, glm::vec3 rotation, RigidBodyType rbtype, bool gravity, glm::vec3 half_extents_, glm::vec3 bbox_min_) {
     glm::quat quaternion = glm::quat(rotation); 
+    bbox_min = bbox_min_;
     half_extents = half_extents_;
 
     btCollisionShape *colShape = new btBoxShape(btVector3(btScalar(half_extents_.x), btScalar(half_extents_.y), btScalar(half_extents_.z)));
     btTransform startTransform;
+
     startTransform.setOrigin(btVector3(position.x, position.y, position.z));
     startTransform.setRotation(btQuaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w));
 
@@ -75,12 +77,13 @@ glm::mat4 PhysicsObject::get_model_matrix() {
     glm::quat ori = orientation();
     glm::vec3 euler = glm::eulerAngles(ori) * 3.14159f / 180.f;
 
-    std::cout << "Pos: (" << pos.x << ", " << pos.y << ", " << pos.z << ") Rot: (" << euler.x << ", " << euler.y << ", " << euler.z << ")" << std::endl;
-
+    //std::cout << "Pos: (" << pos.x << ", " << pos.y << ", " << pos.z << ") Rot: (" << euler.x << ", " << euler.y << ", " << euler.z << ")" << std::endl;
 
     float matrix[16];
     btTransform trans;
     body->getMotionState()->getWorldTransform(trans);
+
+    trans.setOrigin(btVector3(pos.x, pos.y, pos.z));
     trans.getOpenGLMatrix(matrix);
 
     return glm::make_mat4(matrix);

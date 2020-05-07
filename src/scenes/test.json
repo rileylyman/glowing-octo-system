@@ -25,6 +25,17 @@
     ],
     "models" : [
         {
+            "name": "leaf",
+            "modelPath": "resources/models/glowingleaf/scene.gltf",
+            "shaderType": "blinnphong_textured",
+            "heightNormals": true,
+            "shader": "phong",
+            "physics": "dynamic",
+            "gravity": true,
+            "initial_position": [0.0, 50.0, 3.0],
+            "initial_rotation": [0.0, 0.0, 0.0]
+        },
+        {
             "name": "nanosuit",
             "modelPath": "resources/models/suitofnano/nanosuit.obj",
             "shaderType": "blinnphong_textured",
@@ -32,8 +43,8 @@
             "shader": "phong",
             "physics": "dynamic",
             "gravity": true,
-            "initial_position": [0.0, 0.0, 0.0],
-            "initial_rotation": [0.0, 0.0, 0.0]
+            "initial_position": [0.0, 30.0, 3.0],
+            "initial_rotation": [1.0, 0.0, 0.0]
         },
         {
             "name": "naniu",
