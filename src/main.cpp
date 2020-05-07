@@ -82,7 +82,8 @@ int main()
 
     //
     // Init Fluidsim
-    uint32_t grid_width = 64, grid_height = 64, grid_depth = 64;
+    //
+    uint32_t grid_width = 32, grid_height = 32, grid_depth = 32;
     Fluidsim::Engine fs(grid_width, grid_height, grid_depth, 0.25f, 0.25f, 0.25f);
 
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f, {0.0, 0.0, 0.0}, {20.0, 20.0, 20.0});    
@@ -149,7 +150,7 @@ int main()
             }
             fsdebug.draw(output_grid, ImGuiInstance::fsdebug_scalar);
         } else if (ImGuiInstance::fluid_overlay) {
-            fsdebug.draw(fs.q, ImGuiInstance::fsdebug_scalar);
+            fsdebug.draw(fs.temp, ImGuiInstance::fsdebug_scalar);
         }
         
         //

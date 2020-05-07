@@ -60,6 +60,10 @@ bool isSolidCell(ivec3 index) {
     return imageLoad(world_mask, index).r == 0.0;
 }
 
+vec4 proj(vec4 x, vec4 b) {
+    return (dot(x, b) / dot(b, b)) * b;
+}
+
 void main() {
     // Calculate gradient of the pressure field
     float pL = imageLoad(pressure, left()).r;
@@ -75,26 +79,50 @@ void main() {
     vec4 v_next = v - gP;
 
     if (isSolidCell(center())) {
+        // Use velocity of object
+        v_next = imageLoad(u_solid, center());
+    }
+    
+    if (isSolidCell(left())) {
         // Enforce free slip conditions
-        v_next = imageLoad(u_solid, center());;
-    } else if (isSolidCell(left())) {
+        vec4 v_solid = imageLoad(u_solid, left());
+        vec4 n = vec4(1.0, 0.0, 0.0, 0.0);
+        v_next = v_next - proj(v_next, n) + proj(v_solid, n);
+    }
+    
+    if (isSolidCell(right())) {
         // Enforce free slip conditions
-        v_next = imageLoad(u_solid, left());;
-    } else if (isSolidCell(right())) {
+        vec4 v_solid = imageLoad(u_solid, right());
+        vec4 n = vec4(1.0, 0.0, 0.0, 0.0);
+        v_next = v_next - proj(v_next, n) + proj(v_solid, n);
+    }
+    
+    if (isSolidCell(bottom())) {
         // Enforce free slip conditions
-        v_next = imageLoad(u_solid, right());;
-    } else if (isSolidCell(bottom())) {
+        vec4 v_solid = imageLoad(u_solid, bottom());
+        vec4 n = vec4(0.0, 1.0, 0.0, 0.0);
+        v_next = v_next - proj(v_next, n) + proj(v_solid, n);
+    }
+    
+    if (isSolidCell(top())) {
         // Enforce free slip conditions
-        v_next = imageLoad(u_solid, bottom());;
-    } else if (isSolidCell(top())) {
+        vec4 v_solid = imageLoad(u_solid, top());
+        vec4 n = vec4(0.0, 1.0, 0.0, 0.0);
+        v_next = v_next - proj(v_next, n) + proj(v_solid, n);
+    }
+    
+    if (isSolidCell(down())) {
         // Enforce free slip conditions
-        v_next = imageLoad(u_solid, top());;
-    } else if (isSolidCell(down())) {
+        vec4 v_solid = imageLoad(u_solid, down());
+        vec4 n = vec4(0.0, 0.0, 1.0, 0.0);
+        v_next = v_next - proj(v_next, n) + proj(v_solid, n);
+    }
+    
+    if (isSolidCell(up())) {
         // Enforce free slip conditions
-        v_next = imageLoad(u_solid, down());;
-    } else if (isSolidCell(up())) {
-        // Enforce free slip conditions
-        v_next = imageLoad(u_solid, up());;
+        vec4 v_solid = imageLoad(u_solid, up());
+        vec4 n = vec4(0.0, 0.0, 1.0, 0.0);
+        v_next = v_next - proj(v_next, n) + proj(v_solid, n);
     }
 
     // Write to buffer

@@ -1,0 +1,249 @@
+#version 460 core
+
+// Built-in Variables
+// in uvec3 gl_NumWorkGroups;
+// in uvec3 gl_WorkGroupID;
+// in uvec3 gl_LocalInvocationID;
+// in uvec3 gl_GlobalInvocationID;      Represents [x,y,z] position in grid
+// in uint  gl_LocalInvocationIndex;
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(rgba16f) uniform image3D pressure;       // Pressure field iteration
+layout(rgba16f) uniform image3D div_w;          // Divergence of unprojected velocity field
+uniform float pressure_air;                     // Ambient quantity q related to the air
+layout(rgba16f) uniform image3D pressure_next;  // Buffer to store next Jacobi iteration
+
+layout(rgba16f) uniform image3D world_mask;     // Mask which shows the solid, fluid, and air
+
+ivec3 center() {
+    return ivec3(gl_GlobalInvocationID);
+}
+
+ivec3 left() {
+    return ivec3(int(gl_GlobalInvocationID.x) - 1,
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 right() {
+    return ivec3(int(gl_GlobalInvocationID.x) + 1,
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 bottom() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y) - 1,
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 top() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y) + 1,
+                 int(gl_GlobalInvocationID.z));
+}
+
+ivec3 down() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z) + 1);
+}
+
+ivec3 up() {
+    return ivec3(int(gl_GlobalInvocationID.x),
+                 int(gl_GlobalInvocationID.y),
+                 int(gl_GlobalInvocationID.z) - 1);
+}
+
+ivec3 lefti(ivec3 index) {
+    return ivec3(index.x - 1,
+                 index.y,
+                 index.z);
+}
+
+ivec3 righti(ivec3 index) {
+    return ivec3(index.x + 1,
+                 index.y,
+                 index.z);
+}
+
+ivec3 bottomi(ivec3 index) {
+    return ivec3(index.x,
+                 index.y - 1,
+                 index.z);
+}
+
+ivec3 topi(ivec3 index) {
+    return ivec3(index.x,
+                 index.y + 1,
+                 index.z);
+}
+
+ivec3 downi(ivec3 index) {
+    return ivec3(index.x,
+                 index.y,
+                 index.z - 1);
+}
+
+ivec3 upi(ivec3 index) {
+    return ivec3(index.x,
+                 index.y,
+                 index.z + 1);
+}
+
+bool isSolidCell(ivec3 index) {
+    return imageLoad(world_mask, index).r == 0.0;
+}
+
+bool isAirCell(ivec3 index) {
+    return imageLoad(world_mask, index).r == 1.0;
+}
+
+float jacobi1 (ivec3 index) {
+    float pC1 = imageLoad(pressure, center()).r;
+
+    if (isAirCell(center()) || isSolidCell(center())) {
+        return pressure_air;
+    } else {
+        float dC1 = imageLoad(div_w, index).r;
+        float pL1 = imageLoad(pressure, lefti(index)).r;
+        float pR1 = imageLoad(pressure, righti(index)).r;
+        float pB1 = imageLoad(pressure, bottomi(index)).r;
+        float pT1 = imageLoad(pressure, topi(index)).r;
+        float pD1 = imageLoad(pressure, downi(index)).r;
+        float pU1 = imageLoad(pressure, upi(index)).r;
+        
+        if (isSolidCell(lefti(index))) {
+            //Effectively ignore contribution of this cell 
+            pL1 = pC1;
+        } else if (isAirCell(lefti(index))) {
+            pL1 = pressure_air;
+        }
+
+        if (isSolidCell(righti(index))) {
+            //Effectively ignore contribution of this cell
+            pR1 = pC1;
+        } else if (isAirCell(righti(index))) {
+            //Simulate pressure discontinuity
+            pR1 = pressure_air;
+        }
+
+        if (isSolidCell(bottomi(index))) {
+            //Effectively ignore contribution of this cell
+            pB1 = pC1;
+        } else if (isAirCell(bottomi(index))) {
+            //Simulate pressure discontinuity
+            pB1 = pressure_air;
+        }
+
+        if (isSolidCell(topi(index))) {
+            //Effectively ignore contribution of this cell
+            pT1 = pC1;
+        } else if (isAirCell(topi(index))) {
+            //Simulate pressure discontinuity
+            pT1 = pressure_air;
+        }
+
+        if (isSolidCell(downi(index))) {
+            //Effectively ignore contribution of this cell
+            pD1 = pC1;
+        } else if (isAirCell(downi(index))) {
+            //Simulate pressure discontinuity
+            pD1 = pressure_air;
+        }
+
+        if (isSolidCell(upi(index))) {
+            //Effectively ignore contribution of this cell
+            pU1 = pC1;
+        } else if (isAirCell(upi(index))) {
+            //Simulate pressure discontinuity
+            pU1 = pressure_air;
+        }
+
+        return (pL1 + pR1 + pB1 + pT1 + pD1 + pU1 - dC1) / 6.0;
+    }
+}
+
+void main() {
+    float iter;
+    float pC = jacobi1(center());
+
+    if (isAirCell(center()) || isSolidCell(center())) {
+        iter = pressure_air;
+    } else {
+        float dC = imageLoad(div_w, center()).r;
+        float pL;
+        float pR;
+        float pB;
+        float pT;
+        float pD;
+        float pU;
+        
+        if (isSolidCell(left())) {
+            //Effectively ignore contribution of this cell 
+            pL = pC;
+        } else if (isAirCell(left())) {
+            //Simulate pressure discontinuity
+            pL = pressure_air;
+        } else {
+            pL = jacobi1(left());
+        }
+
+        if (isSolidCell(right())) {
+            //Effectively ignore contribution of this cell
+            pR = pC;
+        } else if (isAirCell(right())) {
+            //Simulate pressure discontinuity
+            pR = pressure_air;
+        } else {
+            pR = jacobi1(right());
+        }
+
+        if (isSolidCell(bottom())) {
+            //Effectively ignore contribution of this cell
+            pB = pC;
+        } else if (isAirCell(bottom())) {
+            //Simulate pressure discontinuity
+            pB = pressure_air;
+        } else {
+            pB = jacobi1(bottom());
+        }
+
+        if (isSolidCell(top())) {
+            //Effectively ignore contribution of this cell
+            pT = pC;
+        } else if (isAirCell(top())) {
+            //Simulate pressure discontinuity
+            pT = pressure_air;
+        } else {
+            pT = jacobi1(top());
+        }
+
+        if (isSolidCell(down())) {
+            //Effectively ignore contribution of this cell
+            pD = pC;
+        } else if (isAirCell(down())) {
+            //Simulate pressure discontinuity
+            pD = pressure_air;
+        } else {
+            pD = jacobi1(down());
+        }
+
+        if (isSolidCell(up())) {
+            //Effectively ignore contribution of this cell
+            pU = pC;
+        } else if (isAirCell(up())) {
+            //Simulate pressure discontinuity
+            pU = pressure_air;
+        } else {
+            pU = jacobi1(up());
+        }
+
+        iter = (pL + pR + pB + pT + pD + pU - dC) / 6.0;
+    }
+
+           
+    // Write to buffer
+    imageStore(pressure_next, center(), vec4(iter, 0.0, 0.0, 0.0));
+}

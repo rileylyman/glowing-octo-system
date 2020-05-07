@@ -6,9 +6,14 @@ bool ImGuiInstance::render_normals = true;
 bool ImGuiInstance::render_skybox = true;
 bool ImGuiInstance::cull_back_face = true;
 bool ImGuiInstance::mask_overlay = false;
+<<<<<<< HEAD
 bool ImGuiInstance::fluid_overlay = false;
 bool ImGuiInstance::fsdebug_scalar = false;
 bool ImGuiInstance::physics_enabled = false;
+=======
+bool ImGuiInstance::fluid_overlay = true;
+bool ImGuiInstance::fsdebug_scalar = true;
+>>>>>>> 6ca36b859bb4ccf17b1831fd99bcf99af6496981
 bool ImGuiInstance::draw_model_bb = false;
 bool ImGuiInstance::msaa = false;
 bool ImGuiInstance::reinhard_hdr = true;

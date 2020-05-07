@@ -11,7 +11,7 @@ class Engine {
 public:
     KernelProgram fs_advect_diffuse;
     KernelProgram fs_advect_diffuse_free;
-    KernelProgram fs_advect_diffuse_mc;
+    KernelProgram fs_advect_mc;
     KernelProgram fs_apply_force;
     KernelProgram fs_div;
     KernelProgram fs_jacobi_iter;
@@ -22,8 +22,8 @@ public:
     uint32_t grid_width, grid_height, grid_depth;
     float sclx, scly, sclz;
 
-    // DECLARE MAXIMUM JACOBI ITERATIONS
-    int max_iterations = 5;
+    // DECLARE MAXIMUM JACOBI ITERATIONS * 2
+    int max_iterations = 10;
 
     // DECLARE TEXTURES
     Texture3D u;
@@ -33,6 +33,8 @@ public:
     Texture3D zero;
     Texture3D q;
     Texture3D forces;
+    Texture3D temp;
+    Texture3D temp_solid;
     Texture3D divq;
     Texture3D pres;
     Texture3D lin_buffer2;

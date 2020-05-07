@@ -248,7 +248,7 @@ struct Model {
     //
     void draw_bounding_box(Camera *camera);
 
-    void pressure_force(Texture3D f1, Texture3D pressure) {
+    void pressure_force(Texture3D f1, Texture3D pressure, int num_samples_sides, int num_side_subdivisions) {
         // body is the reactphysics3d dynamic collision body
         // physics_obj->body->applyTorque();
         // physics_obj->body->applyForce()
@@ -257,6 +257,107 @@ struct Model {
         // coordinates of greatest extent                     bbox_most
 
         // call this every frame
+
+        float width;
+        float height;
+        float depth;
+        glm::vec3 center_box_offset(-width/2, -height/2, -depth/2); // (Go from corner centered at origin to box centered at origin)
+
+        // Transforms
+        glm::mat4x4 object2world_offset;
+        glm::mat4x4 object2world_rotate;
+        glm::mat4x4 object2world = object2world_offset * object2world_rotate;
+
+        // Accumulators
+        glm::vec3 force(0.0f, 0.0f, 0.0f);
+        glm::vec3 torque(0.0f, 0.0f, 0.0f);
+
+        auto sample_pressure_from_box_coord = [object2world_offset, object2world_rotate](glm::vec4 box_coord) {
+            glm::vec3 world_coord = object2world_offset * object2world_rotate * box_coord;
+            // Sample from image based on world coords
+            float pressure = 0.0f;
+            return pressure;
+        };
+    
+        //
+        // SAMPLE ON LEFT SIDE OF THE BOX (y,z varies)
+        //
+
+        for (int i = 0; i < num_side_subdivisions; i++) {
+            for (int j = 0; j < num_side_subdivisions; j++) {
+                // Calculate and apply force the subdivided section of the box
+                glm::vec3 force(0.0, 0.0, 0.0);
+
+                for (int k = 0; k < num_samples_sides; k++) {
+                    // Get surface normal of the box
+                    glm::vec4 norm(-1.0f, 0.0f, 0.0f, 1.0f);
+
+                    // Get random point on the side
+                    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    float s = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    
+                    glm::vec4 sample_loc(
+                        0,
+                        (r * (height / (float) num_side_subdivisions)) + ((float) i * (height / num_side_subdivisions)),
+                        (s * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
+                        1.0
+                    );
+
+                    sample_loc += center_box_offset;
+
+                    // Get the probability of the left side of the box
+                    float prob = 1 / (depth * height / (num_side_subdivisions * num_side_subdivisions));
+                    
+                    // Get pressure
+                    float pressure = sample_pressure_from_box_coord(sample_loc);
+
+                    // Get directional pressure
+                    glm::vec4 p = pressure * object2world * norm;
+
+                    // Get lever-vector
+                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+
+                    // Integrate small force
+                    force += p / prob;
+                }
+                
+                force /= (float)num_samples_sides;
+                    
+                glm::vec4 location2applyForce(
+                    0,
+                    (0.5f * (height / (float) num_side_subdivisions)) + ((float) i * (height / num_side_subdivisions)),
+                    (0.5f * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
+                    1.0
+                );
+
+                // TODO: APPLY INTEGRATED FORCE
+            }
+        }
+
+        //
+        // SAMPLE ON RIGHT SIDE OF THE BOX (y,z varies)
+        //
+
+
+        //
+        // SAMPLE ON BOTTOM SIDE OF THE BOX (x,z varies)
+        //
+
+
+        //
+        // SAMPLE ON TOP SIDE OF THE BOX (x,z varies)
+        //
+
+
+        //
+        // SAMPLE ON DOWN SIDE OF THE BOX (x, y varies)
+        //
+
+
+        //
+        // SAMPLE ON UP SIDE OF THE BOX (x, y varies)
+        //
+
     }
 
     //
