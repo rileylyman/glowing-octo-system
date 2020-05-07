@@ -46,38 +46,38 @@ void main() {
             // ****************************
             // FOR RENDERING GENERAL CHANGES
             // ****************************
-            //float t = texture(u_Grid, sampleLocation).r / 200.0;
+            float t = texture(u_Grid, sampleLocation).r / 200.0;
 
-            //float r = 0.0;
-            //float g = 0.0;
-            //float b = 0.0;
-            //float pi = 3.1415;
+            float r = 0.0;
+            float g = 0.0;
+            float b = 0.0;
+            float pi = 3.1415;
 
-            //if (mod(t,3.0) < 1) {
-            //    r = cos((pi/2.0) * mod(t,1.0));
-            //    g = sin((pi/2.0) * mod(t,1.0));
-            //} else if (mod(t,3.0) < 2) {
-            //    g = cos((pi/2.0) * mod(t,1.0));
-            //    b = sin((pi/2.0) * mod(t,1.0));
-            //} else {
-            //    b = cos((pi/2.0) * mod(t,1.0));
-            //    r = sin((pi/2.0) * mod(t,1.0));
-            //}
+            if (mod(t,3.0) < 1) {
+               r = cos((pi/2.0) * mod(t,1.0));
+               g = sin((pi/2.0) * mod(t,1.0));
+            } else if (mod(t,3.0) < 2) {
+               g = cos((pi/2.0) * mod(t,1.0));
+               b = sin((pi/2.0) * mod(t,1.0));
+            } else {
+               b = cos((pi/2.0) * mod(t,1.0));
+               r = sin((pi/2.0) * mod(t,1.0));
+            }
 
-            //FragColor = vec4(r, g, b, 1.0);//
+            FragColor = vec4(r, g, b, 1.0);//
 
 
             // // ****************************
             // // FOR RENDERING TEMPERATURE
             // // ****************************
-            float t = texture(u_Grid, sampleLocation).r - 293.15;
-            t = 1 / (1 + exp(-0.1*t));
+            // float t = texture(u_Grid, sampleLocation).r - 293.15;
+            // t = 1 / (1 + exp(-0.1*t));
 
-            float pi = 3.1415;
-            float r = sin((pi/2.0) * t);
-            float b = cos((pi/2.0) * t);
+            // float pi = 3.1415;
+            // float r = sin((pi/2.0) * t);
+            // float b = cos((pi/2.0) * t);
             
-            FragColor = vec4(r, 0.0, b, 1.0);
+            // FragColor = vec4(r, 0.0, b, 1.0);
             return;
         } else {
             qValue = texture(u_Grid, sampleLocation).rgb;

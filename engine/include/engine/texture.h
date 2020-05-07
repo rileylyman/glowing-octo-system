@@ -235,7 +235,7 @@ struct Texture3D {
                         data.push_back(0.0f);
                     } else if (d >= depth / 3) {
                         float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-                        data.push_back(293.15f - 100.0f * r * r);
+                        data.push_back(293.15f + 100.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
@@ -258,7 +258,7 @@ struct Texture3D {
                 for (uint32_t w = 0; w < width; w++) {
                     if (h == 0 || h == height - 1 || d == 0 || d == depth - 1 || w == 0 || w == width - 1) {
                         // sOLID around boundaries
-                        data.push_back(500.0f);
+                        data.push_back(400.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                         data.push_back(1.0f);
@@ -266,7 +266,7 @@ struct Texture3D {
                                (w >= (width * 2) / 5 && w <= (width * 3) / 5) &&
                                (d >= (depth * 2) / 5 && d <= (depth * 3) / 5)) {
                         // Box in the center
-                        data.push_back(500.0f);
+                        data.push_back(400.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                         data.push_back(1.0f);
@@ -274,13 +274,13 @@ struct Texture3D {
                                (w >= (width * 3) / 10 && w <= (width * 7) / 10) &&
                                (d >= (depth * 3) / 10 && d <= (depth * 7) / 10)) {
                         // Water around the box
-                        data.push_back(2.0f);
+                        data.push_back(400.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                         data.push_back(1.0f);
                     } else {
                         // Water on the Periphery
-                        data.push_back(2.0f);
+                        data.push_back(400.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                         data.push_back(1.0f);

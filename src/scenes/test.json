@@ -33,7 +33,7 @@
             "physics": "dynamic",
             "gravity": true,
             "mass": 0.0001,
-            "initial_position": [0.0, 0.0, 0.0],
+            "initial_position": [0.0, 50.0, 0.0],
             "initial_rotation": [1.0, 0.0, 0.0]
         },
         {
