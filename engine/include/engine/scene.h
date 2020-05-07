@@ -47,6 +47,7 @@ struct Scene {
         for (std::map<ShaderProgram, std::vector<Model>>::iterator iter = models.begin(); iter != models.end(); iter++) {
             for (Model &model: iter->second) {
                 for (Mesh &mesh: model.get_meshes()) {
+                    mesh.parent_model = &model;
                     mesh_masks.push_back(mesh.get_mask(i));
                     i = (i + 1) % 16;
                 }

@@ -83,14 +83,14 @@ Engine::Engine(uint32_t w, uint32_t h, uint32_t d, float dx, float dy, float dz)
     zero            = Texture3D(grid_width, grid_height, grid_depth, 5, Texture3D::zero(grid_width, grid_height, grid_depth));
     q               = Texture3D(grid_width, grid_height, grid_depth, 6, Texture3D::q(grid_width, grid_height, grid_depth));
     forces          = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::zero(grid_width, grid_height, grid_depth));
-    temp            = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::temperature(grid_width, grid_height, grid_depth));
-    divq            = Texture3D(grid_width, grid_height, grid_depth, 8, Texture3D::zero(grid_width, grid_height, grid_depth));
-    pres            = Texture3D(grid_width, grid_height, grid_depth, 9, Texture3D::zero(grid_width, grid_height, grid_depth));
-    lin_buffer2     = Texture3D(grid_width, grid_height, grid_depth, 10, Texture3D::zero(grid_width, grid_height, grid_depth));
-    temp_solid      = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::temperatureSolid(grid_width, grid_height, grid_depth));
-    prescpy[0]      = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::zero(grid_width, grid_height, grid_depth));
-    prescpy[1]      = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::zero(grid_width, grid_height, grid_depth));
-    prescpy[2]      = Texture3D(grid_width, grid_height, grid_depth, 7, Texture3D::zero(grid_width, grid_height, grid_depth));
+    temp            = Texture3D(grid_width, grid_height, grid_depth, 8, Texture3D::temperature(grid_width, grid_height, grid_depth));
+    divq            = Texture3D(grid_width, grid_height, grid_depth, 9, Texture3D::zero(grid_width, grid_height, grid_depth));
+    pres            = Texture3D(grid_width, grid_height, grid_depth, 10, Texture3D::zero(grid_width, grid_height, grid_depth));
+    lin_buffer2     = Texture3D(grid_width, grid_height, grid_depth, 11, Texture3D::zero(grid_width, grid_height, grid_depth));
+    temp_solid      = Texture3D(grid_width, grid_height, grid_depth, 12, Texture3D::temperatureSolid(grid_width, grid_height, grid_depth));
+    prescpy[0]      = Texture3D(grid_width, grid_height, grid_depth, 13, Texture3D::zero(grid_width, grid_height, grid_depth));
+    prescpy[1]      = Texture3D(grid_width, grid_height, grid_depth, 14, Texture3D::zero(grid_width, grid_height, grid_depth));
+    prescpy[2]      = Texture3D(grid_width, grid_height, grid_depth, 15, Texture3D::zero(grid_width, grid_height, grid_depth));
 }
 
 void Engine::step(float dt) {
@@ -317,16 +317,16 @@ void Engine::step(float dt) {
     
     // WRITE TO PRESSURE BUFFER
     if (iter % 3 == 0) {
-        prescpy[0].use(2, 2);
+        prescpy[0].use(7, 7);
     } else if (iter % 3 == 0) {
-        prescpy[1].use(2, 2);
+        prescpy[1].use(7, 7);
     } else {
-        prescpy[2].use(2, 2);
+        prescpy[2].use(7, 7);
     }
 
     fs_write_to.use();
     fs_write_to.setInt("q_in", 6);
-    fs_write_to.setInt("q_out", 2);
+    fs_write_to.setInt("q_out", 7);
 
     glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);

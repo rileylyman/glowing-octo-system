@@ -230,6 +230,7 @@ void Model::draw(ShaderProgram shader_prog, Camera *camera) {
     }
     if (ImGuiInstance::draw_mesh_bb) {
         for (Mesh mesh: meshes) {
+            mesh.parent_model = this;
             mesh.draw_bounding_box(camera);
         }
     }
@@ -343,7 +344,7 @@ glm::mat4 Model::convert_matrix(const aiMatrix4x4 &aiMat) {
 void Model::load_model(std::string pathname, MeshShaderType shader_type, uint32_t shader_flags, bool height_normals) {
     
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(pathname, aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_PreTransformVertices);
+    const aiScene* scene = importer.ReadFile(pathname, aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_PreTransformVertices);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
     {
         std::cout << "Assimp importer error: " << importer.GetErrorString() << std::endl;
@@ -396,13 +397,19 @@ Mesh Model::process_mesh(aiMesh *ai_mesh, const aiScene *scene, glm::mat4 transf
 
         aiVector3D ai_position = ai_mesh->mVertices[i];
         aiVector3D ai_normal = ai_mesh->mNormals[i];
-        aiVector3D ai_tangent = ai_mesh->mTangents[i];
-        aiVector3D ai_bitangent = ai_mesh->mBitangents[i];
+        if (ai_mesh->mTangents && ai_mesh->mBitangents) {
+            aiVector3D ai_tangent = ai_mesh->mTangents[i];
+            aiVector3D ai_bitangent = ai_mesh->mBitangents[i];
+            vertex.tangent = glm::vec3(ai_tangent.x, ai_tangent.y, ai_tangent.z);
+            vertex.bitangent = glm::vec3(ai_bitangent.x, ai_bitangent.y, ai_bitangent.z);
+        }
+        else {
+            vertex.tangent = glm::vec3(0.0);
+            vertex.bitangent = glm::vec3(0.0);
+        }
         
         vertex.position = glm::vec3(ai_position.x, ai_position.y, ai_position.z);
         vertex.normal = glm::vec3(ai_normal.x, ai_normal.y, ai_normal.z);
-        vertex.tangent = glm::vec3(ai_tangent.x, ai_tangent.y, ai_tangent.z);
-        vertex.bitangent = glm::vec3(ai_bitangent.x, ai_bitangent.y, ai_bitangent.z);
         vertex.tex_coord = glm::vec2(0.0f, 0.0f);
         if (ai_mesh->mTextureCoords[0]) {
             aiVector3D ai_tex_coord = ai_mesh->mTextureCoords[0][i];

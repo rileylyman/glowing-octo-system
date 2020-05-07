@@ -60,7 +60,7 @@ Texture::Texture(std::string filename, uint32_t unit, bool srgb) : unit(unit) {
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else {
-        std::cout << "Failed to load texture" << std::endl;
+        std::cout << "Failed to load texture" << filename << std::endl;
         exit(EXIT_FAILURE);
     }
     stbi_image_free(data);

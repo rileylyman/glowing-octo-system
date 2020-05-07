@@ -108,6 +108,12 @@ struct Mesh {
     //
     Mask get_mask(uint32_t unit);
 
+    //
+    // The model transformation of the model which contains
+    // this mesh.
+    //
+    Model *parent_model;
+
 private:
 
     uint64_t hash_position(glm::vec3 position);
@@ -118,12 +124,6 @@ private:
     // The mesh local->model local transformation
     //
     glm::mat4 bind_matrix;
-
-    //
-    // The model transformation of the model which contains
-    // this mesh.
-    //
-    Model *parent_model;
 
 
     //
@@ -286,7 +286,11 @@ struct Model {
             GLfloat *ptr = (GLfloat *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
             if (ptr) {
                 // process pixels
-                std::cout << "First read byte: " << ptr[0] << std::endl;
+                std::cout << "Bytes: (";
+                for (int i = 0; i < 10; i++) {
+                    std::cout << ptr[i] << ", ";
+                }
+                std::cout << ") " << std::endl;
                 glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
             }
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);

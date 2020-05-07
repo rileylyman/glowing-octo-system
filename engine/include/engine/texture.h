@@ -130,7 +130,7 @@ struct Texture3D {
                 for (uint32_t w = 0; w < width; w++) {
                     if (h == 0 || h == height - 1 || d == 0 || d == depth - 1 || w == 0 || w == width - 1) {
                         // Solid around boundaries
-                        data.push_back(0.0f);
+                        data.push_back(2.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                         data.push_back(1.0f);
