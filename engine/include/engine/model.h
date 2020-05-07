@@ -326,6 +326,8 @@ struct Model {
                     1.0f
                 );
 
+                location2applyForce += center_box_offset;
+
                 // TODO: APPLY INTEGRATED FORCE
             }
         }
@@ -334,25 +336,289 @@ struct Model {
         // SAMPLE ON RIGHT SIDE OF THE BOX (y,z varies)
         //
 
+        for (int i = 0; i < num_side_subdivisions; i++) {
+            for (int j = 0; j < num_side_subdivisions; j++) {
+                // Calculate and apply force the subdivided section of the box
+                glm::vec4 force(0.0f, 0.0f, 0.0f, 1.0f);
+
+                for (int k = 0; k < num_samples_sides; k++) {
+                    // Get surface normal of the box
+                    glm::vec4 norm(1.0f, 0.0f, 0.0f, 1.0f);
+
+                    // Get random point on the side
+                    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    float s = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    
+                    glm::vec4 sample_loc(
+                        width,
+                        (r * (height / (float) num_side_subdivisions)) + ((float) i * (height / num_side_subdivisions)),
+                        (s * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
+                        1.0f
+                    );
+
+                    sample_loc += center_box_offset;
+
+                    // Get the probability of the left side of the box
+                    float prob = 1 / (depth * height / ((float)num_side_subdivisions * (float)num_side_subdivisions));
+                    
+                    // Get pressure
+                    float pressure = sample_pressure_from_box_coord(sample_loc);
+
+                    // Get directional pressure
+                    glm::vec4 p = pressure * object2world * norm;
+
+                    // Get lever-vector
+                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+
+                    // Integrate small force
+                    force += p / prob;
+                }
+                
+                force /= (float)num_samples_sides;
+                    
+                glm::vec4 location2applyForce(
+                    width,
+                    (0.5f * (height / (float) num_side_subdivisions)) + ((float) i * (height / num_side_subdivisions)),
+                    (0.5f * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
+                    1.0f
+                );
+
+                location2applyForce += center_box_offset;
+
+                // TODO: APPLY INTEGRATED FORCE
+            }
+        }
+
 
         //
         // SAMPLE ON BOTTOM SIDE OF THE BOX (x,z varies)
         //
+
+        for (int i = 0; i < num_side_subdivisions; i++) {
+            for (int j = 0; j < num_side_subdivisions; j++) {
+                // Calculate and apply force the subdivided section of the box
+                glm::vec4 force(0.0f, 0.0f, 0.0f, 1.0f);
+
+                for (int k = 0; k < num_samples_sides; k++) {
+                    // Get surface normal of the box
+                    glm::vec4 norm(0.0f, -1.0f, 0.0f, 1.0f);
+
+                    // Get random point on the side
+                    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    float s = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    
+                    glm::vec4 sample_loc(
+                        (r * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
+                        0.0f,
+                        (s * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
+                        1.0f
+                    );
+
+                    sample_loc += center_box_offset;
+
+                    // Get the probability of the left side of the box
+                    float prob = 1 / (depth * width / ((float)num_side_subdivisions * (float)num_side_subdivisions));
+                    
+                    // Get pressure
+                    float pressure = sample_pressure_from_box_coord(sample_loc);
+
+                    // Get directional pressure
+                    glm::vec4 p = pressure * object2world * norm;
+
+                    // Get lever-vector
+                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+
+                    // Integrate small force
+                    force += p / prob;
+                }
+                
+                force /= (float)num_samples_sides;
+                    
+                glm::vec4 location2applyForce(
+                    (0.5f * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
+                    0.0f,
+                    (0.5f * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
+                    1.0f
+                );
+
+                location2applyForce += center_box_offset;
+
+                // TODO: APPLY INTEGRATED FORCE
+            }
+        }
 
 
         //
         // SAMPLE ON TOP SIDE OF THE BOX (x,z varies)
         //
 
+        for (int i = 0; i < num_side_subdivisions; i++) {
+            for (int j = 0; j < num_side_subdivisions; j++) {
+                // Calculate and apply force the subdivided section of the box
+                glm::vec4 force(0.0f, 0.0f, 0.0f, 1.0f);
+
+                for (int k = 0; k < num_samples_sides; k++) {
+                    // Get surface normal of the box
+                    glm::vec4 norm(0.0f, 1.0f, 0.0f, 1.0f);
+
+                    // Get random point on the side
+                    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    float s = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    
+                    glm::vec4 sample_loc(
+                        (r * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
+                        height,
+                        (s * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
+                        1.0f
+                    );
+
+                    sample_loc += center_box_offset;
+
+                    // Get the probability of the left side of the box
+                    float prob = 1 / (depth * width / ((float)num_side_subdivisions * (float)num_side_subdivisions));
+                    
+                    // Get pressure
+                    float pressure = sample_pressure_from_box_coord(sample_loc);
+
+                    // Get directional pressure
+                    glm::vec4 p = pressure * object2world * norm;
+
+                    // Get lever-vector
+                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+
+                    // Integrate small force
+                    force += p / prob;
+                }
+                
+                force /= (float)num_samples_sides;
+                    
+                glm::vec4 location2applyForce(
+                    (0.5f * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
+                    height,
+                    (0.5f * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
+                    1.0f
+                );
+
+                location2applyForce += center_box_offset;
+
+                // TODO: APPLY INTEGRATED FORCE
+            }
+        }
+
 
         //
         // SAMPLE ON DOWN SIDE OF THE BOX (x, y varies)
         //
 
+        for (int i = 0; i < num_side_subdivisions; i++) {
+            for (int j = 0; j < num_side_subdivisions; j++) {
+                // Calculate and apply force the subdivided section of the box
+                glm::vec4 force(0.0f, 0.0f, 0.0f, 1.0f);
+
+                for (int k = 0; k < num_samples_sides; k++) {
+                    // Get surface normal of the box
+                    glm::vec4 norm(0.0f, 0.0f, -1.0f, 1.0f);
+
+                    // Get random point on the side
+                    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    float s = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    
+                    glm::vec4 sample_loc(
+                        (r * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
+                        (s * (height / (float) num_side_subdivisions)) + ((float) j * (height / num_side_subdivisions)),
+                        0.0f,
+                        1.0f
+                    );
+
+                    sample_loc += center_box_offset;
+
+                    // Get the probability of the left side of the box
+                    float prob = 1 / (height * width / ((float)num_side_subdivisions * (float)num_side_subdivisions));
+                    
+                    // Get pressure
+                    float pressure = sample_pressure_from_box_coord(sample_loc);
+
+                    // Get directional pressure
+                    glm::vec4 p = pressure * object2world * norm;
+
+                    // Get lever-vector
+                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+
+                    // Integrate small force
+                    force += p / prob;
+                }
+                
+                force /= (float)num_samples_sides;
+                    
+                glm::vec4 location2applyForce(
+                    (0.5f * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
+                    (0.5f * (height / (float) num_side_subdivisions)) + ((float) j * (height / num_side_subdivisions)),
+                    0.0f,
+                    1.0f
+                );
+
+                location2applyForce += center_box_offset;
+
+                // TODO: APPLY INTEGRATED FORCE
+            }
+        }
 
         //
         // SAMPLE ON UP SIDE OF THE BOX (x, y varies)
         //
+
+        for (int i = 0; i < num_side_subdivisions; i++) {
+            for (int j = 0; j < num_side_subdivisions; j++) {
+                // Calculate and apply force the subdivided section of the box
+                glm::vec4 force(0.0f, 0.0f, 0.0f, 1.0f);
+
+                for (int k = 0; k < num_samples_sides; k++) {
+                    // Get surface normal of the box
+                    glm::vec4 norm(0.0f, 0.0f, 1.0f, 1.0f);
+
+                    // Get random point on the side
+                    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    float s = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                    
+                    glm::vec4 sample_loc(
+                        (r * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
+                        (s * (height / (float) num_side_subdivisions)) + ((float) j * (height / num_side_subdivisions)),
+                        depth,
+                        1.0f
+                    );
+
+                    sample_loc += center_box_offset;
+
+                    // Get the probability of the left side of the box
+                    float prob = 1 / (height * width / ((float)num_side_subdivisions * (float)num_side_subdivisions));
+                    
+                    // Get pressure
+                    float pressure = sample_pressure_from_box_coord(sample_loc);
+
+                    // Get directional pressure
+                    glm::vec4 p = pressure * object2world * norm;
+
+                    // Get lever-vector
+                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+
+                    // Integrate small force
+                    force += p / prob;
+                }
+                
+                force /= (float)num_samples_sides;
+                    
+                glm::vec4 location2applyForce(
+                    (0.5f * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
+                    (0.5f * (height / (float) num_side_subdivisions)) + ((float) j * (height / num_side_subdivisions)),
+                    depth,
+                    1.0f
+                );
+
+                location2applyForce += center_box_offset;
+
+                // TODO: APPLY INTEGRATED FORCE
+            }
+        }
 
     }
 
