@@ -11,6 +11,7 @@
 #include "engine/camera.h"
 #include "engine/physics.h"
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <map>
 
 //
@@ -250,7 +251,7 @@ struct Model {
     //
     void draw_bounding_box(Camera *camera);
 
-    void pressure_force(Fluidsim::Engine &fs, int num_samples_sides, int num_side_subdivisions) {
+    void pressure_force(Fluidsim::Engine &fs, int num_samples_sides, int num_side_subdivisions, glm::vec3 offset) {
         // body is the reactphysics3d dynamic collision body
         // physics_obj->body->applyTorque();
         // physics_obj->body->applyForce()
@@ -260,45 +261,81 @@ struct Model {
 
         // call this every frame
 
-        float width;
-        float height;
-        float depth;
+        float width   = (bbox_most.x - bbox_least.x);
+        float height  = (bbox_most.y - bbox_least.y);
+        float depth   = (bbox_most.z - bbox_least.z);
         glm::vec4 center_box_offset(-width/2, -height/2, -depth/2, 0.0f); // (Go from corner centered at origin to box centered at origin)
 
         // Transforms
-        glm::mat4x4 object2world_offset;
-        glm::mat4x4 object2world_rotate;
-        glm::mat4x4 object2world = object2world_offset * object2world_rotate;
+        glm::mat4x4 object2world_offset = glm::translate(glm::mat4(1.0), offset);
+        glm::mat4x4 object2world_rotate = glm::mat4(1.0);
+        glm::mat4x4 object2world = object2world_offset; 
 
-        auto sample_pressure_from_box_coord = [fs, object2world_offset, object2world_rotate](glm::vec4 box_coord) {
-            glm::vec4 world_coord = object2world_offset * object2world_rotate * box_coord;
+        static int index = 0;
+        int next_index = (index + 1) % 3;
+
+        glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+        glGetError();
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, Physics::instance->pbos[index]);
+        glBindTexture(GL_TEXTURE_3D, fs.prescpy[index].id);
+        glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, 0);
+
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, Physics::instance->pbos[next_index]);
+        GLfloat *ptr = (GLfloat *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+
+
+        auto sample_pressure_from_box_coord = [fs, object2world_offset, ptr](glm::vec4 box_coord) {
+            glm::vec4 world_coord = object2world_offset * box_coord;
             // Sample from image based on world coords
 
-            static int index = 0;
-            int next_index = (index + 1) % 3;
+            float dim_x = (float)fs.grid_width * fs.sclx;
+            float dim_y = (float)fs.grid_height * fs.scly;
+            float dim_z = (float)fs.grid_depth * fs.sclz;
 
-            glGetError();
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, Physics::instance->pbos[index]);
-            glBindTexture(GL_TEXTURE_3D, fs.prescpy[index].id);
-            glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, 0);
-
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, Physics::instance->pbos[next_index]);
-            GLfloat *ptr = (GLfloat *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-            if (ptr) {
-                // process pixels
-                std::cout << "Bytes: (";
-                for (int i = 0; i < 10; i++) {
-                    std::cout << ptr[i] << ", ";
-                }
-                std::cout << ") " << std::endl;
-                glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+            float float_cell_x = ((world_coord.x + dim_x / 2.0) / dim_x) * (float)fs.grid_width;
+            float float_cell_y = ((world_coord.y + dim_y / 2.0) / dim_y) * (float)fs.grid_height;
+            float float_cell_z = ((world_coord.z + dim_z / 2.0) / dim_z) * (float)fs.grid_depth;
+            if (float_cell_x >= dim_x) {
+                return 0.0f;
+            } else if (float_cell_x < 0.0) {
+                return 0.0f;
             }
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-            glGetError();
-
-            index = next_index;
+            if (float_cell_y >= dim_y) {
+                return 0.0f;
+            } else if (float_cell_y < 0.0) {
+                return 0.0f;
+            }
+            if (float_cell_z >= dim_z) {
+                return 0.0f;
+            } else if (float_cell_z < 0.0) {
+                return 0.0f;
+            }
+            
+            uint32_t cell_x = (uint32_t)float_cell_x;
+            uint32_t cell_y = (uint32_t)float_cell_y;
+            uint32_t cell_z = (uint32_t)float_cell_z;
 
             float pressure = 0.0f;
+
+            if (ptr) {
+                // process pixels
+                auto get_pressure = [fs, ptr] (uint32_t w, uint32_t h, uint32_t d) {
+                    uint32_t pixel_index = 4 * (w + fs.grid_width * d + fs.grid_width * fs.grid_depth * h);
+                    return ptr[pixel_index];
+                };
+                pressure = get_pressure(cell_x, cell_y, cell_z);
+
+                std::cout << "Pressure at ( " << cell_x << ", " << cell_y << ", " << cell_z << "): " << pressure << std::endl;
+                //for (int i = 0; i < 10; i++) {
+                //    std::cout << ptr[i] << ", ";
+                //}
+                //std::cout << ") " << std::endl;
+                glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+            }
+
+
+
             return pressure;
         };
     
@@ -356,6 +393,7 @@ struct Model {
                 location2applyForce += center_box_offset;
 
                 // TODO: APPLY INTEGRATED FORCE
+                //physics_obj->apply_force_to_point(force, point);
             }
         }
 
@@ -646,6 +684,14 @@ struct Model {
                 // TODO: APPLY INTEGRATED FORCE
             }
         }
+
+
+        // CLEAN UP PIXEL BUFFER
+        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+        glGetError();
+        index = next_index;
+
 
     }
 

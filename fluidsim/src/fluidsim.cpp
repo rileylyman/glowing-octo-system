@@ -342,7 +342,7 @@ void Engine::step(float dt, Texture3D *solidmask) {
     // WRITE TO PRESSURE BUFFER
     if (iter % 3 == 0) {
         prescpy[0].use(7, 7);
-    } else if (iter % 3 == 0) {
+    } else if (iter % 3 == 1) {
         prescpy[1].use(7, 7);
     } else {
         prescpy[2].use(7, 7);
