@@ -333,6 +333,9 @@ struct Model {
 
             return pressure;
         };
+
+        // Induce a small perturbation to surface to get nonzero pressure values
+        float dv = 1.0001f * sqrt(fs.sclx * fs.sclx + fs.scly * fs.scly + fs.sclz * fs.sclz);
     
         //
         // SAMPLE ON LEFT SIDE OF THE BOX (y,z varies)
@@ -352,7 +355,7 @@ struct Model {
                     float s = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
                     
                     glm::vec4 sample_loc(
-                        0.f,
+                        0.f - dv,
                         (r * (height / (float) num_side_subdivisions)) + ((float) i * (height / num_side_subdivisions)),
                         (s * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
                         1.0f
@@ -407,7 +410,7 @@ struct Model {
                     float s = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
                     
                     glm::vec4 sample_loc(
-                        width,
+                        width + dv,
                         (r * (height / (float) num_side_subdivisions)) + ((float) i * (height / num_side_subdivisions)),
                         (s * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
                         1.0f
@@ -464,7 +467,7 @@ struct Model {
                     
                     glm::vec4 sample_loc(
                         (r * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
-                        0.0f,
+                        0.0f - dv,
                         (s * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
                         1.0f
                     );
@@ -520,7 +523,7 @@ struct Model {
                     
                     glm::vec4 sample_loc(
                         (r * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
-                        height,
+                        height + dv,
                         (s * (depth / (float) num_side_subdivisions)) + ((float) j * (depth / num_side_subdivisions)),
                         1.0f
                     );
@@ -577,7 +580,7 @@ struct Model {
                     glm::vec4 sample_loc(
                         (r * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
                         (s * (height / (float) num_side_subdivisions)) + ((float) j * (height / num_side_subdivisions)),
-                        0.0f,
+                        0.0f - dv,
                         1.0f
                     );
 
@@ -632,7 +635,7 @@ struct Model {
                     glm::vec4 sample_loc(
                         (r * (width / (float) num_side_subdivisions)) + ((float) i * (width / num_side_subdivisions)),
                         (s * (height / (float) num_side_subdivisions)) + ((float) j * (height / num_side_subdivisions)),
-                        depth,
+                        depth + dv,
                         1.0f
                     );
 
