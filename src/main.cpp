@@ -175,9 +175,10 @@ int main()
         if (ImGuiInstance::physics_enabled) {
             double current_time = glfwGetTime();
             double frame_time = current_time - Physics::instance->previous_time;
-            Physics::instance->previous_time = current_time;
             fs.step(frame_time, &output_solid_mask, &output_velocity_mask, &output_temperature_mask, 10);
             Physics::instance->tick(frame_time);
+            Physics::instance->previous_time = current_time;
+        }
 
         // Fluid Debugger
         if (ImGuiInstance::mask_overlay) {
