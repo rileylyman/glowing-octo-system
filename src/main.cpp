@@ -144,7 +144,7 @@ int main()
         glCheckError();
         for (Model &model : scene.get_models()) {
             //model.physics_obj->apply_force_to_center({0.0, 0.0, -1.0});
-            model.pressure_force(fs, 4, 2, grid_offset);
+            model.pressure_force(fs, 4, 2, grid_offset, model.model());
         }
         scene.draw(&camera);
 

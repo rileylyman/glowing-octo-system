@@ -251,7 +251,7 @@ struct Model {
     //
     void draw_bounding_box(Camera *camera);
 
-    void pressure_force(Fluidsim::Engine &fs, int num_samples_sides, int num_side_subdivisions, glm::vec3 offset) {
+    void pressure_force(Fluidsim::Engine &fs, int num_samples_sides, int num_side_subdivisions, glm::vec3 offset, glm::mat4 object_m) {
         // body is the reactphysics3d dynamic collision body
         // physics_obj->body->applyTorque();
         // physics_obj->body->applyForce()
@@ -265,11 +265,6 @@ struct Model {
         float height  = (bbox_most.y - bbox_least.y);
         float depth   = (bbox_most.z - bbox_least.z);
         glm::vec4 center_box_offset(-width/2, -height/2, -depth/2, 0.0f); // (Go from corner centered at origin to box centered at origin)
-
-        // Transforms
-        glm::mat4x4 object2world_offset = glm::translate(glm::mat4(1.0), offset);
-        glm::mat4x4 object2world_rotate = glm::mat4(1.0);
-        glm::mat4x4 object2world = object2world_offset; 
 
         static int index = 0;
         int next_index = (index + 1) % 3;
@@ -285,8 +280,8 @@ struct Model {
         GLfloat *ptr = (GLfloat *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
 
-        auto sample_pressure_from_box_coord = [fs, object2world_offset, ptr](glm::vec4 box_coord) {
-            glm::vec4 world_coord = object2world_offset * box_coord;
+        auto sample_pressure_from_box_coord = [fs, object_m, ptr](glm::vec4 box_coord) {
+            glm::vec4 world_coord = object_m * box_coord;
             // Sample from image based on world coords
 
             float dim_x = (float)fs.grid_width * fs.sclx;
@@ -296,6 +291,7 @@ struct Model {
             float float_cell_x = ((world_coord.x + dim_x / 2.0) / dim_x) * (float)fs.grid_width;
             float float_cell_y = ((world_coord.y + dim_y / 2.0) / dim_y) * (float)fs.grid_height;
             float float_cell_z = ((world_coord.z + dim_z / 2.0) / dim_z) * (float)fs.grid_depth;
+            
             if (float_cell_x >= dim_x) {
                 return 0.0f;
             } else if (float_cell_x < 0.0) {
@@ -326,15 +322,13 @@ struct Model {
                 };
                 pressure = get_pressure(cell_x, cell_y, cell_z);
 
-                std::cout << "Pressure at ( " << cell_x << ", " << cell_y << ", " << cell_z << "): " << pressure << std::endl;
+                //std::cout << "Pressure at ( " << cell_x << ", " << cell_y << ", " << cell_z << "): " << pressure << std::endl;
                 //for (int i = 0; i < 10; i++) {
                 //    std::cout << ptr[i] << ", ";
                 //}
                 //std::cout << ") " << std::endl;
                 glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
             }
-
-
 
             return pressure;
         };
@@ -350,7 +344,7 @@ struct Model {
 
                 for (int k = 0; k < num_samples_sides; k++) {
                     // Get surface normal of the box
-                    glm::vec4 norm(-1.0f, 0.0f, 0.0f, 1.0f);
+                    glm::vec4 norm(-1.0f, 0.0f, 0.0f, 0.0f);
 
                     // Get random point on the side
                     float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -372,10 +366,7 @@ struct Model {
                     float pressure = sample_pressure_from_box_coord(sample_loc);
 
                     // Get directional pressure
-                    glm::vec4 p = pressure * object2world * norm;
-
-                    // Get lever-vector
-                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+                    glm::vec4 p = pressure * object_m * norm;
 
                     // Integrate small force
                     force += p / prob;
@@ -393,7 +384,7 @@ struct Model {
                 location2applyForce += center_box_offset;
 
                 // TODO: APPLY INTEGRATED FORCE
-                //physics_obj->apply_force_to_point(force, point);
+                physics_obj->apply_force_to_point(force, location2applyForce);
             }
         }
 
@@ -408,7 +399,7 @@ struct Model {
 
                 for (int k = 0; k < num_samples_sides; k++) {
                     // Get surface normal of the box
-                    glm::vec4 norm(1.0f, 0.0f, 0.0f, 1.0f);
+                    glm::vec4 norm(1.0f, 0.0f, 0.0f, 0.0f);
 
                     // Get random point on the side
                     float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -430,10 +421,7 @@ struct Model {
                     float pressure = sample_pressure_from_box_coord(sample_loc);
 
                     // Get directional pressure
-                    glm::vec4 p = pressure * object2world * norm;
-
-                    // Get lever-vector
-                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+                    glm::vec4 p = pressure * object_m * norm;
 
                     // Integrate small force
                     force += p / prob;
@@ -451,6 +439,7 @@ struct Model {
                 location2applyForce += center_box_offset;
 
                 // TODO: APPLY INTEGRATED FORCE
+                physics_obj->apply_force_to_point(force, location2applyForce);
             }
         }
 
@@ -466,7 +455,7 @@ struct Model {
 
                 for (int k = 0; k < num_samples_sides; k++) {
                     // Get surface normal of the box
-                    glm::vec4 norm(0.0f, -1.0f, 0.0f, 1.0f);
+                    glm::vec4 norm(0.0f, -1.0f, 0.0f, 0.0f);
 
                     // Get random point on the side
                     float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -488,10 +477,7 @@ struct Model {
                     float pressure = sample_pressure_from_box_coord(sample_loc);
 
                     // Get directional pressure
-                    glm::vec4 p = pressure * object2world * norm;
-
-                    // Get lever-vector
-                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+                    glm::vec4 p = pressure * object_m * norm;
 
                     // Integrate small force
                     force += p / prob;
@@ -509,6 +495,7 @@ struct Model {
                 location2applyForce += center_box_offset;
 
                 // TODO: APPLY INTEGRATED FORCE
+                physics_obj->apply_force_to_point(force, location2applyForce);
             }
         }
 
@@ -524,7 +511,7 @@ struct Model {
 
                 for (int k = 0; k < num_samples_sides; k++) {
                     // Get surface normal of the box
-                    glm::vec4 norm(0.0f, 1.0f, 0.0f, 1.0f);
+                    glm::vec4 norm(0.0f, 1.0f, 0.0f, 0.0f);
 
                     // Get random point on the side
                     float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -546,10 +533,7 @@ struct Model {
                     float pressure = sample_pressure_from_box_coord(sample_loc);
 
                     // Get directional pressure
-                    glm::vec4 p = pressure * object2world * norm;
-
-                    // Get lever-vector
-                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+                    glm::vec4 p = pressure * object_m * norm;
 
                     // Integrate small force
                     force += p / prob;
@@ -567,6 +551,7 @@ struct Model {
                 location2applyForce += center_box_offset;
 
                 // TODO: APPLY INTEGRATED FORCE
+                physics_obj->apply_force_to_point(force, location2applyForce);
             }
         }
 
@@ -582,7 +567,7 @@ struct Model {
 
                 for (int k = 0; k < num_samples_sides; k++) {
                     // Get surface normal of the box
-                    glm::vec4 norm(0.0f, 0.0f, -1.0f, 1.0f);
+                    glm::vec4 norm(0.0f, 0.0f, -1.0f, 0.0f);
 
                     // Get random point on the side
                     float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -604,10 +589,7 @@ struct Model {
                     float pressure = sample_pressure_from_box_coord(sample_loc);
 
                     // Get directional pressure
-                    glm::vec4 p = pressure * object2world * norm;
-
-                    // Get lever-vector
-                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+                    glm::vec4 p = pressure * object_m * norm;
 
                     // Integrate small force
                     force += p / prob;
@@ -624,7 +606,8 @@ struct Model {
 
                 location2applyForce += center_box_offset;
 
-                // TODO: APPLY INTEGRATED FORCE
+                // TODO: APPLY INTEGRATED 
+                physics_obj->apply_force_to_point(force, location2applyForce);
             }
         }
 
@@ -639,7 +622,7 @@ struct Model {
 
                 for (int k = 0; k < num_samples_sides; k++) {
                     // Get surface normal of the box
-                    glm::vec4 norm(0.0f, 0.0f, 1.0f, 1.0f);
+                    glm::vec4 norm(0.0f, 0.0f, 1.0f, 0.0f);
 
                     // Get random point on the side
                     float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -661,10 +644,7 @@ struct Model {
                     float pressure = sample_pressure_from_box_coord(sample_loc);
 
                     // Get directional pressure
-                    glm::vec4 p = pressure * object2world * norm;
-
-                    // Get lever-vector
-                    glm::vec4 lever = glm::normalize(object2world_rotate * sample_loc);
+                    glm::vec4 p = pressure * object_m * norm;
 
                     // Integrate small force
                     force += p / prob;
@@ -682,6 +662,7 @@ struct Model {
                 location2applyForce += center_box_offset;
 
                 // TODO: APPLY INTEGRATED FORCE
+                physics_obj->apply_force_to_point(force, location2applyForce);
             }
         }
 
