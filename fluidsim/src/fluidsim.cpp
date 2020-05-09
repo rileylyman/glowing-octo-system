@@ -155,7 +155,7 @@ void Engine::step(float dt, Texture3D *solid_mask, Texture3D *velocity_mask, Tex
     world_mask.use(2, 2);
     lin_buffer.use(3, 3);
     nearest_buffer.use(4, 4);
-    zero.use(5, 5);
+    velocity_mask->use(5, 5);
     q.use(6, 6);
     lin_buffer2.use(7, 7);
 
@@ -223,7 +223,7 @@ void Engine::step(float dt, Texture3D *solid_mask, Texture3D *velocity_mask, Tex
     fs_advect_diffuse.setInt("world_mask", 2);
     fs_advect_diffuse.setFloat("dt", dt);
     fs_advect_diffuse.setVec3("scale", sclx, scly, sclz);
-    fs_advect_diffuse.setVec4("q_air", 293.15f + 100.0f, 0.0f, 0.0f, 0.0f);
+    fs_advect_diffuse.setVec4("q_air", 293.15f, 0.0f, 0.0f, 0.0f);
 
     glDispatchCompute((GLuint) grid_width, (GLuint) grid_depth, (GLuint) grid_height);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
