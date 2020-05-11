@@ -281,7 +281,7 @@ struct Model {
         GLfloat *ptr = (GLfloat *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
 
-        auto sample_pressure_from_box_coord = [fs, object_m, ptr](glm::vec4 box_coord) {
+        auto sample_pressure_from_box_coord = [fs, object_m, ptr, offset](glm::vec4 box_coord) {
             glm::vec4 world_coord = object_m * box_coord;
             // Sample from image based on world coords
 
@@ -289,24 +289,33 @@ struct Model {
             float dim_y = (float)fs.grid_height * fs.scly;
             float dim_z = (float)fs.grid_depth * fs.sclz;
 
-            float float_cell_x = ((world_coord.x + dim_x / 2.0) / dim_x) * (float)fs.grid_width;
-            float float_cell_y = ((world_coord.y + dim_y / 2.0) / dim_y) * (float)fs.grid_height;
-            float float_cell_z = ((world_coord.z + dim_z / 2.0) / dim_z) * (float)fs.grid_depth;
+            // float float_cell_x = ((world_coord.x + dim_x / 2.0) / dim_x) * (float)fs.grid_width;
+            // float float_cell_y = ((world_coord.y + dim_y / 2.0) / dim_y) * (float)fs.grid_height;
+            // float float_cell_z = ((world_coord.z + dim_z / 2.0) / dim_z) * (float)fs.grid_depth;
+
+            world_coord -= glm::vec4(offset, 0.0f);
+            world_coord /= glm::vec4(dim_x, dim_y, dim_z, 1.0f);
+            world_coord += glm::vec4(0.5f, 0.5f, 0.5f, 0.0f);
+            world_coord *= glm::vec4((float) fs.grid_width, (float) fs.grid_height, (float) fs.grid_depth, 1.0f);
+
+            float float_cell_x = world_coord.x;
+            float float_cell_y = world_coord.y;
+            float float_cell_z = world_coord.z;
             
-            if (float_cell_x >= dim_x) {
-                return 0.0f;
+            if (float_cell_x >= (float)fs.grid_width) {
+                return -1001.0f;
             } else if (float_cell_x < 0.0) {
-                return 0.0f;
+                return -1002.0f;
             }
-            if (float_cell_y >= dim_y) {
-                return 0.0f;
+            if (float_cell_y >= (float)fs.grid_height) {
+                return -1003.0f;
             } else if (float_cell_y < 0.0) {
-                return 0.0f;
+                return -1004.0f;
             }
-            if (float_cell_z >= dim_z) {
-                return 0.0f;
+            if (float_cell_z >= (float)fs.grid_depth) {
+                return -1005.0f;
             } else if (float_cell_z < 0.0) {
-                return 0.0f;
+                return -1006.0f;
             }
             
             uint32_t cell_x = (uint32_t)float_cell_x;
@@ -368,6 +377,7 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
+                    std::cout << "LEFT::" << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
@@ -423,6 +433,7 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
+                    std::cout << "RIGHT::"  << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
@@ -479,6 +490,7 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
+                    std::cout << "BOT::"  << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
@@ -535,6 +547,7 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
+                    std::cout << "TOP::"  << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
@@ -591,6 +604,7 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
+                    std::cout << "DOWN::"  << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
@@ -646,6 +660,7 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
+                    std::cout << "UP::"  << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
