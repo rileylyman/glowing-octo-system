@@ -202,7 +202,9 @@ int main()
         // Fluid Debugger
         if (ImGuiInstance::mask_overlay) {
             fsdebug.draw(output_solid_mask, ImGuiInstance::fsdebug_scalar);
-        } else if (ImGuiInstance::fluid_overlay) {
+        } else if (ImGuiInstance::fluid_velocity_overlay) {
+            fsdebug.draw(fs.u, ImGuiInstance::fsdebug_scalar);
+        } else if (ImGuiInstance::fluid_pressure_overlay) {
             fsdebug.draw(fs.q, ImGuiInstance::fsdebug_scalar);
         }
         

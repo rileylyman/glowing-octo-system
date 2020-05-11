@@ -5,7 +5,8 @@ bool ImGuiInstance::render_normals = true;
 bool ImGuiInstance::render_skybox = true;
 bool ImGuiInstance::cull_back_face = true;
 bool ImGuiInstance::mask_overlay = false;
-bool ImGuiInstance::fluid_overlay = true;
+bool ImGuiInstance::fluid_pressure_overlay = true;
+bool ImGuiInstance::fluid_velocity_overlay = false;
 bool ImGuiInstance::fsdebug_scalar = false;
 bool ImGuiInstance::physics_enabled = false;
 bool ImGuiInstance::draw_model_bb = false;
@@ -77,7 +78,8 @@ void ImGuiInstance::draw() {
         ImGui::Checkbox("Anti-Aliasing", &msaa);
         ImGui::Checkbox("Reinhard HDR Mapping", &reinhard_hdr);
         ImGui::Checkbox("Wireframe", &wireframe);
-        ImGui::Checkbox("Fluid Debug Plane", &fluid_overlay);
+        ImGui::Checkbox("Fluid Transport Plane", &fluid_pressure_overlay);
+        ImGui::Checkbox("Fluid Velocity Plane", &fluid_velocity_overlay);
         ImGui::Checkbox("Mask Debug Plane", &mask_overlay);
         ImGui::Checkbox("Fluid Debug Scalar Grid?", &fsdebug_scalar);
 

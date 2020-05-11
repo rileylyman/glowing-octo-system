@@ -276,7 +276,7 @@ void Scene::draw(Camera *camera) {
 
         for (Model &model : models_to_render) {
         glCheckError();
-            //model.physics_obj->apply_force_to_point({0.0, 0.0, -0.2}, {0.0, 1.0, 0.0});
+            //model.physics_obj->apply_force_to_point({0.0, 10.0, 0.0}, {0.0, 0.0, 0.0});
             model.draw(shader, camera);
         glCheckError();
             if (ImGuiInstance::draw_model_bb) model.draw_bounding_box(camera);
