@@ -9,6 +9,9 @@ uniform bool u_Scalar;
 uniform vec3 u_PlaneX;
 uniform vec3 u_PlaneY;
 
+uniform bool u_RenderMask = false;
+uniform bool u_RenderTemperature = false;
+
 in vec3 WSPosition;
 
 vec3 hsv2rgb(vec3 c) {
@@ -33,38 +36,38 @@ void main() {
             // ****************************
             // FOR RENDERING THE WORLD MASK
             // ****************************
-            // vec4 type = vec4(texture(u_Grid, sampleLocation).r, 0.0, 0.0, 1.0);
-            // if (type.r == 0.0) {
-            //     FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-            // } else if (type.r == 1.0) {
-            //     FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-            // } else {
-            //     FragColor = vec4(0.0, 0.0, 1.0, 1.0);
-            // }
+            vec4 type = vec4(texture(u_Grid, sampleLocation).a, 0.0, 0.0, 1.0);
+            if (type.r == 0.0) {
+                FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            } else if (type.r == 1.0) {
+                FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+            } else {
+                FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+            }
 
 
             // ****************************
             // FOR RENDERING GENERAL CHANGES
             // ****************************
-            float t = texture(u_Grid, sampleLocation).r / 200.0;
+            //float t = texture(u_Grid, sampleLocation).r / 200.0;
 
-            float r = 0.0;
-            float g = 0.0;
-            float b = 0.0;
-            float pi = 3.1415;
+            //float r = 0.0;
+            //float g = 0.0;
+            //float b = 0.0;
+            //float pi = 3.1415;
 
-            if (mod(t,3.0) < 1) {
-               r = cos((pi/2.0) * mod(t,1.0));
-               g = sin((pi/2.0) * mod(t,1.0));
-            } else if (mod(t,3.0) < 2) {
-               g = cos((pi/2.0) * mod(t,1.0));
-               b = sin((pi/2.0) * mod(t,1.0));
-            } else {
-               b = cos((pi/2.0) * mod(t,1.0));
-               r = sin((pi/2.0) * mod(t,1.0));
-            }
+            //if (mod(t,3.0) < 1) {
+            //   r = cos((pi/2.0) * mod(t,1.0));
+            //   g = sin((pi/2.0) * mod(t,1.0));
+            //} else if (mod(t,3.0) < 2) {
+            //   g = cos((pi/2.0) * mod(t,1.0));
+            //   b = sin((pi/2.0) * mod(t,1.0));
+            //} else {
+            //   b = cos((pi/2.0) * mod(t,1.0));
+            //   r = sin((pi/2.0) * mod(t,1.0));
+            //}
 
-            FragColor = vec4(r, g, b, 1.0);//
+            //FragColor = vec4(r, g, b, 1.0);//
 
 
             // // ****************************

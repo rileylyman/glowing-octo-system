@@ -162,10 +162,14 @@ int main()
         fs.fs_write_to.setInt("q_in", 1);
         fs.fs_write_to.setInt("q_out", 2);
 
+        glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
+
         // Zero the Velocity Mask
         fs.fs_write_to.use();
         fs.fs_write_to.setInt("q_in", 1);
         fs.fs_write_to.setInt("q_out", 3);
+
+        glDispatchCompute((GLuint) grid_width, (GLuint) grid_height, (GLuint) grid_depth);
 
         // Zero the Texture Mask
         fs.fs_write_to.use();
