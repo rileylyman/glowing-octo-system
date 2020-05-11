@@ -24,30 +24,6 @@
         }
     ],
     "models" : [
-        {
-            "name": "leaf",
-            "modelPath": "resources/models/glowingleaf/scene.gltf",
-            "shaderType": "blinnphong_textured",
-            "heightNormals": true,
-            "shader": "phong",
-            "physics": "dynamic",
-            "gravity": true,
-            "mass": 0.0001,
-            "initial_position": [0.0, 50.0, 0.0],
-            "initial_rotation": [1.0, 0.0, 0.0]
-        },
-        {
-            "name": "naniu",
-            "modelPath": "resources/models/super/scene.fbx",
-            "shaderType": "pbr_textured",
-            "heightNormals": true,
-            "shader": "pbr",
-            "physics": "static",
-            "gravity": true,
-            "mass": 10.0,
-            "initial_position": [0.0, -10.0, 0.0],
-            "initial_rotation": [0.0, 0.0, 0.0]
-        }
     ],
     "lights": [
         {

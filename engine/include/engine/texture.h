@@ -213,10 +213,17 @@ struct Texture3D {
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
                 for (uint32_t w = 0; w < width; w++) {
-                    data.push_back(0.0f);
-                    data.push_back(0.0f);
-                    data.push_back(0.0f);
-                    data.push_back(1.0f);
+                    if (h == height / 2 && d == depth / 2 && w < 5) {
+                        data.push_back(100.0f);
+                        data.push_back(-100.0f);
+                        data.push_back(0.0f);
+                        data.push_back(1.0f);
+                    } else {
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(0.0f);
+                        data.push_back(1.0f);
+                    }
                 }
             }
         }
@@ -228,19 +235,19 @@ struct Texture3D {
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
                 for (uint32_t w = 0; w < width; w++) {
-                    if (d >= 2 * depth / 3) {
-                        data.push_back(293.15f + 100.0f);
+                    if (h >= 2 * height / 3) {
+                        data.push_back(293.15f - 200.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
-                    } else if (d >= depth / 3) {
+                    } else if (h >= height / 3) {
                         float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-                        data.push_back(293.15f + 100.0f);
+                        data.push_back(293.15f - 100.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                     } else {
-                        data.push_back(293.15f + 100.0f);
+                        data.push_back(293.15f + 500.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);
                         data.push_back(0.0f);

@@ -33,6 +33,15 @@ void main() {
     // position in world (using grid dimensions and offset)
     // position in mesh mask grid (using transformation on mesh bbox vertices)
 
+    ivec3 myPos = center();
+    ivec3 maxima = ivec3(gl_NumWorkGroups);
+    if (myPos.x <= 1 || myPos.y <= 1 || myPos.z <= 1 ||
+        myPos.x >= maxima.x - 2 || myPos.y >= maxima.y - 2 || myPos.z >= maxima.z - 2)
+    {
+        imageStore(u_Grid, center(), vec4(0.0, 0.0, 0.0, 1.0));
+        return;
+    }
+
     ivec3 pos_in_grid_i = center();
     pos_in_grid_i = pos_in_grid_i.xzy;
     

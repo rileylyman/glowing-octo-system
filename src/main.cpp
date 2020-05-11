@@ -187,7 +187,7 @@ int main()
                 );
             }
             fsdebug.overlay_mask(mask, &output_velocity_mask, velocity);
-            fsdebug.overlay_mask(mask, &output_temperature_mask, glm::vec3(293.15f + 100.0f, 0.0, 0.0));
+            fsdebug.overlay_mask(mask, &output_temperature_mask, glm::vec3(293.15f + 600.0f, 0.0, 0.0));
         }
 
         // Fluid Physics
