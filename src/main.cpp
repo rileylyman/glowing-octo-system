@@ -39,7 +39,7 @@ const unsigned int SCR_HEIGHT = 600;
 int main()
 {
     uint32_t grid_width = 32, grid_height = 32, grid_depth = 32;
-    float dim_x = 80.0f, dim_y = 80.0f, dim_z = 80.0f;
+    float dim_x = 150.0f, dim_y = 150.0f, dim_z = 150.0f;
     float scl_x = dim_x / (float) grid_width;
     float scl_y = dim_y / (float) grid_height;
     float scl_z = dim_z / (float) grid_depth;

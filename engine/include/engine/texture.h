@@ -215,7 +215,7 @@ struct Texture3D {
                 for (uint32_t w = 0; w < width; w++) {
                     if (h <= 4) {
                         data.push_back(0.0f);
-                        data.push_back(-100.0f);
+                        data.push_back(-1.0f);
                         data.push_back(0.0f);
                         data.push_back(1.0f);
                     } else {
