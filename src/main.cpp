@@ -39,7 +39,7 @@ const unsigned int SCR_HEIGHT = 600;
 int main()
 {
     uint32_t grid_width = 32, grid_height = 32, grid_depth = 32;
-    float dim_x = 20.0f, dim_y = 20.0f, dim_z = 20.0f;
+    float dim_x = 40.0f, dim_y = 20.0f, dim_z = 20.0f;
     float scl_x = dim_x / (float) grid_width;
     float scl_y = dim_y / (float) grid_height;
     float scl_z = dim_z / (float) grid_depth;
@@ -149,7 +149,7 @@ int main()
         glCheckError();
         for (Model &model : scene.get_models()) {
             //model.physics_obj->apply_force_to_center({0.0, 0.0, -1.0});
-            model.pressure_force(fs, 4, 2, grid_offset, model.model());
+            model.pressure_force(fs, 32, 2, grid_offset, model.model());
         }
         scene.draw(&camera);
 

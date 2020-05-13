@@ -82,23 +82,23 @@ void main() {
         // Apply Force
         force += imageLoad(f, center());
 
-        // // // Apply Buoyant Force
-        // vec4 buoyant = vec4(0.0, -100.0, 0.0, 0.0);
-        // float temp_avg = ((imageLoad(temp, center()) +
-        //                    imageLoad(temp, left()) +
-        //                    imageLoad(temp, right()) +
-        //                    imageLoad(temp, bottom()) +
-        //                    imageLoad(temp, top()) +
-        //                    imageLoad(temp, left()) +
-        //                    imageLoad(temp, right()))/7.0).r + 1;
-        // float delta_temp = (1 / temp_air) - (1 / temp_avg);
-        // buoyant *= (delta_temp * mass * g * (imageLoad(pressure, center()).r)) / 8.314;
-        // force += buoyant;
+        // Apply Buoyant Force
+        vec4 buoyant = vec4(0.0, -100.0, 0.0, 0.0);
+        float temp_avg = ((imageLoad(temp, center()) +
+                           imageLoad(temp, left()) +
+                           imageLoad(temp, right()) +
+                           imageLoad(temp, bottom()) +
+                           imageLoad(temp, top()) +
+                           imageLoad(temp, left()) +
+                           imageLoad(temp, right()))/7.0).r + 1;
+        float delta_temp = (1 / temp_air) - (1 / temp_avg);
+        buoyant *= (delta_temp * mass * g * (imageLoad(pressure, center()).r)) / 8.314;
+        force += buoyant;
 
-        // // Apply Gravitational Force
-        // vec4 gforce = vec4(0.0, 1.0, 0.0, 0.0);
-        // gforce *= mass * g;
-        // force += gforce;
+        // Apply Gravitational Force
+        vec4 gforce = vec4(0.0, 1.0, 0.0, 0.0);
+        gforce *= mass * g;
+        force += gforce;
 
         // Get Acceleration
         vec4 acceleration = force / mass;

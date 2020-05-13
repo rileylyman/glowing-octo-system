@@ -303,19 +303,19 @@ struct Model {
             float float_cell_z = world_coord.z;
             
             if (float_cell_x >= (float)fs.grid_width) {
-                return -1001.0f;
+                return 0.0f;
             } else if (float_cell_x < 0.0) {
-                return -1002.0f;
+                return 0.0f;
             }
             if (float_cell_y >= (float)fs.grid_height) {
-                return -1003.0f;
+                return 0.0f;
             } else if (float_cell_y < 0.0) {
-                return -1004.0f;
+                return 0.0f;
             }
             if (float_cell_z >= (float)fs.grid_depth) {
-                return -1005.0f;
+                return 0.0f;
             } else if (float_cell_z < 0.0) {
-                return -1006.0f;
+                return 0.0f;
             }
             
             uint32_t cell_x = (uint32_t)float_cell_x;

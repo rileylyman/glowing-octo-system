@@ -213,8 +213,8 @@ struct Texture3D {
         for (uint32_t h = 0; h < height; h++) {
             for (uint32_t d = 0; d < depth; d++) {
                 for (uint32_t w = 0; w < width; w++) {
-                    if (h == height / 2 && d == depth / 2 && w < 5) {
-                        data.push_back(100.0f);
+                    if (h <= 4) {
+                        data.push_back(0.0f);
                         data.push_back(-100.0f);
                         data.push_back(0.0f);
                         data.push_back(1.0f);
