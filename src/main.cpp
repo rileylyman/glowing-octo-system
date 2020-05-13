@@ -39,7 +39,7 @@ const unsigned int SCR_HEIGHT = 600;
 int main()
 {
     uint32_t grid_width = 32, grid_height = 32, grid_depth = 32;
-    float dim_x = 40.0f, dim_y = 20.0f, dim_z = 20.0f;
+    float dim_x = 80.0f, dim_y = 80.0f, dim_z = 80.0f;
     float scl_x = dim_x / (float) grid_width;
     float scl_y = dim_y / (float) grid_height;
     float scl_z = dim_z / (float) grid_depth;
@@ -92,7 +92,7 @@ int main()
     Fluidsim::Engine fs(grid_width, grid_height, grid_depth, scl_x, scl_y, scl_z);
     Physics::instance->fs = &fs;
 
-    glm::vec3 grid_offset = glm::vec3(0.0);
+    glm::vec3 grid_offset = glm::vec3(0.0f, 0.0f, 0.0f);
     FluidDebugRenderer fsdebug(&camera, 10.0f, 5.0f, -10.0f, grid_offset, {dim_x, dim_y, dim_z});    
 
     std::vector<Mask> mesh_masks = scene.get_mesh_masks();

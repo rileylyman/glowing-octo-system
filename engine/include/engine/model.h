@@ -377,7 +377,6 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
-                    std::cout << "LEFT::" << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
@@ -399,6 +398,7 @@ struct Model {
 
                 // TODO: APPLY INTEGRATED FORCE
                 physics_obj->apply_force_to_point(force, location2applyForce);
+                physics_obj->apply_force_to_center(force);
             }
         }
 
@@ -433,7 +433,6 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
-                    std::cout << "RIGHT::"  << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
@@ -455,6 +454,7 @@ struct Model {
 
                 // TODO: APPLY INTEGRATED FORCE
                 physics_obj->apply_force_to_point(force, location2applyForce);
+                physics_obj->apply_force_to_center(force);
             }
         }
 
@@ -490,7 +490,6 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
-                    std::cout << "BOT::"  << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
@@ -512,6 +511,7 @@ struct Model {
 
                 // TODO: APPLY INTEGRATED FORCE
                 physics_obj->apply_force_to_point(force, location2applyForce);
+                physics_obj->apply_force_to_center(force);
             }
         }
 
@@ -547,7 +547,6 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
-                    std::cout << "TOP::"  << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
@@ -569,6 +568,7 @@ struct Model {
 
                 // TODO: APPLY INTEGRATED FORCE
                 physics_obj->apply_force_to_point(force, location2applyForce);
+                physics_obj->apply_force_to_center(force);
             }
         }
 
@@ -604,7 +604,6 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
-                    std::cout << "DOWN::"  << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
@@ -626,6 +625,7 @@ struct Model {
 
                 // TODO: APPLY INTEGRATED 
                 physics_obj->apply_force_to_point(force, location2applyForce);
+                physics_obj->apply_force_to_center(force);
             }
         }
 
@@ -660,7 +660,6 @@ struct Model {
                     
                     // Get pressure
                     float pressure = sample_pressure_from_box_coord(sample_loc);
-                    std::cout << "UP::"  << pressure << std::endl;
 
                     // Get directional pressure
                     glm::vec4 p = pressure * object_m * norm;
@@ -682,6 +681,7 @@ struct Model {
 
                 // TODO: APPLY INTEGRATED FORCE
                 physics_obj->apply_force_to_point(force, location2applyForce);
+                physics_obj->apply_force_to_center(force);
             }
         }
 
